@@ -57,10 +57,10 @@ public class StateTransitionTable<TState, TArg> where TArg : notnull
 	#endregion
 	public StateTriggerType Consult(TArg arg, out TState state)
 	{
-		StateTriggerType type;
+		StateTriggerType type= default;
 		foreach (var func in dynamicTable)
 		{
-			(state, type) = func.Invoke(arg);
+			(state, type) = func.Invoke(arg); 
 			if (type != StateTriggerType.Ignore)
 			{
 				return type;
@@ -72,6 +72,6 @@ public class StateTransitionTable<TState, TArg> where TArg : notnull
 			return type;
 		}
 		state = default!;
-		return default;
+		return type;
 	}
 }

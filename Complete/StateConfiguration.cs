@@ -3,7 +3,6 @@
 namespace zms9110750Library.Complete;
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2007:考虑对等待的任务调用 ConfigureAwait", Justification = "<挂起>")]
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1003:使用泛型事件处理程序实例", Justification = "<挂起>")]
-
 public class StateConfiguration<TState>
 {
 	public event Func<Task> OnExcite;
@@ -132,10 +131,10 @@ public class StateConfiguration<TState>
 		await Exit(arg, ancestor);
 		await target.Entry(arg, ancestor);
 	}
-	public StateTriggerType Transition<TArg>(TArg arg, out TState state) where TArg : notnull
+	public StateTriggerType Consult<TArg>(TArg arg, out TState state) where TArg : notnull
 	{
 		var type = Table<TArg>().Consult(arg, out state);
-		return type == StateTriggerType.Ignore && Substate != null ? Substate.Transition(arg, out state) : type;
+		return type == StateTriggerType.Ignore && Substate != null ? Substate.Consult(arg, out state) : type;
 	}
 	#endregion
 	#region 注册和撤销

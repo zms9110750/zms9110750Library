@@ -59,7 +59,8 @@ public sealed class ObservableAsyncEnumerable<T> : IObservable<T>, IObserver<T>,
 	#region 观察者方法
 	public T Current
 	{
-		get => current; set
+		get => current;
+		set
 		{
 			ObjectDisposedException.ThrowIf(Disposed, this);
 			current = value;
@@ -121,7 +122,7 @@ public sealed class ObservableAsyncEnumerable<T> : IObservable<T>, IObserver<T>,
 	}
 	void ResetWait()
 	{
-		if (buffer.Count > 0)
+		if (buffer.Count > 0 && wait.CurrentCount == 0)
 		{
 			wait.Release(buffer.Count);
 		}

@@ -97,7 +97,7 @@ public sealed class StateMachine<TState> : IObservable<Transition<TState>>, IAsy
 				await semaphore.WaitAsync();
 				if (!Disposed)
 				{
-					switch (CurrentConfiguration.Transition(arg, out var state))
+					switch (CurrentConfiguration.Consult(arg, out var state))
 					{
 						case StateTriggerType.Transition:
 							await CurrentConfiguration.Transition(this[state], arg);
