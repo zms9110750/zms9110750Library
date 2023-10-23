@@ -3,9 +3,21 @@ using System.Runtime.InteropServices;
 
 namespace zms9110750Library.Complete;
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2012:正确使用 ValueTask", Justification = "<挂起>")]
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0028:简化集合初始化", Justification = "<挂起>")]
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0290:使用主构造函数", Justification = "<挂起>")]
 
+#if NET8_0_OR_GREATER
+public sealed class ObservableAsyncEnumerable<T>(T value) : IObservable<T>, IObserver<T>, IDisposable, IAsyncEnumerable<T>
+{
+	#region 字段 
+	readonly HashSet<ConcurrentQueue<ValueTask<T>>> buffer = [];
+	readonly HashSet<UnSubscribe> observers = [];
+	readonly HashSet<UnSubscribe> sources = [];
+	readonly SemaphoreSlim wait = new SemaphoreSlim(0);
+	readonly CancellationTokenSource close = new CancellationTokenSource();
+	T current = value;
+	public bool Disposed { get; private set; }
+	#endregion
+#else
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0290:使用主构造函数", Justification = "<挂起>")]
 public sealed class ObservableAsyncEnumerable<T> : IObservable<T>, IObserver<T>, IDisposable, IAsyncEnumerable<T>
 {
 	#region 字段 
@@ -21,6 +33,7 @@ public sealed class ObservableAsyncEnumerable<T> : IObservable<T>, IObserver<T>,
 		current = value;
 	}
 	#endregion
+#endif
 	#region 注册和订阅
 	public void Register(IObservable<T> observable)
 	{

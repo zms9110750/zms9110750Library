@@ -1,4 +1,7 @@
 ﻿namespace zms9110750Library.Complete;
+#if NET8_0_OR_GREATER 
+public readonly record struct Transition<TState>(TState Launch, TState Response, StateTriggerType Type, object? Parameter);
+#else
 public readonly struct Transition<TState> : IEquatable<Transition<TState>>
 {
 	#region 字段 
@@ -30,3 +33,4 @@ public readonly struct Transition<TState> : IEquatable<Transition<TState>>
 	}
 	#endregion
 }
+#endif

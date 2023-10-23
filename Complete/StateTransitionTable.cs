@@ -1,4 +1,6 @@
-﻿namespace zms9110750Library.Complete;
+﻿using System;
+
+namespace zms9110750Library.Complete;
 
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2007:考虑对等待的任务调用 ConfigureAwait", Justification = "<挂起>")]
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1003:使用泛型事件处理程序实例", Justification = "<挂起>")]
@@ -7,7 +9,7 @@
 public class StateTransitionTable<TState, TArg> where TArg : notnull
 {
 	#region 字段
-	public event Func<TArg, Task> OnEntryFrom;
+	public event Func<TArg, Task> OnEntryFrom; 
 	public event Func<TArg, Task> OnExitFrom;
 	public event Func<TArg, Task> OnExciteFrom;
 	readonly Dictionary<TArg, (TState, StateTriggerType)> reserveTable = new Dictionary<TArg, (TState, StateTriggerType)>();

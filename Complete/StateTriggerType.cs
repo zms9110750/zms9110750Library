@@ -2,7 +2,7 @@
 public enum StateTriggerType
 {
 	/// <summary>
-	/// 从外部直接修改状态，不触发进入退出事件。作为转换表时应顺延查找其他转换。
+	/// 作为转换表时应顺延查找其他转换。
 	/// </summary>
 	Ignore,
 	/// <summary>
@@ -16,5 +16,9 @@ public enum StateTriggerType
 	/// <summary>
 	/// 拦截，在转换表中查询到此状态时不应该继续查询。
 	/// </summary>
-	Intercept
+	Intercept,
+	/// <summary>
+	/// 转换状态但不触发进入退出事件。
+	/// </summary>
+	NoProcess
 }

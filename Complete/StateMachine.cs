@@ -45,7 +45,7 @@ public sealed class StateMachine<TState> : IObservable<Transition<TState>>, IAsy
 		get => state;
 		set
 		{
-			observable.Current = new Transition<TState>(state, value, StateTriggerType.Ignore, null);
+			observable.Current = new Transition<TState>(state, value, StateTriggerType.NoProcess, null);
 			state = value;
 		}
 	}
@@ -107,6 +107,10 @@ public sealed class StateMachine<TState> : IObservable<Transition<TState>>, IAsy
 						case StateTriggerType.Excite:
 							await this[state].Excite(arg);
 							observable.Current = new Transition<TState>(this.state, state, StateTriggerType.Excite, arg);
+							break;
+						case StateTriggerType.NoProcess:
+							observable.Current = new Transition<TState>(this.state, state, StateTriggerType.NoProcess, arg);
+							this.state = state;
 							break;
 					}
 				}
