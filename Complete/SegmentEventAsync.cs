@@ -1,11 +1,9 @@
-﻿namespace zms9110750Library.Complete;
-internal class SegmentEventAsync<TMoment> : IAsyncEnumerable<TMoment> where TMoment : struct, Enum
+﻿namespace zms9110750Library.Complete; 
+public class SegmentEventAsync<TMoment> : IAsyncEnumerable<TMoment> where TMoment : struct, Enum
 {
 	public event Func<IAsyncEnumerator<TMoment>>? EventHandlers;
-	[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1859", Justification = "<挂起>")]
 	static readonly IEnumerable<TMoment> moments = Enum.GetValues<TMoment>();
 
-	[System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2012:正确使用 ValueTask", Justification = "<挂起>")]
 	public async IAsyncEnumerator<TMoment> GetAsyncEnumerator(CancellationToken cancellationToken = default)
 	{
 		#region 初始化 

@@ -1,24 +1,7 @@
 ﻿using System.Collections.Concurrent;
-using System.Runtime.InteropServices;
 
 namespace zms9110750Library.Complete;
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2012:正确使用 ValueTask", Justification = "<挂起>")]
-
-#if NET8_0_OR_GREATER
-public sealed class ObservableAsyncEnumerable<T>(T value) : IObservable<T>, IObserver<T>, IDisposable, IAsyncEnumerable<T>
-{
-	#region 字段 
-	readonly HashSet<ConcurrentQueue<ValueTask<T>>> buffer = [];
-	readonly HashSet<UnSubscribe> observers = [];
-	readonly HashSet<UnSubscribe> sources = [];
-	readonly SemaphoreSlim wait = new SemaphoreSlim(0);
-	readonly CancellationTokenSource close = new CancellationTokenSource();
-	T current = value;
-	public bool Disposed { get; private set; }
-	#endregion
-#else
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0290:使用主构造函数", Justification = "<挂起>")]
-public sealed class ObservableAsyncEnumerable<T> : IObservable<T>, IObserver<T>, IDisposable, IAsyncEnumerable<T>
+public sealed class ObservableAsyncEnumerable<T>(T value) : IObservable<T>, IObserver<T>, IAsyncEnumerable<T>, IDisposable
 {
 	#region 字段 
 	readonly HashSet<ConcurrentQueue<ValueTask<T>>> buffer = new HashSet<ConcurrentQueue<ValueTask<T>>>();
@@ -26,14 +9,9 @@ public sealed class ObservableAsyncEnumerable<T> : IObservable<T>, IObserver<T>,
 	readonly HashSet<UnSubscribe> sources = new HashSet<UnSubscribe>();
 	readonly SemaphoreSlim wait = new SemaphoreSlim(0);
 	readonly CancellationTokenSource close = new CancellationTokenSource();
-	T current;
-	public bool Disposed { get; private set; }
-	public ObservableAsyncEnumerable(T value)
-	{
-		current = value;
-	}
+	T current = value;
+	public bool Disposed => close.IsCancellationRequested;
 	#endregion
-#endif
 	#region 注册和订阅
 	public void Register(IObservable<T> observable)
 	{
@@ -53,6 +31,10 @@ public sealed class ObservableAsyncEnumerable<T> : IObservable<T>, IObserver<T>,
 				observer.OnNext(item);
 			}
 		}
+		catch (ObjectDisposedException e) when (e.ObjectName == GetType().FullName)
+		{
+			throw;
+		}
 		catch (Exception e)
 		{
 			observer.OnError(e);
@@ -64,6 +46,7 @@ public sealed class ObservableAsyncEnumerable<T> : IObservable<T>, IObserver<T>,
 	public IDisposable Subscribe(IObserver<T> observer)
 	{
 		ObjectDisposedException.ThrowIf(Disposed, this);
+		ArgumentNullException.ThrowIfNull(observer);
 		var obs = new UnSubscribe(observers, observer);
 		observers.Add(obs);
 		return obs;
@@ -128,14 +111,13 @@ public sealed class ObservableAsyncEnumerable<T> : IObservable<T>, IObserver<T>,
 			observers.Clear();
 			sources.Clear();
 			close.Dispose();
-			wait.Dispose();
-			Disposed = true;
+			wait.Dispose(); 
 			GC.SuppressFinalize(this);
 		}
 	}
 	void ResetWait()
 	{
-		if (buffer.Count > 0 && wait.CurrentCount == 0)
+		if (buffer.Count > wait.CurrentCount)//buffer.Count > 0 && wait.CurrentCount == 0
 		{
 			wait.Release(buffer.Count);
 		}
@@ -178,18 +160,8 @@ public sealed class ObservableAsyncEnumerable<T> : IObservable<T>, IObserver<T>,
 	}
 	#endregion
 	#region 辅助类 
-	private readonly struct UnSubscribe : IObserver<T>, IDisposable
+	private readonly struct UnSubscribe(ICollection<UnSubscribe> observers, IObserver<T> observer, IDisposable? disposable = null) : IObserver<T>, IDisposable
 	{
-		readonly ICollection<UnSubscribe> observers;
-		readonly IObserver<T> observer;
-		readonly IDisposable? disposable;
-
-		public UnSubscribe(ICollection<UnSubscribe> observers, IObserver<T> observer, IDisposable? disposable = null)
-		{
-			this.observers = observers;
-			this.observer = observer;
-			this.disposable = disposable;
-		}
 		public void OnNext(T value) => observer.OnNext(value);
 		public void OnError(Exception error) => observer.OnError(error);
 		public void OnCompleted()

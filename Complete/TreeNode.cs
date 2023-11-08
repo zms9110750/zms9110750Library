@@ -2,20 +2,12 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
-namespace zms9110750Library.Complete;
-[SuppressMessage("Usage", "CA2225:运算符重载具有命名的备用项", Justification = "<挂起>")]
-[SuppressMessage("Style", "IDE0290:使用主构造函数", Justification = "<挂起>")]
-[SuppressMessage("Style", "IDE0028:简化集合初始化", Justification = "<挂起>")]
-[SuppressMessage("Usage", "CA2227:集合属性应为只读", Justification = "<挂起>")] 
-public sealed class TreeNode<T> : IEquatable<T>, IList<TreeNode<T>>
+namespace zms9110750Library.Complete; 
+public sealed class TreeNode<T>(T value) : IEquatable<T>, IList<TreeNode<T>>
 {
 	#region 储存值
-	public T Value { get; set; }
-	public TreeNode(T value)
-	{
-		Value = value;
-	}
-	#endregion
+	public T Value { get; set; } = value;
+	#endregion 
 	#region 层级和索引
 	int level;
 	int index;
