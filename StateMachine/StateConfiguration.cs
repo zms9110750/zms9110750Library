@@ -30,9 +30,9 @@ public class StateConfiguration<TState>
 			: Task.WhenAll(@delegate.GetInvocationList().OfType<Func<Task>>().Select(func => func.Invoke()));
 	}
 	#region 进入
-	public async Task Entry()
+	public Task Entry()
 	{
-		await  WhenAllEvent(OnEntry);
+		return WhenAllEvent(OnEntry);
 	}
 	public async Task EntryFromAncestors(StateConfiguration<TState>? ancestors)
 	{
@@ -57,9 +57,9 @@ public class StateConfiguration<TState>
 	}
 	#endregion
 	#region 退出
-	public async Task Exit()
+	public Task Exit()
 	{
-		await  WhenAllEvent(OnExit);
+		return WhenAllEvent(OnExit);
 	}
 	public async Task ExitToAncestors(StateConfiguration<TState>? ancestors)
 	{
@@ -84,9 +84,9 @@ public class StateConfiguration<TState>
 	}
 	#endregion
 	#region 激发
-	public async Task Excite()
+	public Task Excite()
 	{
-		await WhenAllEvent(OnExcite);
+		return WhenAllEvent(OnExcite);
 	}
 	public async Task ExciteFromAncestors(StateConfiguration<TState>? ancestors)
 	{

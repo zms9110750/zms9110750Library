@@ -11,6 +11,7 @@ public sealed class ObservableAsyncEnumerable<T>(T value) : IObservable<T>, IObs
 	readonly CancellationTokenSource close = new CancellationTokenSource();
 	T current = value;
 	public bool Disposed => close.IsCancellationRequested;
+	public CancellationToken CancellationToken=> close.Token;
 	#endregion
 	#region 注册和订阅
 	public void Register(IObservable<T> observable)
@@ -23,7 +24,7 @@ public sealed class ObservableAsyncEnumerable<T>(T value) : IObservable<T>, IObs
 	{
 		ObjectDisposedException.ThrowIf(Disposed, this);
 		IObserver<T> observer = this;
-		var token = close.Token;
+		var token = CancellationToken;
 		try
 		{
 			await foreach (var item in asyncEnumerable.WithCancellation(token))
@@ -130,7 +131,7 @@ public sealed class ObservableAsyncEnumerable<T>(T value) : IObservable<T>, IObs
 		{
 			yield break;
 		}
-		var token = close.Token;
+		var token = CancellationToken;
 		ConcurrentQueue<ValueTask<T>> queue = new ConcurrentQueue<ValueTask<T>>();
 		buffer.Add(queue);
 		try

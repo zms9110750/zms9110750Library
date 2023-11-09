@@ -5,22 +5,17 @@ using zms9110750Library.Complete;
 
 namespace zms9110750Library.StateMachine;
 
-public sealed class StateMachine<TState> : IObservable<Transition<TState>>, IAsyncEnumerable<Transition<TState>>, IDisposable where TState : notnull
+public sealed class StateMachine<TState>(TState state) : IObservable<Transition<TState>>, IAsyncEnumerable<Transition<TState>>, IDisposable where TState : notnull
 {
 	#region 字段
 	readonly SemaphoreSlim semaphore = new SemaphoreSlim(1, 1);
 	readonly ConcurrentDictionary<TState, StateConfiguration<TState>> configuration = new ConcurrentDictionary<TState, StateConfiguration<TState>>();
-	readonly ObservableAsyncEnumerable<Transition<TState>> observable = new ObservableAsyncEnumerable<Transition<TState>>(default);
-	private TState state;
-	public bool Disposed { get; private set; }
-	public StateMachine(TState state)
-	{
-		this.state = state;
-		observable.Current = new Transition<TState>(state, state, StateTriggerType.NoProcess, null);
-	}
+	readonly ObservableAsyncEnumerable<Transition<TState>> observable = new ObservableAsyncEnumerable<Transition<TState>>(new Transition<TState>(state, state, StateTriggerType.NoProcess, null));
+	public TState State { get; private set; } = state;
+	public bool Disposed => observable.Disposed;
 	#endregion
 	#region 获取配置
-	public StateConfiguration<TState> CurrentConfiguration => this[state];
+	public StateConfiguration<TState> CurrentConfiguration => this[State];
 	public StateConfiguration<TState> this[TState key] => configuration.GetOrAdd(key, static _ => new StateConfiguration<TState>());
 	public StateTransitionTable<TState, TArg> Table<TArg>(TState state) where TArg : notnull
 	{
@@ -48,24 +43,26 @@ public sealed class StateMachine<TState> : IObservable<Transition<TState>>, IAsy
 			this[item].Substate = this[substate];
 		}
 	}
+
 	#endregion
 	#region 转换
-	public TState State
+	public async void SetState(TState value)
 	{
-		get => state;
-		set
-		{
-			var current = state;
-			state = value;
-			observable.Current = new Transition<TState>(current, value, StateTriggerType.NoProcess, null);
-		}
+		await ExecuteIfNotDisposed(() =>
+			 {
+			 	var current = State;
+			 	State = value;
+			 	observable.Current = new Transition<TState>(current, value, StateTriggerType.NoProcess, null);
+			 	return Task.CompletedTask;
+			 });
 	}
+
 	public async Task Excite(TState state)
 	{
 		await ExecuteIfNotDisposed(async () =>
 		{
 			await this[state].ExciteFromAncestors(null);
-			observable.Current = new Transition<TState>(this.state, state, StateTriggerType.Excite, null);
+			observable.Current = new Transition<TState>(State, state, StateTriggerType.Excite, null);
 		});
 	}
 	public async Task Excite<TArg>(TState state, TArg arg) where TArg : notnull
@@ -73,16 +70,17 @@ public sealed class StateMachine<TState> : IObservable<Transition<TState>>, IAsy
 		await ExecuteIfNotDisposed(async () =>
 		{
 			await this[state].ExciteFromAncestors(arg, null);
-			observable.Current = new Transition<TState>(this.state, state, StateTriggerType.Excite, arg);
+			observable.Current = new Transition<TState>(State, state, StateTriggerType.Excite, arg);
 		});
 	}
 	public async Task Transition(TState state)
 	{
 		await ExecuteIfNotDisposed(async () =>
 		{
+			var current = State;
 			await CurrentConfiguration.Transition(this[state]);
-			observable.Current = new Transition<TState>(this.state, state, StateTriggerType.Transition, null);
-			this.state = state;
+			State = state;
+			observable.Current = new Transition<TState>(current, State, StateTriggerType.Transition, null);
 		});
 	}
 	public async Task Consult<TArg>(TArg arg) where TArg : notnull
@@ -95,13 +93,13 @@ public sealed class StateMachine<TState> : IObservable<Transition<TState>>, IAsy
 			{
 				case StateTriggerType.Transition:
 					await CurrentConfiguration.Transition(this[response], arg);
-					state = response;
+					State = response;
 					break;
 				case StateTriggerType.Excite:
 					await this[response].Excite(arg);
 					break;
 				case StateTriggerType.NoProcess:
-					state = response;
+					State = response;
 					break;
 				default:
 					response = current;
@@ -112,11 +110,15 @@ public sealed class StateMachine<TState> : IObservable<Transition<TState>>, IAsy
 	}
 	async Task ExecuteIfNotDisposed(Func<Task> action)
 	{
-		if (!Disposed)
+		if (Disposed)
+		{
+			ObjectDisposedException.ThrowIf(Disposed, this);
+		}
+		else
 		{
 			try
 			{
-				await semaphore.WaitAsync();
+				await semaphore.WaitAsync(observable.CancellationToken);
 				if (!Disposed)
 				{
 					await action();
@@ -124,7 +126,10 @@ public sealed class StateMachine<TState> : IObservable<Transition<TState>>, IAsy
 			}
 			finally
 			{
-				semaphore.Release();
+				if (!Disposed)
+				{
+					semaphore.Release();
+				}
 			}
 		}
 	}
@@ -135,9 +140,7 @@ public sealed class StateMachine<TState> : IObservable<Transition<TState>>, IAsy
 		if (Disposed)
 		{
 			return;
-		}
-		Disposed = true;
-		semaphore.Wait();
+		} 
 		semaphore.Dispose();
 		observable.Dispose();
 	}
@@ -145,7 +148,6 @@ public sealed class StateMachine<TState> : IObservable<Transition<TState>>, IAsy
 	public IDisposable Subscribe(IObserver<Transition<TState>> observer) => observable.Subscribe(observer);
 	public IAsyncEnumerator<Transition<TState>> GetAsyncEnumerator(CancellationToken cancellationToken = default) => ((IAsyncEnumerable<Transition<TState>>)observable).GetAsyncEnumerator(cancellationToken);
 	#endregion
-
 }
 
 
