@@ -1,15 +1,14 @@
 ﻿using System.Collections.Concurrent;
 
 namespace zms9110750Library.Complete;
-public sealed class ObservableAsyncEnumerable<T>(T value) : IObservable<T>, IObserver<T>, IAsyncEnumerable<T>, IDisposable
+public sealed class ObservableAsyncEnumerable<T>(T current) : IObservable<T>, IObserver<T>, IAsyncEnumerable<T>, IDisposable
 {
 	#region 字段 
-	readonly HashSet<ConcurrentQueue<ValueTask<T>>> buffer = new HashSet<ConcurrentQueue<ValueTask<T>>>();
-	readonly HashSet<UnSubscribe> observers = new HashSet<UnSubscribe>();
-	readonly HashSet<UnSubscribe> sources = new HashSet<UnSubscribe>();
+	readonly HashSet<ConcurrentQueue<ValueTask<T>>> buffer = [];
+	readonly HashSet<UnSubscribe> observers = [];
+	readonly HashSet<UnSubscribe> sources = [];
 	readonly SemaphoreSlim wait = new SemaphoreSlim(0);
 	readonly CancellationTokenSource close = new CancellationTokenSource();
-	T current = value;
 	public bool Disposed => close.IsCancellationRequested;
 	public CancellationToken CancellationToken=> close.Token;
 	#endregion
@@ -43,7 +42,6 @@ public sealed class ObservableAsyncEnumerable<T>(T value) : IObservable<T>, IObs
 		}
 		token.ThrowIfCancellationRequested();
 	}
-
 	public IDisposable Subscribe(IObserver<T> observer)
 	{
 		ObjectDisposedException.ThrowIf(Disposed, this);
@@ -72,8 +70,6 @@ public sealed class ObservableAsyncEnumerable<T>(T value) : IObservable<T>, IObs
 			ResetWait();
 		}
 	}
-
-
 	public void OnError(Exception error)
 	{
 		ObjectDisposedException.ThrowIf(Disposed, this);
@@ -118,7 +114,7 @@ public sealed class ObservableAsyncEnumerable<T>(T value) : IObservable<T>, IObs
 	}
 	void ResetWait()
 	{
-		if (buffer.Count > wait.CurrentCount)//buffer.Count > 0 && wait.CurrentCount == 0
+		if (buffer.Count > wait.CurrentCount)
 		{
 			wait.Release(buffer.Count);
 		}
@@ -132,7 +128,7 @@ public sealed class ObservableAsyncEnumerable<T>(T value) : IObservable<T>, IObs
 			yield break;
 		}
 		var token = CancellationToken;
-		ConcurrentQueue<ValueTask<T>> queue = new ConcurrentQueue<ValueTask<T>>();
+		ConcurrentQueue<ValueTask<T>> queue = [];
 		buffer.Add(queue);
 		try
 		{
