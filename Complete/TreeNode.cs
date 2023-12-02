@@ -326,7 +326,7 @@ public sealed class TreeNode<T>(T value) : IEquatable<T>, IList<TreeNode<T>>
         }
         return left;
     }
-    public static IEnumerable<TreeNode<T>?> operator |(TreeNode<T>? left, TreeNode<T>? right)
+    public static IEnumerable<TreeNode<T>> operator |(TreeNode<T>? left, TreeNode<T>? right)
     {
         if (left == null && right == null)
         {
@@ -337,7 +337,7 @@ public sealed class TreeNode<T>(T value) : IEquatable<T>, IList<TreeNode<T>>
         {
             while (left != right)
             {
-                yield return left;
+                yield return left!;
                 left = left!.Parent;
             }
         }

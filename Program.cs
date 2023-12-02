@@ -1,5 +1,6 @@
-﻿using zms9110750Library.StateMachine;
-StateMachine<PlayerState> StateMachine = new StateMachine<PlayerState>(PlayerState.Idel);
+﻿using zms9110750Library.Complete;
+using zms9110750Library.StateMachine;
+await using StateMachine<PlayerState> StateMachine = new StateMachine<PlayerState>(PlayerState.Idel);
 _ = Task.Run(async () =>
 {
     await foreach (var item in StateMachine)
@@ -47,7 +48,18 @@ await StateMachine.Consult("P");
 
 
 await Task.Delay(1000);
-_=StateMachine.DisposeAsync();
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 enum PlayerState
