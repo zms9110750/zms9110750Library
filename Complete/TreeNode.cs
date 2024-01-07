@@ -3,10 +3,10 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace zms9110750Library.Complete;
-public sealed class TreeNode<T>(T value) : IEquatable<T>, IList<TreeNode<T>>
+public sealed class TreeNode<T>(T? value) : IEquatable<T>, IList<TreeNode<T>>
 {
     #region 储存值
-    public T Value { get; set; } = value;
+    public T? Value { get; set; } = value;
     #endregion
     #region 层级和索引
     int level;
@@ -14,7 +14,7 @@ public sealed class TreeNode<T>(T value) : IEquatable<T>, IList<TreeNode<T>>
     public int Level
     {
         get => level;
-        set
+        private set
         {
             if (level != (level = value))
             {
@@ -30,7 +30,7 @@ public sealed class TreeNode<T>(T value) : IEquatable<T>, IList<TreeNode<T>>
         get => index;
         set
         {
-            var parent = NotNullParent;
+            var parent = RequiredParent;
             if (parent.children.Count <= value)
             {
                 throw new ArgumentException("索引越界");
@@ -61,7 +61,7 @@ public sealed class TreeNode<T>(T value) : IEquatable<T>, IList<TreeNode<T>>
             }
         }
     }
-    public TreeNode<T> NotNullParent => Parent ?? throw new InvalidOperationException("根节点不能执行需要父节点的操作");
+    public TreeNode<T> RequiredParent => Parent ?? throw new InvalidOperationException("根节点不能执行需要父节点的操作");
     [AllowNull]
     public TreeNode<T> Root
     {
@@ -90,7 +90,7 @@ public sealed class TreeNode<T>(T value) : IEquatable<T>, IList<TreeNode<T>>
         {
             if (value == null)
             {
-                RemoveAt(index);
+                this.RemoveAt(index);
             }
             else if (value.Parent == this)
             {
@@ -98,7 +98,7 @@ public sealed class TreeNode<T>(T value) : IEquatable<T>, IList<TreeNode<T>>
             }
             else
             {
-                RemoveAt(index);
+                this.RemoveAt(index);
                 AddAt(index, value);
             }
         }
@@ -143,11 +143,6 @@ public sealed class TreeNode<T>(T value) : IEquatable<T>, IList<TreeNode<T>>
         }
         return node;
     }
-    public TreeNode<T>[] AddFirst(params TreeNode<T>[] node) => AddAt(0, node);
-    public TreeNode<T>[] AddLast(params TreeNode<T>[] node) => AddAt(^0, node);
-    public TreeNode<T>[] AddAfter(params TreeNode<T>[] node) => NotNullParent.AddAt(index + 1, node);
-    public TreeNode<T>[] AddBefore(params TreeNode<T>[] node) => NotNullParent.AddAt(index, node);
-
     #endregion
     #region 删除节点
     public void RemoveSelf()
@@ -165,66 +160,6 @@ public sealed class TreeNode<T>(T value) : IEquatable<T>, IList<TreeNode<T>>
         Level = 0;
         index = 0;
     }
-    public TreeNode<T> RemoveAt(Index index)
-    {
-        var node = children[index];
-        node.RemoveSelf();
-        return node;
-    }
-    public int RemoveAll(Predicate<TreeNode<T>>? predicate = null)
-    {
-        var count = 0;
-        for (int i = children.Count - 1; i >= 0; i--)
-        {
-            if (predicate?.Invoke(children[i]) ?? true)
-            {
-                children[i].RemoveSelf();
-            }
-        }
-        return count;
-    }
-    public TreeNode<T>? RemoveBefore()
-    {
-        var node = Previous;
-        node?.RemoveSelf();
-        return node;
-    }
-    public TreeNode<T>? RemoveAfter()
-    {
-        var node = Next;
-        node?.RemoveSelf();
-        return node;
-    }
-    public TreeNode<T>? RemoveFirst(T value, Range? range = default)
-    {
-        var (sta, len) = range.GetValueOrDefault(..).GetOffsetAndLength(children.Count);
-        for (int i = sta; i < sta + len; i++)
-        {
-            if (children[i].Equals(value))
-            {
-                var node = children[i];
-                node.RemoveSelf();
-                return node;
-            }
-        }
-        return null;
-    }
-    public TreeNode<T>? RemoveLast(T value, Range? range = default)
-    {
-        var (sta, len) = range.GetValueOrDefault(..).GetOffsetAndLength(children.Count);
-        for (int i = sta + len - 1; i >= sta; i--)
-        {
-            if (children[i].Equals(value))
-            {
-                var node = children[i];
-                node.RemoveSelf();
-                return node;
-            }
-        }
-        return null;
-    }
-    public TreeNode<T>? RemoveBefore(T value) => NotNullParent.RemoveLast(value, ..(index - 1));
-    public TreeNode<T>? RemoveAfter(T value) => NotNullParent.RemoveFirst(value, (index + 1)..);
 
     #endregion
     #region 查询节点
@@ -232,10 +167,10 @@ public sealed class TreeNode<T>(T value) : IEquatable<T>, IList<TreeNode<T>>
     {
         return other?.Equals(Value) ?? Value == null;
     }
-    public bool Contains(T item) => IndexOf(item) > -1;
-    public int IndexOf(T item)
+    public int IndexOf(T item, Range? range = default)
     {
-        for (int i = 0; i < children.Count; i++)
+        var (sta, len) = range.GetValueOrDefault(..).GetOffsetAndLength(Count);
+        for (int i = sta; i < len; i++)
         {
             if (children[i].Equals(item))
             {
@@ -244,22 +179,13 @@ public sealed class TreeNode<T>(T value) : IEquatable<T>, IList<TreeNode<T>>
         }
         return -1;
     }
-    public Stack<TreeNode<T>> Ancestor()
-    {
-        Stack<TreeNode<T>> ancestor = new Stack<TreeNode<T>>();
-        for (TreeNode<T>? node = this; node != null; node = node.parent)
-        {
-            ancestor.Push(node);
-        }
-        return ancestor;
-    }
     #endregion
     #region IList
     bool ICollection<TreeNode<T>>.IsReadOnly => false;
     int IList<TreeNode<T>>.IndexOf(TreeNode<T> item) => item.Parent == this ? item.Index : -1;
     void IList<TreeNode<T>>.Insert(int index, TreeNode<T> item) => AddAt(index, item);
-    void IList<TreeNode<T>>.RemoveAt(int index) => RemoveAt(index);
-    void ICollection<TreeNode<T>>.Add(TreeNode<T> item) => AddLast(item);
+    void IList<TreeNode<T>>.RemoveAt(int index) => this.RemoveAt(index);
+    void ICollection<TreeNode<T>>.Add(TreeNode<T> item) => this.AddLast(item);
     bool ICollection<TreeNode<T>>.Contains(TreeNode<T> item) => item.Parent == this;
     void ICollection<TreeNode<T>>.CopyTo(TreeNode<T>[] array, int arrayIndex) => children.CopyTo(array, arrayIndex);
     bool ICollection<TreeNode<T>>.Remove(TreeNode<T> item)
@@ -274,13 +200,13 @@ public sealed class TreeNode<T>(T value) : IEquatable<T>, IList<TreeNode<T>>
             return false;
         }
     }
-    public void Clear() => RemoveAll();
+    public void Clear() => this.RemoveAll();
     #endregion
     #region IEnumerator 
     public IEnumerator<TreeNode<T>> GetEnumerator()
     {
         var parent = Parent;
-        var node = Next;
+        var index = Index;
         yield return this;
         foreach (var item in First ?? Enumerable.Empty<TreeNode<T>>())
         {
@@ -288,15 +214,18 @@ public sealed class TreeNode<T>(T value) : IEquatable<T>, IList<TreeNode<T>>
             {
                 break;
             }
-            node = Next;
+            index = Index;
             yield return item;
         }
-        foreach (var item in node ?? Enumerable.Empty<TreeNode<T>>())
+        if (parent != null && parent.Count > index)
         {
-            yield return item;
+            foreach (var item in parent[index] ?? Enumerable.Empty<TreeNode<T>>())
+            {
+                yield return item;
+            }
         }
     }
-    IEnumerator IEnumerable.GetEnumerator() => throw new NotImplementedException();
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     #endregion
     #region operator 
     /// <summary>
@@ -328,7 +257,7 @@ public sealed class TreeNode<T>(T value) : IEquatable<T>, IList<TreeNode<T>>
     }
     public static IEnumerable<TreeNode<T>> operator |(TreeNode<T>? left, TreeNode<T>? right)
     {
-        if (left == null && right == null)
+        if (left == right)
         {
             yield break;
         }
@@ -396,4 +325,74 @@ public sealed class TreeNode<T>(T value) : IEquatable<T>, IList<TreeNode<T>>
         stack.Pop();
     }
     #endregion
+}
+[SuppressMessage("Design", "CA1062:验证公共方法的参数", Justification = "<挂起>")]
+public static class TreeNodeExtensions
+{
+    public static TreeNode<T>[] AddFirst<T>(this TreeNode<T> tree, params TreeNode<T>[] node) => tree.AddAt(0, node);
+    public static TreeNode<T>[] AddLast<T>(this TreeNode<T> tree, params TreeNode<T>[] node) => tree.AddAt(^0, node);
+    public static TreeNode<T>[] AddAfter<T>(this TreeNode<T> tree, params TreeNode<T>[] node) => tree.RequiredParent.AddAt(tree.Index + 1, node);
+    public static TreeNode<T>[] AddBefore<T>(this TreeNode<T> tree, params TreeNode<T>[] node) => tree.RequiredParent.AddAt(tree.Index, node);
+    public static TreeNode<T> RemoveAt<T>(this TreeNode<T> tree, Index index)
+    {
+        var node = tree[index];
+        node.RemoveSelf();
+        return node;
+    }
+    public static int RemoveAll<T>(this TreeNode<T> tree, Predicate<TreeNode<T>>? predicate = null)
+    {
+        var count = 0;
+        for (int i = tree.Count - 1; i >= 0; i--)
+        {
+            if (predicate?.Invoke(tree[i]) ?? true)
+            {
+                tree[i].RemoveSelf();
+            }
+        }
+        return count;
+    }
+    public static TreeNode<T>? RemoveBefore<T>(this TreeNode<T> tree)
+    {
+        var node = tree.Previous;
+        node?.RemoveSelf();
+        return node;
+    }
+    public static TreeNode<T>? RemoveAfter<T>(this TreeNode<T> tree)
+    {
+        var node = tree.Next;
+        node?.RemoveSelf();
+        return node;
+    }
+    public static TreeNode<T>? RemoveFirst<T>(this TreeNode<T> tree, T value, Range? range = default)
+    {
+        var (sta, len) = range.GetValueOrDefault(..).GetOffsetAndLength(tree.Count);
+        for (int i = sta; i < sta + len; i++)
+        {
+            if (tree[i].Equals(value))
+            {
+                var node = tree[i];
+                node.RemoveSelf();
+                return node;
+            }
+        }
+        return null;
+    }
+    public static TreeNode<T>? RemoveLast<T>(this TreeNode<T> tree, T value, Range? range = default)
+    {
+        var (sta, len) = range.GetValueOrDefault(..).GetOffsetAndLength(tree.Count);
+        for (int i = sta + len - 1; i >= sta; i--)
+        {
+            if (tree[i].Equals(value))
+            {
+                var node = tree[i];
+                node.RemoveSelf();
+                return node;
+            }
+        }
+        return null;
+    }
+    public static TreeNode<T>? RemoveBefore<T>(this TreeNode<T> tree, T value) => tree.RequiredParent.RemoveLast(value, ..(tree.Index - 1));
+    public static TreeNode<T>? RemoveAfter<T>(this TreeNode<T> tree, T value) => tree.RequiredParent.RemoveFirst(value, (tree.Index + 1)..);
+    public static bool Contains<T>(this TreeNode<T> tree, T item, Range? range = default) => tree.IndexOf(item, range) > -1;
+
 }

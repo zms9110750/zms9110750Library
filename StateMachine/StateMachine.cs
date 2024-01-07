@@ -41,168 +41,163 @@ public sealed class StateMachine<TState>(TState state) : IObservable<Transition<
     }
 
     #endregion
-    #region 转换
-    public async void SetState(TState value)
+    #region 转换 
+    public async Task SetState(TState value, bool waitRemaining = true)
     {
-        await ExecuteIfNotDisposed(() =>
-             {
-                 var current = State;
-                 State = value;
-                 observable.Current = new Transition<TState>(current, value, StateTriggerType.NoProcess, null);
-                 return Task.CompletedTask;
-             });
-    }
-    public async Task Excite(TState state)
-    {
-        await ExecuteIfNotDisposed(async () =>
+        if (await CompleteRemain(waitRemaining))
         {
-            var target = tree!.GetValueOrDefault(state, null);
-            foreach (var item in (null | target).Select(n => n.Value).DefaultIfEmpty(state))
-            {
-                await this[item].Excite();
-            }
-            observable.Current = new Transition<TState>(State, state, StateTriggerType.Excite, null);
-        });
-    }
-    public async Task Excite<TArg>(TState state, TArg arg) where TArg : notnull
-    {
-        await ExecuteIfNotDisposed(async () =>
+            return;
+        }
+        var current = State;
+        State = value;
+        observable.Current = new Transition<TState>(current, value, StateTriggerType.NoProcess, null);
+        if (waitRemaining)
         {
-            var target = tree!.GetValueOrDefault(state, null);
-            foreach (var item in (null | target).Select(n => n.Value).DefaultIfEmpty(state))
-            {
-                await this[item].Excite(arg);
-            }
-            observable.Current = new Transition<TState>(State, state, StateTriggerType.Excite, arg);
-        });
+            semaphore.Release();
+        }
     }
-    public async Task Transition(TState state)
+    public async Task Excite(TState state, bool waitRemaining = true)
     {
-        await ExecuteIfNotDisposed(async () =>
+        if (await CompleteRemain(waitRemaining))
         {
-            var old = State;
-            var target = tree!.GetValueOrDefault(state, null);
-            var current = tree!.GetValueOrDefault(State, null);
-            var ancestor = target & current;
-            foreach (var item in (current | ancestor).Select(n => n.Value).DefaultIfEmpty(State))
-            {
-                await this[item].Exit();
-            }
-            foreach (var item in (ancestor | target).Select(n => n.Value).DefaultIfEmpty(state))
-            {
-                await this[item].Entry();
-            }
-            State = state;
-            observable.Current = new Transition<TState>(old, State, StateTriggerType.Transition, null);
-        });
+            return;
+        }
+        var target = tree!.GetValueOrDefault(state, null);
+        foreach (var item in (null | target).Select(n => n.Value).DefaultIfEmpty(state))
+        {
+            await this[item].Excite();
+        }
+        observable.Current = new Transition<TState>(State, state, StateTriggerType.Excite, null);
+        if (waitRemaining)
+        {
+            semaphore.Release();
+        }
     }
-    public async Task Transition<TArg>(TState state, TArg arg) where TArg : notnull
+    public async Task Excite<TArg>(TState state, TArg arg, bool waitRemaining = true) where TArg : notnull
     {
-        await ExecuteIfNotDisposed(async () =>
+        if (await CompleteRemain(waitRemaining))
         {
-            var old = State;
-            var target = tree!.GetValueOrDefault(state, null);
-            var current = tree!.GetValueOrDefault(State, null);
-            var ancestor = target & current;
-            foreach (var item in (current | ancestor).Select(n => n.Value).DefaultIfEmpty(State))
-            {
-                await this[item].Exit(arg);
-            }
-            foreach (var item in (ancestor | target).Select(n => n.Value).DefaultIfEmpty(state))
-            {
-                await this[item].Entry(arg);
-            }
-            State = state;
-            observable.Current = new Transition<TState>(old, State, StateTriggerType.Transition, null);
-        });
+            return;
+        }
+        var target = tree!.GetValueOrDefault(state, null);
+        foreach (var item in (null | target).Select(n => n.Value).DefaultIfEmpty(state))
+        {
+            await this[item].Excite(arg);
+        }
+        observable.Current = new Transition<TState>(State, state, StateTriggerType.Excite, arg);
+        if (waitRemaining)
+        {
+            semaphore.Release();
+        }
     }
-    public async Task Consult<TArg>(TArg arg) where TArg : notnull
+    public async Task Transition(TState state, bool waitRemaining = true)
     {
-        await ExecuteIfNotDisposed(async () =>
+        if (await CompleteRemain(waitRemaining))
         {
-            StateTriggerType type = StateTriggerType.Unregistered;
-            TState response;
-            var old = State;
-            var temp = State;
-            do
+            return;
+        }
+        var old = State;
+        var target = tree!.GetValueOrDefault(state, null);
+        var current = tree!.GetValueOrDefault(State, null);
+        var ancestor = target & current;
+        State = state;
+        foreach (var item in (current | ancestor).Select(n => n.Value).DefaultIfEmpty(State))
+        {
+            await this[item].Exit();
+        }
+        foreach (var item in (ancestor | target).Select(n => n.Value).DefaultIfEmpty(state))
+        {
+            await this[item].Entry();
+        } 
+        observable.Current = new Transition<TState>(old, State, StateTriggerType.Transition, null);
+        if (waitRemaining)
+        {
+            semaphore.Release();
+        }
+    }
+    public async Task Transition<TArg>(TState state, TArg arg, bool waitRemaining = true) where TArg : notnull
+    {
+        if (await CompleteRemain(waitRemaining))
+        {
+            return;
+        }
+        var old = State;
+        var target = tree!.GetValueOrDefault(state, null);
+        var current = tree!.GetValueOrDefault(State, null);
+        var ancestor = target & current;
+        State = state;
+        foreach (var item in (current | ancestor).Select(n => n.Value).DefaultIfEmpty(State))
+        {
+            await this[item].Exit(arg);
+        }
+        foreach (var item in (ancestor | target).Select(n => n.Value).DefaultIfEmpty(state))
+        {
+            await this[item].Entry(arg);
+        } 
+        observable.Current = new Transition<TState>(old, State, StateTriggerType.Transition, null);
+        if (waitRemaining)
+        {
+            semaphore.Release();
+        }
+    }
+    public async Task Consult<TArg>(TArg arg, bool waitRemaining = true) where TArg : notnull
+    {
+        if (await CompleteRemain(waitRemaining))
+        {
+            return;
+        }
+        var temp = State;
+        TState response;
+        StateTriggerType type;
+        do
+        {
+            type = this[temp].Consult(arg, out response);
+            if (tree.TryGetValue(temp, out var node) && node.Parent != null)
             {
-                type = this[temp].Consult(arg, out response);
-                if (tree.TryGetValue(temp, out var node) && node.Parent != null)
-                {
-                    temp = node.Parent.Value;
-                }
-                else
-                {
-                    break;
-                }
-            } while (type == StateTriggerType.Unregistered);
-            switch (type)
-            {
-                case StateTriggerType.Transition:
-                    var target = tree!.GetValueOrDefault(response, null);
-                    var current = tree!.GetValueOrDefault(State, null);
-                    var ancestor = target & current;
-                    foreach (var item in (current | ancestor).Select(n => n.Value).DefaultIfEmpty(State))
-                    {
-                        await this[item].Exit(arg);
-                    }
-                    foreach (var item in (ancestor | target).Select(n => n.Value).DefaultIfEmpty(response))
-                    {
-                        await this[item].Entry(arg);
-                    }
-                    State = response;
-                    break;
-                case StateTriggerType.Excite:
-                    target = tree!.GetValueOrDefault(response, null);
-                    foreach (var item in (null | target).Select(n => n.Value).DefaultIfEmpty(response))
-                    {
-                        await this[item].Excite(arg);
-                    }
-                    break;
-                case StateTriggerType.NoProcess:
-                    State = response;
-                    break;
-                default:
-                    response = old;
-                    break;
+                temp = node.Parent.Value;
             }
-            observable.Current = new Transition<TState>(old, response, type, arg);
-        });
+            else
+            {
+                break;
+            }
+        } while (type == StateTriggerType.Unregistered);
+        switch (type)
+        {
+            case StateTriggerType.Transition:
+                await Transition(response, arg, false);
+                break;
+            case StateTriggerType.Excite:
+                await Excite(response, arg, false);
+                break;
+            case StateTriggerType.NoProcess:
+                await SetState(response, false);
+                break;
+            default:
+                observable.Current = new Transition<TState>(State, State, type, arg);
+                break;
+        }
+        if (waitRemaining)
+        {
+            semaphore.Release();
+        }
     }
 
     #endregion
     #region Help
-    async Task ExecuteIfNotDisposed(Func<Task> action)
+    async Task<bool> CompleteRemain(bool waitRemaining)
     {
         if (Disposed)
         {
             ObjectDisposedException.ThrowIf(Disposed, this);
         }
-        else
+        if (waitRemaining)
         {
-            try
-            {
-                await semaphore.WaitAsync(observable.CancellationToken);
-                if (!Disposed)
-                {
-                    await action();
-                }
-            }
-            finally
-            {
-                if (!Disposed)
-                {
-                    semaphore.Release();
-                }
-            }
+            await semaphore.WaitAsync();
         }
+        return Disposed;
     }
-
-
     #endregion
-
-    #region 接口   
-
+    #region 接口    
     public IDisposable Subscribe(IObserver<Transition<TState>> observer) => observable.Subscribe(observer);
     public IAsyncEnumerator<Transition<TState>> GetAsyncEnumerator(CancellationToken cancellationToken = default) => ((IAsyncEnumerable<Transition<TState>>)observable).GetAsyncEnumerator(cancellationToken);
     public async ValueTask DisposeAsync()
@@ -211,14 +206,10 @@ public sealed class StateMachine<TState>(TState state) : IObservable<Transition<
         {
             return;
         }
-        await ExecuteIfNotDisposed(() =>
-        {
-            semaphore.Dispose();
-            observable.Dispose();
-            return Task.CompletedTask;
-        });
+        await CompleteRemain(true);
+        observable.Dispose();
+        semaphore.Release();
+        semaphore.Dispose();
     }
-    #endregion
+    #endregion 
 }
-
-
