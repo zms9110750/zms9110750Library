@@ -1,6 +1,29 @@
 ﻿using System.Collections.Concurrent;
+using System.Threading.Tasks.Dataflow;
 
 namespace zms9110750Library.Complete;
+public abstract class Distributor<T> : IObservable<T>, IObserver<T>, IAsyncEnumerable<T>, IDisposable, IPropagatorBlock<T, T>
+{ 
+	public abstract Task Completion { get; } 
+	public abstract void Complete();
+	public abstract T? ConsumeMessage(DataflowMessageHeader messageHeader, ITargetBlock<T> target, out bool messageConsumed); 
+	public abstract void Fault(Exception exception);
+	public abstract IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default);
+	public abstract IDisposable LinkTo(ITargetBlock<T> target, DataflowLinkOptions linkOptions);
+	public abstract DataflowMessageStatus OfferMessage(DataflowMessageHeader messageHeader, T messageValue, ISourceBlock<T>? source, bool consumeToAccept);
+	public abstract void OnCompleted();
+	public abstract void OnError(Exception error);
+	public abstract void OnNext(T value);
+	public abstract void ReleaseReservation(DataflowMessageHeader messageHeader, ITargetBlock<T> target);
+	public abstract bool ReserveMessage(DataflowMessageHeader messageHeader, ITargetBlock<T> target);
+	public abstract IDisposable Subscribe(IObserver<T> observer); 
+    protected abstract void Dispose(bool disposing);
+	public  void Dispose()
+	{ 
+		Dispose(disposing: true);
+		GC.SuppressFinalize(this);
+	}
+}
 public sealed class ObservableAsyncEnumerable<T>(T current) : IObservable<T>, IObserver<T>, IAsyncEnumerable<T>, IDisposable
 {
     #region 字段 
