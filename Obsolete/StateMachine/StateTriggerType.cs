@@ -1,18 +1,18 @@
-﻿namespace zms9110750Library.StateMachine;
+﻿namespace zms9110750Library.Obsolete.StateMachine;
 public enum StateTriggerType
-{ 
-	/// <summary>
-	/// 未注册，转换表没有登记这种转换
-	/// </summary>
-	Unregistered,
+{
+    /// <summary>
+    /// 未注册，转换表没有登记这种转换
+    /// </summary>
+    Unregistered,
     /// <summary>
     /// 忽略，因为条件不满足而继续查询转换表
     /// </summary>
 	Ignore,
-	/// <summary>
-	/// 转换，触发自己到目标间的退出和进入。自我转换无事发生。
-	/// </summary>
-	Transition,
+    /// <summary>
+    /// 转换，触发自己到目标间的退出和进入。自我转换无事发生。
+    /// </summary>
+    Transition,
     /// <summary>
     /// 激发，用于不转换状态时执行预定操作。例如从空闲，移动，奔跑激发转身。
     /// </summary>

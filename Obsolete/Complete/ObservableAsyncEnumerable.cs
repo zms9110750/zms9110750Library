@@ -1,46 +1,28 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Threading.Channels;
 using System.Threading.Tasks.Dataflow;
 
-namespace zms9110750Library.Complete;
-public abstract class Distributor<T> : IObservable<T>, IObserver<T>, IAsyncEnumerable<T>, IDisposable, IPropagatorBlock<T, T>
-{ 
-	public abstract Task Completion { get; } 
-	public abstract void Complete();
-	public abstract T? ConsumeMessage(DataflowMessageHeader messageHeader, ITargetBlock<T> target, out bool messageConsumed); 
-	public abstract void Fault(Exception exception);
-	public abstract IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default);
-	public abstract IDisposable LinkTo(ITargetBlock<T> target, DataflowLinkOptions linkOptions);
-	public abstract DataflowMessageStatus OfferMessage(DataflowMessageHeader messageHeader, T messageValue, ISourceBlock<T>? source, bool consumeToAccept);
-	public abstract void OnCompleted();
-	public abstract void OnError(Exception error);
-	public abstract void OnNext(T value);
-	public abstract void ReleaseReservation(DataflowMessageHeader messageHeader, ITargetBlock<T> target);
-	public abstract bool ReserveMessage(DataflowMessageHeader messageHeader, ITargetBlock<T> target);
-	public abstract IDisposable Subscribe(IObserver<T> observer); 
-    protected abstract void Dispose(bool disposing);
-	public  void Dispose()
-	{ 
-		Dispose(disposing: true);
-		GC.SuppressFinalize(this);
-	}
-}
+namespace zms9110750Library.Obsolete.Complete;
+
+[Obsolete]
 public sealed class ObservableAsyncEnumerable<T>(T current) : IObservable<T>, IObserver<T>, IAsyncEnumerable<T>, IDisposable
 {
     #region 字段 
-    readonly HashSet<ConcurrentQueue<ValueTask<T>>> buffer = [];
-    readonly HashSet<UnSubscribe> observers = [];
-    readonly HashSet<UnSubscribe> sources = [];
-    readonly SemaphoreSlim wait = new SemaphoreSlim(0);
-    readonly CancellationTokenSource close = new CancellationTokenSource();
-    public bool Disposed => close.IsCancellationRequested;
-    public CancellationToken CancellationToken => close.Token;
+    readonly HashSet<ConcurrentQueue<ValueTask<T>>> _buffer = [];
+    readonly HashSet<UnSubscribe> _observers = [];
+    readonly HashSet<UnSubscribe> _sources = [];
+    readonly SemaphoreSlim _wait = new SemaphoreSlim(0);
+    readonly CancellationTokenSource _close = new CancellationTokenSource();
+    public bool Disposed => _close.IsCancellationRequested;
+    public CancellationToken CancellationToken => _close.Token;
     #endregion
     #region 注册和订阅
     public void Register(IObservable<T> observable)
     {
         ObjectDisposedException.ThrowIf(Disposed, this);
         ArgumentNullException.ThrowIfNull(observable, nameof(observable));
-        sources.Add(new UnSubscribe(sources, this, observable.Subscribe(this)));
+        _sources.Add(new UnSubscribe(_sources, this, observable.Subscribe(this)));
     }
     public async ValueTask Register(IAsyncEnumerable<T> asyncEnumerable)
     {
@@ -69,8 +51,8 @@ public sealed class ObservableAsyncEnumerable<T>(T current) : IObservable<T>, IO
     {
         ObjectDisposedException.ThrowIf(Disposed, this);
         ArgumentNullException.ThrowIfNull(observer);
-        var obs = new UnSubscribe(observers, observer);
-        observers.Add(obs);
+        var obs = new UnSubscribe(_observers, observer);
+        _observers.Add(obs);
         return obs;
     }
     #endregion
@@ -82,11 +64,11 @@ public sealed class ObservableAsyncEnumerable<T>(T current) : IObservable<T>, IO
         {
             ObjectDisposedException.ThrowIf(Disposed, this);
             current = value;
-            foreach (var item in observers)
+            foreach (var item in _observers)
             {
                 item.OnNext(value);
             }
-            foreach (var item in buffer)
+            foreach (var item in _buffer)
             {
                 item.Enqueue(ValueTask.FromResult(value));
             }
@@ -96,11 +78,11 @@ public sealed class ObservableAsyncEnumerable<T>(T current) : IObservable<T>, IO
     public void OnError(Exception error)
     {
         ObjectDisposedException.ThrowIf(Disposed, this);
-        foreach (var item in observers)
+        foreach (var item in _observers)
         {
             item.OnError(error);
         }
-        foreach (var item in buffer)
+        foreach (var item in _buffer)
         {
             item.Enqueue(ValueTask.FromException<T>(error));
         }
@@ -117,29 +99,29 @@ public sealed class ObservableAsyncEnumerable<T>(T current) : IObservable<T>, IO
     {
         if (!Disposed)
         {
-            close.Cancel();
-            foreach (var item in sources)
+            _close.Cancel();
+            foreach (var item in _sources)
             {
                 item.Dispose();
             }
-            foreach (var item in observers)
+            foreach (var item in _observers)
             {
                 item.OnCompleted();
             }
             ResetWait();
-            buffer.Clear();
-            observers.Clear();
-            sources.Clear();
-            close.Dispose();
-            wait.Dispose();
+            _buffer.Clear();
+            _observers.Clear();
+            _sources.Clear();
+            _close.Dispose();
+            _wait.Dispose();
             GC.SuppressFinalize(this);
         }
     }
     void ResetWait()
     {
-        if (buffer.Count > wait.CurrentCount)
+        if (_buffer.Count > _wait.CurrentCount)
         {
-            wait.Release(buffer.Count);
+            _wait.Release(_buffer.Count);
         }
     }
     #endregion
@@ -152,7 +134,7 @@ public sealed class ObservableAsyncEnumerable<T>(T current) : IObservable<T>, IO
         }
         var token = CancellationToken;
         ConcurrentQueue<ValueTask<T>> queue = [];
-        buffer.Add(queue);
+        _buffer.Add(queue);
         try
         {
             while (!cancellationToken.IsCancellationRequested)
@@ -163,7 +145,7 @@ public sealed class ObservableAsyncEnumerable<T>(T current) : IObservable<T>, IO
                 }
                 else if (!token.IsCancellationRequested)
                 {
-                    await wait.WaitAsync(token).ConfigureAwait(true);
+                    await _wait.WaitAsync(token).ConfigureAwait(true);
                 }
                 else
                 {
@@ -174,7 +156,7 @@ public sealed class ObservableAsyncEnumerable<T>(T current) : IObservable<T>, IO
         }
         finally
         {
-            buffer.Remove(queue);
+            _buffer.Remove(queue);
             queue.Clear();
         }
     }
@@ -191,7 +173,7 @@ public sealed class ObservableAsyncEnumerable<T>(T current) : IObservable<T>, IO
         }
         public void Dispose()
         {
-            disposable?.Dispose(); 
+            disposable?.Dispose();
             observers.Remove(this);
         }
     }

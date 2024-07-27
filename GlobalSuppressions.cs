@@ -11,6 +11,6 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("Usage", "CA2225:运算符重载具有命名的备用项", Justification = "<挂起>")]
 [assembly: SuppressMessage("Usage", "CA2227:集合属性应为只读", Justification = "<挂起>")]
 [assembly: SuppressMessage("Design", "CA1003:使用泛型事件处理程序实例", Justification = "<挂起>", Scope = "member", Target = "~E:zms9110750Library.Complete.SegmentEventAsync`1.EventHandlers")]
-[assembly: SuppressMessage("Style", "IDE0028:简化集合初始化", Justification = "<挂起>", Scope = "member", Target = "~F:zms9110750Library.Complete.ObservableAsyncEnumerable`1.sources")]
+[assembly: SuppressMessage("Style", "IDE0028:简化集合初始化", Justification = "<挂起>", Scope = "member", Target = "~F:zms9110750Library.Complete.ObservableAsyncEnumerable`1._sources")]
 [assembly: SuppressMessage("Design", "CA1003:使用泛型事件处理程序实例", Justification = "<挂起>")]
 [assembly: SuppressMessage("Reliability", "CA2008:不要在未传递 TaskScheduler 的情况下创建任务", Justification = "<挂起>", Scope = "member", Target = "~M:zms9110750Library.StateMachine.StateMachine`1.Dispose")]

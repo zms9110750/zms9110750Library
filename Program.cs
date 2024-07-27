@@ -1,12 +1,13 @@
-﻿using zms9110750Library.Complete;
+﻿using System.Xml.Linq;
+using zms9110750Library.Obsolete.Complete;
 using zms9110750Library.StateMachine;
-await using StateMachine<PlayerState> StateMachine = new StateMachine<PlayerState>(PlayerState.Idel);
+/*await using StateMachine<PlayerState> StateMachine = new StateMachine<PlayerState>(PlayerState.Idel);
 _ = Task.Run(async () =>
 {
-    await foreach (var item in StateMachine)
-    {
-        await Console.Out.WriteLineAsync(item + "");
-    }
+	await foreach (var item in StateMachine)
+	{
+		await Console.Out.WriteLineAsync(item + "");
+	}
 });
 
 
@@ -14,14 +15,14 @@ StateMachine.SetChildState(PlayerState.Move, PlayerState.Walk, PlayerState.Run);
 StateMachine.Register(PlayerState.Idel, PlayerState.Jump, "W", StateTriggerType.Transition);
 StateMachine.Register(PlayerState.Idel, (string s) => s switch
 {
-    "A" or "D" => (PlayerState.Walk, StateTriggerType.Transition),
-    _ => (default, StateTriggerType.Ignore)
+	"A" or "D" => (PlayerState.Walk, StateTriggerType.Transition),
+	_ => (default, StateTriggerType.Ignore)
 });
 StateMachine.Register(PlayerState.Move, PlayerState.Idel, "S", StateTriggerType.Transition);
 StateMachine.Register(PlayerState.Walk, (string s) => s switch
 {
-    "S" => (PlayerState.Run, StateTriggerType.Transition),
-    _ => (default, StateTriggerType.Ignore),
+	"S" => (PlayerState.Run, StateTriggerType.Transition),
+	_ => (default, StateTriggerType.Ignore),
 });
 StateMachine.Register(PlayerState.Run, PlayerState.Idel, "S", StateTriggerType.Intercept);
 
@@ -49,20 +50,27 @@ await StateMachine.Consult("P");
 
 await Task.Delay(1000);
 
+*/
 
 
 
+TreeNode<string> a = new TreeNode<string>("1");
+a.AddLast("1.1", "1.2", "1.3");
+a[0].AddLast("1.1.1", "1.1.2", "1.1.2");
+a[1].AddLast("1.2.1", "1.2.2", "1.2.3");
+a[2].AddLast("1.3.1", "1.3.2", "1.3.3");
+a[0][1].AddLast("1.1.2.1", "1.1.2.2");
+a[2][1].AddLast("1.3.2.1", "1.3.2.2");
+var b=a[2].RemoveSelf();
+foreach (var item in (b[1][0]| a[0][1][0]))
+{
+	Console.WriteLine(item.Value);
+}
 
-
-
-
-
-
-
-
+Console.WriteLine(a);
 
 
 enum PlayerState
 {
-    Move, Walk, Run, Idel, Swing, Jump, Fall
+	Move, Walk, Run, Idel, Swing, Jump, Fall
 }
