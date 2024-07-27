@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.Threading.Channels;
 using System.Threading.Tasks.Dataflow;
 
-namespace zms9110750Library.Obsolete.Complete;
+namespace zms9110750Library;
 
 [Obsolete]
 public sealed class ObservableAsyncEnumerable<T>(T current) : IObservable<T>, IObserver<T>, IAsyncEnumerable<T>, IDisposable

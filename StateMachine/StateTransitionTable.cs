@@ -35,7 +35,7 @@ public class StateTransitionTable<TState, TArg> where TArg : notnull
 	/// <returns>等待事件处理完毕</returns>
 	public Task EntryArg(TArg arg)
 	{
-		return OnEntryFrom.WhenAll(arg);
+        return OnEntryFrom.WhenAll(arg);
 	}
 	/// <summary>
 	/// 触发退出事件
@@ -102,7 +102,7 @@ public class StateTransitionTable<TState, TArg> where TArg : notnull
 	/// <returns>转换方式</returns>
 	public TriggerMode Consult(TArg arg, out TState state)
 	{
-		TriggerMode type = TriggerMode.Unregistered;
+		TriggerMode type = default;
 		foreach (var func in DynamicTable.EnumInvocationList())
 		{
 			(state, type) = func.Invoke(arg);
@@ -117,7 +117,7 @@ public class StateTransitionTable<TState, TArg> where TArg : notnull
 			return type;
 		}
 		state = default!;
-		return TriggerMode.Unregistered;
+		return default;
 	}
 	#region 内部类
 
@@ -138,9 +138,9 @@ public class StateTransitionTable<TState, TArg> where TArg : notnull
 	/// <param name="arg">参数</param>
 	/// <param name="state">目标状态</param>
 	/// <param name="mode">转换方式</param>
-	public class StaticTableVoucher(StateTransitionTable<TState, TArg> stateTransitionTable, TArg arg, TState state, TriggerMode mode) : IDisposable
+	public sealed class StaticTableVoucher(StateTransitionTable<TState, TArg> stateTransitionTable, TArg arg, TState state, TriggerMode mode) : IDisposable
 	{
-		private bool _disposed = false;
+		private bool _disposed;
 		public void Deconstruct(out TState state, out TriggerMode type)
 		{
 			state = State;
@@ -179,7 +179,7 @@ public class StateTransitionTable<TState, TArg> where TArg : notnull
 	/// <param name="type">解绑类型</param>
 	private class RegisterVoucher(StateTransitionTable<TState, TArg> configuration, Func<TArg, Task> func, RegistrationTiming type) : IDisposable
 	{
-		private bool _disposed = false;
+		private bool _disposed  ;
 
 		public void Dispose()
 		{

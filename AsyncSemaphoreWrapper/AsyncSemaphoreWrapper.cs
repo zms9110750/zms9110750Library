@@ -11,7 +11,7 @@ namespace zms9110750Library.StateMachine;
 public sealed class AsyncSemaphoreWrapper(int initialCount = 1) : IAsyncDisposable
 {
 	private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(initialCount, initialCount);
-	private Lazy<TaskCompletionSource<bool>> _waitExitScope = new Lazy<TaskCompletionSource<bool>>();
+	private Lazy<TaskCompletionSource> _waitExitScope = new Lazy<TaskCompletionSource>();
 	private int _disposed;
 	/// <summary>
 	/// 已经释放了
@@ -34,13 +34,23 @@ public sealed class AsyncSemaphoreWrapper(int initialCount = 1) : IAsyncDisposab
 	/// <summary>
 	/// 下一次退出锁的时候。
 	/// </summary>
-	/// <returns>退出锁时已经释放</returns>
-	public Task<bool> ExitScopeAsync(CancellationToken cancellationToken = default)
+	/// <returns></returns>
+	public Task ExitScopeAsync(CancellationToken cancellationToken = default)
 	{
 		ObjectDisposedException.ThrowIf(_disposed != 0, this);
+		var waitExitScope = _waitExitScope;
+		if (waitExitScope.IsValueCreated && waitExitScope.Value.Task.IsCompleted)
+		{
+			lock (waitExitScope)
+			{
+				if (_waitExitScope == waitExitScope)
+				{
+					_waitExitScope = new Lazy<TaskCompletionSource>();
+				}
+			}
+		}
 		return cancellationToken == default ? _waitExitScope.Value.Task.WaitAsync(cancellationToken) : _waitExitScope.Value.Task;
 	}
-
 
 	public async ValueTask DisposeAsync()
 	{
@@ -50,12 +60,16 @@ public sealed class AsyncSemaphoreWrapper(int initialCount = 1) : IAsyncDisposab
 		}
 		await _semaphore.WaitAsync();
 		_semaphore.Dispose();
+		if (_waitExitScope.IsValueCreated)
+		{
+			_waitExitScope.Value.SetResult();
+		}
 	}
 
 	/// <summary>
 	/// 锁域
 	/// </summary>
-	public struct Scope : IDisposable
+	public struct Scope : IDisposable, IEquatable<Scope>
 	{
 		private int _disposed;
 		AsyncSemaphoreWrapper _wrapper;
@@ -69,13 +83,37 @@ public sealed class AsyncSemaphoreWrapper(int initialCount = 1) : IAsyncDisposab
 			{
 				return;
 			}
-			if (_wrapper._waitExitScope.IsValueCreated)
+			var waitExitScope = _wrapper._waitExitScope;
+			if (waitExitScope.IsValueCreated)
 			{
-				_wrapper._waitExitScope.Value.SetResult(_wrapper.IsDisposed);
-				_wrapper._waitExitScope = new Lazy<TaskCompletionSource<bool>>();
+				waitExitScope.Value.SetResult();
 			}
 			_wrapper._semaphore.Release();
+		}
 
+		public override readonly bool Equals(object? obj)
+		{
+			return obj is Scope scope && Equals(scope);
+		}
+
+		public override readonly int GetHashCode()
+		{
+			return HashCode.Combine(_wrapper, _disposed);
+		}
+
+		public static bool operator ==(Scope left, Scope right)
+		{
+			return left.Equals(right);
+		}
+
+		public static bool operator !=(Scope left, Scope right)
+		{
+			return !(left == right);
+		}
+
+		public readonly bool Equals(Scope other)
+		{
+			return other._disposed == _disposed && other._wrapper == _wrapper;
 		}
 	}
 }

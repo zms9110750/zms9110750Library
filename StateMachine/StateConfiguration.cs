@@ -61,7 +61,7 @@ public class StateConfiguration<TState>
 	/// <param name="arg">参数</param>
 	/// <returns>事件执行完毕</returns>
 	public async Task Entry<TArg>(TArg arg) where TArg : notnull
-	{
+	{ 
 		await Entry();
 		await Table<TArg>().EntryArg(arg);
 	}
@@ -122,7 +122,7 @@ public class StateConfiguration<TState>
 	/// <param name="type">解绑类型</param>
 	private class RegisterVoucher(StateConfiguration<TState> configuration, Func<Task> func, RegistrationTiming type) : IDisposable
 	{
-		private bool _disposed = false;
+		private bool _disposed ;
 
 		public void Dispose()
 		{

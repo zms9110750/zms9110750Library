@@ -1,7 +1,6 @@
 ﻿using System.Xml.Linq;
-using zms9110750Library.Obsolete.Complete;
 using zms9110750Library.StateMachine;
-/*await using StateMachine<PlayerState> StateMachine = new StateMachine<PlayerState>(PlayerState.Idel);
+await using StateMachine<PlayerState> StateMachine = new StateMachine<PlayerState>(PlayerState.Idel);
 _ = Task.Run(async () =>
 {
 	await foreach (var item in StateMachine)
@@ -12,19 +11,19 @@ _ = Task.Run(async () =>
 
 
 StateMachine.SetChildState(PlayerState.Move, PlayerState.Walk, PlayerState.Run);
-StateMachine.Register(PlayerState.Idel, PlayerState.Jump, "W", StateTriggerType.Transition);
+StateMachine.Register(PlayerState.Idel, PlayerState.Jump, "W", TriggerMode.Transition);
 StateMachine.Register(PlayerState.Idel, (string s) => s switch
 {
-	"A" or "D" => (PlayerState.Walk, StateTriggerType.Transition),
-	_ => (default, StateTriggerType.Ignore)
+	"A" or "D" => (PlayerState.Walk, TriggerMode.Transition),
+	_ => (default, TriggerMode.None)
 });
-StateMachine.Register(PlayerState.Move, PlayerState.Idel, "S", StateTriggerType.Transition);
+StateMachine.Register(PlayerState.Move, PlayerState.Idel, "S", TriggerMode.Transition);
 StateMachine.Register(PlayerState.Walk, (string s) => s switch
 {
-	"S" => (PlayerState.Run, StateTriggerType.Transition),
-	_ => (default, StateTriggerType.Ignore),
+	"S" => (PlayerState.Run, TriggerMode.None),
+	_ => (default, TriggerMode.None),
 });
-StateMachine.Register(PlayerState.Run, PlayerState.Idel, "S", StateTriggerType.Intercept);
+StateMachine.Register(PlayerState.Run, PlayerState.Idel, "S", TriggerMode.Intercept);
 
 
 StateMachine[PlayerState.Idel].OnEntry += () => { Console.WriteLine("进入空闲"); return Task.CompletedTask; };
@@ -35,40 +34,17 @@ StateMachine[PlayerState.Walk].OnEntry += async () => { await Console.Out.WriteL
 StateMachine[PlayerState.Walk].OnExit += async () => { await Console.Out.WriteLineAsync("退出行走"); };
 StateMachine[PlayerState.Run].OnEntry += async () => { await Console.Out.WriteLineAsync("进入奔跑"); };
 StateMachine[PlayerState.Run].OnExit += async () => { await Console.Out.WriteLineAsync("退出奔跑"); };
+StateMachine.Table<int>(PlayerState.Run).OnEntryFrom += async i => { await Console.Out.WriteLineAsync("起步速度为" + i); };
+ 
 
+await StateMachine.Transition("D");//空闲进入行走
+await StateMachine.Transition(PlayerState.Run, 10, TriggerMode.Transition);//行走仅触发奔跑 
+await StateMachine.Transition("200");//无事发生 
+await StateMachine.Transition("S");//移动进入空闲 
+await StateMachine.Transition("P");//无事发生 
+ 
 
-await StateMachine.Consult("D");
-StateMachine.Table<int>(PlayerState.Run).OnExciteFrom += async i => { await Console.Out.WriteLineAsync("起步速度为" + i); };
-
-
-
-await StateMachine.Excite(PlayerState.Run, 10);
-await StateMachine.Consult("200");
-await StateMachine.Consult("S");
-await StateMachine.Consult("P");
-
-
-await Task.Delay(1000);
-
-*/
-
-
-
-TreeNode<string> a = new TreeNode<string>("1");
-a.AddLast("1.1", "1.2", "1.3");
-a[0].AddLast("1.1.1", "1.1.2", "1.1.2");
-a[1].AddLast("1.2.1", "1.2.2", "1.2.3");
-a[2].AddLast("1.3.1", "1.3.2", "1.3.3");
-a[0][1].AddLast("1.1.2.1", "1.1.2.2");
-a[2][1].AddLast("1.3.2.1", "1.3.2.2");
-var b=a[2].RemoveSelf();
-foreach (var item in (b[1][0]| a[0][1][0]))
-{
-	Console.WriteLine(item.Value);
-}
-
-Console.WriteLine(a);
-
+await Task.Delay(100); 
 
 enum PlayerState
 {

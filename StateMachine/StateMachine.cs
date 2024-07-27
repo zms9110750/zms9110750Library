@@ -161,7 +161,7 @@ public sealed class StateMachine<TState>(TState state) : IAsyncDisposable, IAsyn
 	public async Task Transition<TArg>(TState state, TArg arg, TriggerMode mode = TriggerMode.Transition) where TArg : notnull
 	{
 		using var scope = await _lock.EnterScopeAsync();
-		await Transition<object>(state, mode, arg, true);
+		await Transition(state, mode, arg, true);
 	}
 
 	/// <summary>
@@ -187,7 +187,7 @@ public sealed class StateMachine<TState>(TState state) : IAsyncDisposable, IAsyn
 		{
 			mode = CurrentConfiguration.Consult(arg, out state);
 		}
-		await Transition<object>(state, mode, arg, true);
+		await Transition(state, mode, arg, true);
 	}
 	#endregion
 
@@ -209,7 +209,11 @@ public sealed class StateMachine<TState>(TState state) : IAsyncDisposable, IAsyn
 				{
 					yield return result;
 				}
-				else if (await _lock.ExitScopeAsync(cancellationToken))
+				else if (!_lock.IsDisposed)
+				{ 
+                    await _lock.ExitScopeAsync(cancellationToken);
+				}
+				else
 				{
 					break;
 				}
