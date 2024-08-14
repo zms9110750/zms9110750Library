@@ -69,7 +69,8 @@ public sealed class AsyncSemaphoreWrapper(int initialCount = 1) : IAsyncDisposab
 	/// <summary>
 	/// 锁域
 	/// </summary>
-	public struct Scope : IDisposable, IEquatable<Scope>
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1815:重写值类型上的 Equals 和相等运算符", Justification = "<挂起>")]
+	public struct Scope : IDisposable
 	{
 		private int _disposed;
 		AsyncSemaphoreWrapper _wrapper;
@@ -89,31 +90,6 @@ public sealed class AsyncSemaphoreWrapper(int initialCount = 1) : IAsyncDisposab
 				waitExitScope.Value.SetResult();
 			}
 			_wrapper._semaphore.Release();
-		}
-
-		public override readonly bool Equals(object? obj)
-		{
-			return obj is Scope scope && Equals(scope);
-		}
-
-		public override readonly int GetHashCode()
-		{
-			return HashCode.Combine(_wrapper, _disposed);
-		}
-
-		public static bool operator ==(Scope left, Scope right)
-		{
-			return left.Equals(right);
-		}
-
-		public static bool operator !=(Scope left, Scope right)
-		{
-			return !(left == right);
-		}
-
-		public readonly bool Equals(Scope other)
-		{
-			return other._disposed == _disposed && other._wrapper == _wrapper;
 		}
 	}
 }
