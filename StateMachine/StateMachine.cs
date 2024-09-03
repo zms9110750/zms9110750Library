@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Threading.Channels;
 using zms9110750Library.TreeNode;
+using zms9110750Library.Wrapper;
 
 namespace zms9110750Library.StateMachine;
 
@@ -210,8 +210,8 @@ public sealed class StateMachine<TState>(TState state) : IAsyncDisposable, IAsyn
 					yield return result;
 				}
 				else if (!_lock.IsDisposed)
-				{ 
-                    await _lock.ExitScopeAsync(cancellationToken);
+				{
+					await _lock.ExitScopeAsync(cancellationToken);
 				}
 				else
 				{

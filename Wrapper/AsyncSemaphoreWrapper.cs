@@ -1,6 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 
-namespace zms9110750Library.StateMachine;
+namespace zms9110750Library.Wrapper;
 /// <summary>
 /// 异步锁包装器
 /// </summary>
@@ -68,8 +68,7 @@ public sealed class AsyncSemaphoreWrapper(int initialCount = 1) : IAsyncDisposab
 
 	/// <summary>
 	/// 锁域
-	/// </summary>
-	[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1815:重写值类型上的 Equals 和相等运算符", Justification = "<挂起>")]
+	/// </summary> 
 	public struct Scope : IDisposable
 	{
 		private int _disposed;

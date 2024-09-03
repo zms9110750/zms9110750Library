@@ -36,7 +36,8 @@ public sealed class TreeNode<TValue>(TValue? value = default) : IEquatable<TValu
 	/// <list type="bullet">
 	/// <item>移除节点（value为null）</item>
 	/// <item>排列节点（value是自己的子节点）</item>
-	/// <item>添加节点（index为count)</item>
+	/// <item>添加节点（index为count且不是自己的子节点)</item>
+	/// <item>替换节点（不是自己的子节点)</item>
 	/// </list>
 	/// </remarks>
 	/// <exception cref="ArgumentException">目标节点是自己的祖先节点</exception>
@@ -213,11 +214,11 @@ public sealed class TreeNode<TValue>(TValue? value = default) : IEquatable<TValu
 	/// <param name="nodes">放入的节点</param>
 	/// <returns>放入节点的第一个</returns>
 	/// <exception cref="ArgumentException"></exception>
-	public TreeNode<TValue> AddAt(Index index, params Span<TreeNode<TValue>> nodes)
+	public TreeNode<TValue> AddAt(Index index, TreeNode<TValue> node, params ReadOnlySpan<TreeNode<TValue>> nodes)
 	{
-		if (nodes.IsEmpty)
+		if ((this & node) == node)
 		{
-			throw new ArgumentException("参数长度为0");
+			throw new ArgumentException("不能把自己的祖先节点设置为自己的子节点");
 		}
 		foreach (var item in nodes)
 		{
@@ -226,27 +227,29 @@ public sealed class TreeNode<TValue>(TValue? value = default) : IEquatable<TValu
 				throw new ArgumentException("不能把自己的祖先节点设置为自己的子节点");
 			}
 		}
-		foreach (ref var item in nodes)
+		node ??= new TreeNode<TValue>();
+		Span<TreeNode<TValue>> span = [node, .. nodes];
+		foreach (ref var item in span)
 		{
 			item ??= new TreeNode<TValue>();
 		}
 		var offset = index.GetOffset(_children.Count);
-		switch ((isInsert: offset != Count, isRange: nodes.Length == 1))
+		switch ((isInsert: offset != Count, isRange: !nodes.IsEmpty))
 		{
 			case { isInsert: false, isRange: false }:
-				_children.Add(nodes[0]);
+				_children.Add(node);
 				break;
 			case { isInsert: false, isRange: true }:
-				_children.AddRange(nodes);
+				_children.AddRange(span);
 				break;
 			case { isInsert: true, isRange: false }:
-				_children.Insert(offset, nodes[0]);
+				_children.Insert(offset, node);
 				break;
 			case { isInsert: true, isRange: true }:
-				_children.InsertRange(offset, nodes);
+				_children.InsertRange(offset, span);
 				break;
 		}
-		foreach (var item in nodes)
+		foreach (var item in span)
 		{
 			item.RemoveSelf(false);
 			item._parent = this;
@@ -257,32 +260,32 @@ public sealed class TreeNode<TValue>(TValue? value = default) : IEquatable<TValu
 		{
 			_children[i]._index = i;
 		}
-		return nodes[0];
+		return node;
 	}
 	/// <summary>
 	/// 添加到子节点的开头
 	/// </summary>
 	/// <param name="nodes">放入的节点</param>
 	/// <returns>放入节点的第一个</returns>
-	public TreeNode<TValue> AddFirst(params Span<TreeNode<TValue>> nodes) => AddAt(0, nodes);
+	public TreeNode<TValue> AddFirst(TreeNode<TValue> node, params ReadOnlySpan<TreeNode<TValue>> nodes) => AddAt(0, node, nodes);
 	/// <summary>
 	/// 添加到子节点的末尾
 	/// </summary>
 	/// <param name="nodes">放入的节点</param>
 	/// <returns>放入节点的第一个</returns>
-	public TreeNode<TValue> AddLast(params Span<TreeNode<TValue>> nodes) => AddAt(^0, nodes);
+	public TreeNode<TValue> AddLast(TreeNode<TValue> node, params ReadOnlySpan<TreeNode<TValue>> nodes) => AddAt(^0, node, nodes);
 	/// <summary>
 	/// 添加到自己之前
 	/// </summary>
 	/// <param name="nodes">放入的节点</param>
 	/// <returns>放入节点的第一个</returns>
-	public TreeNode<TValue> AddAfter(params Span<TreeNode<TValue>> nodes) => RequiredParent.AddAt(Index + 1, nodes);
+	public TreeNode<TValue> AddAfter(TreeNode<TValue> node, params ReadOnlySpan<TreeNode<TValue>> nodes) => RequiredParent.AddAt(Index + 1, node, nodes);
 	/// <summary>
 	/// 添加到自己之后
 	/// </summary>
 	/// <param name="nodes">放入的节点</param>
 	/// <returns>放入节点的第一个</returns>
-	public TreeNode<TValue> AddBefore(params Span<TreeNode<TValue>> nodes) => RequiredParent.AddAt(Index, nodes);
+	public TreeNode<TValue> AddBefore(TreeNode<TValue> node, params ReadOnlySpan<TreeNode<TValue>> nodes) => RequiredParent.AddAt(Index, node, nodes);
 	#endregion
 	#region 删除节点  
 	/// <summary>

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 
 namespace zms9110750Library.RecipeBalancing;
 
@@ -11,14 +12,12 @@ public sealed record RecipeSet : ICollection<Recipe>, ILookup<string, Recipe>
 {
 	HashSet<Recipe> _recipes = [];
 	Lazy<ILookup<string, Recipe>> _lookup;
-
-#pragma warning disable CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
-	public RecipeSet()
-#pragma warning restore CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
+	 
+	public RecipeSet() 
 	{
 		UpdateLookup();
 	}
-
+	[MemberNotNull(nameof(_lookup))]
 	private void UpdateLookup()
 	{
 		if (_lookup is { IsValueCreated: false })
