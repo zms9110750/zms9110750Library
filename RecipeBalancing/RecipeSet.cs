@@ -12,7 +12,7 @@ public sealed record RecipeSet : ICollection<Recipe>, ILookup<string, Recipe>
 {
 	HashSet<Recipe> _recipes = [];
 	Lazy<ILookup<string, Recipe>> _lookup;
-	 
+	
 	public RecipeSet() 
 	{
 		UpdateLookup();

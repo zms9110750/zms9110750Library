@@ -1,6 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-
-namespace zms9110750Library.Wrapper;
+﻿namespace zms9110750Library.Wrapper;
 /// <summary>
 /// 异步锁包装器
 /// </summary>
@@ -12,21 +10,21 @@ public sealed class AsyncSemaphoreWrapper(int initialCount = 1) : IAsyncDisposab
 {
 	private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(initialCount, initialCount);
 	private Lazy<TaskCompletionSource> _waitExitScope = new Lazy<TaskCompletionSource>();
+
 	private int _disposed;
 	/// <summary>
 	/// 已经释放了
 	/// </summary>
 	public bool IsDisposed => _disposed != 0;
 
-
 	/// <summary>
 	/// 等待之前的任务执行完。然后获取域
 	/// </summary>
 	/// <returns>域</returns>
 	/// <remarks>域是<seealso cref="IDisposable"/>，释放它以允许下一个访问者进入。</remarks>
-	public async ValueTask<Scope> EnterScopeAsync(int millisecondsTimeout = Timeout.Infinite, CancellationToken cancellationToken = default)
+	public async Task<IDisposable> EnterScopeAsync(int millisecondsTimeout = Timeout.Infinite, CancellationToken cancellationToken = default)
 	{
-		ObjectDisposedException.ThrowIf(_disposed != 0, this);
+		ObjectDisposedException.ThrowIf(IsDisposed, this);
 		await _semaphore.WaitAsync(millisecondsTimeout, cancellationToken);
 		return new Scope(this);
 	}
@@ -37,7 +35,7 @@ public sealed class AsyncSemaphoreWrapper(int initialCount = 1) : IAsyncDisposab
 	/// <returns></returns>
 	public Task ExitScopeAsync(CancellationToken cancellationToken = default)
 	{
-		ObjectDisposedException.ThrowIf(_disposed != 0, this);
+		ObjectDisposedException.ThrowIf(IsDisposed, this);
 		var waitExitScope = _waitExitScope;
 		if (waitExitScope.IsValueCreated && waitExitScope.Value.Task.IsCompleted)
 		{
@@ -49,7 +47,7 @@ public sealed class AsyncSemaphoreWrapper(int initialCount = 1) : IAsyncDisposab
 				}
 			}
 		}
-		return cancellationToken == default ? _waitExitScope.Value.Task.WaitAsync(cancellationToken) : _waitExitScope.Value.Task;
+		return cancellationToken == default ? _waitExitScope.Value.Task : _waitExitScope.Value.Task.WaitAsync(cancellationToken);
 	}
 
 	public async ValueTask DisposeAsync()
@@ -69,26 +67,22 @@ public sealed class AsyncSemaphoreWrapper(int initialCount = 1) : IAsyncDisposab
 	/// <summary>
 	/// 锁域
 	/// </summary> 
-	public struct Scope : IDisposable
+	struct Scope(AsyncSemaphoreWrapper wrapper) : IDisposable
 	{
 		private int _disposed;
-		AsyncSemaphoreWrapper _wrapper;
-		internal Scope(AsyncSemaphoreWrapper wrapper)
-		{
-			_wrapper = wrapper;
-		}
+
 		public void Dispose()
 		{
 			if (Interlocked.Exchange(ref _disposed, 1) != 0)
 			{
 				return;
 			}
-			var waitExitScope = _wrapper._waitExitScope;
+			var waitExitScope = wrapper._waitExitScope;
 			if (waitExitScope.IsValueCreated)
 			{
 				waitExitScope.Value.SetResult();
 			}
-			_wrapper._semaphore.Release();
+			wrapper._semaphore.Release();
 		}
 	}
 }
