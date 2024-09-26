@@ -16,3 +16,4 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("Reliability", "CA2000:丢失范围之前释放对象", Justification = "<挂起>")]
 [assembly: SuppressMessage("Design", "CA1034:嵌套类型应不可见", Justification = "<挂起>", Scope = "type", Target = "~T:zms9110750Library.Wrapper.AsyncSemaphoreWrapper.Scope")]
 [assembly: SuppressMessage("Performance", "CA1815:重写值类型上的 Equals 和相等运算符", Justification = "<挂起>", Scope = "type", Target = "~T:zms9110750Library.Wrapper.AsyncSemaphoreWrapper.Scope")]
+ 

@@ -1,142 +1,95 @@
-﻿using System;
+﻿using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Concurrent;
-using zms9110750Library.TreeNode;
-using zms9110750Library.Wrapper;
+using Nito.AsyncEx;
+using System.Threading.Channels;
+using zms9110750Library.StateMachine.Mode;
 
 namespace zms9110750Library.StateMachine;
-
-public sealed class StateMachine<TState>(TState state) : IAsyncDisposable, IAsyncEnumerable<Transition<TState>> where TState : notnull
+/// <summary>
+/// 状态机
+/// </summary>
+/// <typeparam name="TState">状态类型</typeparam>
+public abstract class StateMachine<TState>(TState state) : IAsyncDisposable where TState : notnull
 {
-	#region 字段
-	readonly AsyncSemaphoreWrapper _lock = new AsyncSemaphoreWrapper();
+
+	#region 字段 
+	volatile int _disposed;
+	readonly AsyncLock _lock = new AsyncLock();
 	readonly ConcurrentDictionary<TState, StateConfiguration<TState>> _configuration = new ConcurrentDictionary<TState, StateConfiguration<TState>>();
-	readonly ConcurrentDictionary<TState, TreeNode<TState>> _tree = new ConcurrentDictionary<TState, TreeNode<TState>>();
-	readonly HashSet<Queue<Transition<TState>>> _notice = [];
+	ServiceProvider _serviceProvider = InitService();
+
 	#endregion
 
-	#region 获取配置 
+	#region 属性
+	/// <summary>
+	/// 是否已释放
+	/// </summary>
+	public bool IsDisposed => _disposed != 0;
+
 	/// <summary>
 	/// 当前状态
 	/// </summary>
 	/// <remarks>切换状态必须使用<see cref="Transition(TState, TriggerMode)"/>方法，以等待未完成的转换。</remarks>
-	public TState State { get; private set; } = state;
-
+	public TState State { get; protected set; } = state;
 
 	/// <summary>
-	/// 当前状态的配置
+	/// 当前状态的 <seealso href="StateConfiguration"/> 
 	/// </summary>
 	public StateConfiguration<TState> CurrentConfiguration => this[State];
 
 	/// <summary>
-	/// 获取该状态下的配置
+	/// 获取该状态下的 <seealso href="StateConfiguration"/>
 	/// </summary>
 	/// <param name="state">状态</param>
 	/// <returns>状态配置</returns>
-	public StateConfiguration<TState> this[TState state] => _configuration.GetOrAdd(state, _ => new StateConfiguration<TState>());
-
-	/// <summary>
-	/// 获取目标状态下指定参数类型的转换表
-	/// </summary>
-	/// <typeparam name="TArg">参数类型</typeparam>
-	/// <param name="state">目标状态</param>
-	/// <returns>转换表</returns>
-	public StateTransitionTable<TState, TArg> Table<TArg>(TState state) where TArg : notnull
-	{
-		return this[state].Table<TArg>();
-	}
+	public StateConfiguration<TState> this[TState state] => _configuration.GetOrAdd(state, CreateNewStateConfiguration);
 	#endregion
 
-	#region 查看和设置层级状态
+	#region 方法
 	/// <summary>
-	/// 是否处于某个状态中
-	/// </summary>
-	/// <param name="state">检查的状态</param>
-	/// <returns>处于参数的状态里</returns>
-	public bool IsInState(TState state)
+	/// 初始化服务
+	/// </summary>	
+	/// <returns>服务提供者</returns> 
+	private static ServiceProvider InitService()
 	{
-		return _tree.TryGetValue(state, out var target)
-			&& _tree.TryGetValue(State, out var current)
-			&& (current & target) == target;
+		var serviceCollection = new ServiceCollection();
+		serviceCollection.AddScoped(typeof(StateTransitionTable<,>));
+		serviceCollection.AddTransient(sp => sp.CreateScope());
+		serviceCollection.AddTransient<StateConfiguration<TState>>();
+		return serviceCollection.BuildServiceProvider();
 	}
 
-	/// <summary>
-	/// 设置状态的子状态
-	/// </summary>
-	/// <param name="substate">作为超类的状态</param>
-	/// <param name="child">子状态</param>
-	/// <remarks>把自己作为自己的子状态，改为把自己从超类中独立出来</remarks>
-	public void SetChildState(TState substate, params ReadOnlySpan<TState> child)
-	{
-		var target = _tree.GetOrAdd(substate, key => new TreeNode<TState>(key));
-		foreach (var item in child)
-		{
-			_tree.GetOrAdd(item, key => new TreeNode<TState>(key)).Parent = item.Equals(substate) ? null : target;
-		}
-	}
-
-	#endregion
-
-	#region 转换    
+	private StateConfiguration<TState> CreateNewStateConfiguration(TState arg) => _serviceProvider.GetRequiredService<StateConfiguration<TState>>();
 
 	/// <summary>
-	/// 设置状态
+	/// 转换状态
 	/// </summary>
 	/// <typeparam name="TArg">参数类型</typeparam>
 	/// <param name="state">目标状态</param>
 	/// <param name="mode">转换方式</param>
 	/// <param name="arg">参数</param>
-	/// <param name="hasArg">是否调用带参数的触发事件</param>
+	/// <param name="useArg">是否使用参数</param>
 	/// <returns>等待转换完成的任务</returns>
-	private async Task Transition<TArg>(TState state, TriggerMode mode, TArg arg = default!, bool hasArg = false) where TArg : notnull
+	protected virtual async ValueTask Transition<TArg>(TState state, TriggerMode mode, TArg arg = default!, bool useArg = false) where TArg : notnull
 	{
-		var old = State;
-		var target = _tree!.GetValueOrDefault(state, null);
-		var current = _tree!.GetValueOrDefault(State, null);
-		var ancestor = target & current;
-		if (mode.HasFlag(TriggerMode.SwitchState))
+		ObjectDisposedException.ThrowIf(IsDisposed, this);
+		if (!mode.HasFlag(TriggerMode.Intercept))
+		{
+			return;
+		}
+		if (mode.HasFlag(TriggerMode.StateSwitch))
 		{
 			State = state;
 		}
-		if (mode.HasFlag(TriggerMode.TriggerExit))
+		if (mode.HasFlag(TriggerMode.OnExit))
 		{
-			if (hasArg)
-			{
-				foreach (var item in (current | ancestor).Select(n => n.Value!).DefaultIfEmpty(State))
-				{
-					await this[item].Exit(arg);
-				}
-			}
-			else
-			{
-				foreach (var item in (current | ancestor).Select(n => n.Value!).DefaultIfEmpty(State))
-				{
-					await this[item].Exit();
-				}
-			}
+			await (useArg ? CurrentConfiguration.TransitionExitAsync(arg) : CurrentConfiguration.TransitionExitAsync());
 		}
-		if (mode.HasFlag(TriggerMode.TriggerEntry))
+		if (mode.HasFlag(TriggerMode.OnEntry))
 		{
-			if (hasArg)
-			{
-				foreach (var item in (ancestor | target).Select(n => n.Value!).DefaultIfEmpty(state))
-				{
-					await this[item].Entry(arg);
-				}
-			}
-			else
-			{
-				foreach (var item in (ancestor | target).Select(n => n.Value!).DefaultIfEmpty(state))
-				{
-					await this[item].Entry();
-				}
-			}
-		}
-		foreach (var item in _notice)
-		{
-			item.Enqueue(new Transition<TState>(old, state, mode, hasArg ? typeof(TArg) : null, arg));
+			await (useArg ? this[state].TransitionEntryAsync(arg) : this[state].TransitionEntryAsync());
 		}
 	}
-
 
 	/// <summary>
 	/// 无参数转换
@@ -146,7 +99,7 @@ public sealed class StateMachine<TState>(TState state) : IAsyncDisposable, IAsyn
 	/// <returns>等待转换完成的任务</returns>
 	public async Task Transition(TState state, TriggerMode mode = TriggerMode.Transition)
 	{
-		using var scope = await _lock.EnterScopeAsync();
+		using var scope = await _lock.LockAsync();
 		await Transition<object>(state, mode);
 	}
 
@@ -160,7 +113,7 @@ public sealed class StateMachine<TState>(TState state) : IAsyncDisposable, IAsyn
 	/// <returns>等待转换完成的任务</returns>
 	public async Task Transition<TArg>(TState state, TArg arg, TriggerMode mode = TriggerMode.Transition) where TArg : notnull
 	{
-		using var scope = await _lock.EnterScopeAsync();
+		using var scope = await _lock.LockAsync();
 		await Transition(state, mode, arg, true);
 	}
 
@@ -170,61 +123,24 @@ public sealed class StateMachine<TState>(TState state) : IAsyncDisposable, IAsyn
 	/// <typeparam name="TArg">参数类型</typeparam>
 	/// <param name="arg">参数</param>
 	/// <returns>等待转换完成的任务</returns>
-	public async Task Transition<TArg>(TArg arg) where TArg : notnull
+	public async ValueTask Transition<TArg>(TArg arg) where TArg : notnull
 	{
-		using var scope = await _lock.EnterScopeAsync();
-		TState state;
-		TriggerMode mode;
-		if (_tree.TryGetValue(State, out var node))
-		{
-			do
-			{
-				mode = this[node.Value!].Consult(arg, out state);
-				node = node.Parent;
-			} while (node != null && !mode.HasFlag(TriggerMode.Intercept));
-		}
-		else
-		{
-			mode = CurrentConfiguration.Consult(arg, out state);
-		}
+		using var scope = await _lock.LockAsync();
+		TriggerMode mode = CurrentConfiguration.Consult(arg, out TState state);
 		await Transition(state, mode, arg, true);
 	}
-	#endregion
 
-	#region 接口     
-	public ValueTask DisposeAsync() => _lock.DisposeAsync();
-	public async IAsyncEnumerator<Transition<TState>> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+
+	/// <summary>
+	/// 异步释放
+	/// </summary>
+	/// <returns>等待释放完成的任务</returns>
+	public async ValueTask DisposeAsync()
 	{
-		if (_lock.IsDisposed)
-		{
-			yield break;
-		}
-		Queue<Transition<TState>> queue = new Queue<Transition<TState>>();
-		_notice.Add(queue);
-		try
-		{
-			while (!cancellationToken.IsCancellationRequested)
-			{
-				if (queue.TryDequeue(out var result))
-				{
-					yield return result;
-				}
-				else if (!_lock.IsDisposed)
-				{
-					await _lock.ExitScopeAsync(cancellationToken);
-				}
-				else
-				{
-					break;
-				}
-			}
-			cancellationToken.ThrowIfCancellationRequested();
-		}
-		finally
-		{
-			_notice.Remove(queue);
-			queue.Clear();
-		}
+		using var scope = await _lock.LockAsync();
+		_serviceProvider.Dispose();
+		GC.SuppressFinalize(this);
 	}
 	#endregion
 }
+

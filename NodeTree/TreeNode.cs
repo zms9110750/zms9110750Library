@@ -1,9 +1,10 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace zms9110750Library.TreeNode;
+namespace zms9110750Library.NodeTree;
 
 /// <summary>
 /// 节点树
@@ -26,62 +27,75 @@ public sealed class TreeNode<TValue>(TValue? value = default) : IEquatable<TValu
 	/// </summary>
 	/// <value>替换原保存的值</value>
 	public TValue? Value { get; set; } = value;
-	/// <summary>
-	/// 获取或替换目标索引的节点
-	/// </summary>
-	/// <param name="index">索引</param>
-	/// <returns>指定索引的节点</returns>
-	/// <value>替换原节点的新节点</value>
-	/// <remarks>可能发生以下情形
-	/// <list type="bullet">
-	/// <item>移除节点（value为null）</item>
-	/// <item>排列节点（value是自己的子节点）</item>
-	/// <item>添加节点（index为count且不是自己的子节点)</item>
-	/// <item>替换节点（不是自己的子节点)</item>
-	/// </list>
-	/// </remarks>
-	/// <exception cref="ArgumentException">目标节点是自己的祖先节点</exception>
+	/// <summary>  
+	/// 获取或替换目标索引的节点  
+	/// </summary>  
+	/// <param name="index">索引</param>  
+	/// <returns>指定索引的节点</returns>  
+	/// <value>替换原节点的新节点</value>  
+	/// <remarks>  
+	/// 可能发生以下情形  
+	/// <list type="bullet">  
+	/// <item>移除节点（value为null）</item>  
+	/// <item>排列节点（value已经是自己的子节点）</item>  
+	/// <item>添加节点（index为count且不是自己的子节点)</item>  
+	/// <item>替换节点（不是自己的子节点)</item>  
+	/// </list>  
+	/// </remarks>  
+	/// <exception cref="ArgumentException">目标节点是自己的祖先节点</exception>  
 	public TreeNode<TValue> this[int index]
 	{
 		get => _children[index];
 		set
 		{
-			if (value == this[index])
+			// 检查索引是否超出范围
+			if (index < 0 || index > Count)
+			{
+				throw new ArgumentOutOfRangeException(nameof(index), "索引超出范围");
+			}
+			// 如果新值和旧值相同，则无需进行任何操作  
+			else if (value == this[index])
 			{
 				return;
 			}
+			// 如果新值为null，则从列表中移除当前节点  
 			else if (value == null)
 			{
-				RemoveAt(index);
+				RemoveAt(index); // 移除指定索引的节点  
 			}
+			// 如果新值已经是当前节点的子节点，则更新其索引  
 			else if (Contains(value))
 			{
-				value.Index = index;
+				value.Index = index; // 更新新值的索引  
 			}
-			else if ((this & value) == value)
+			// 检查新值是否是当前节点的祖先，如果是，则抛出异常  
+			else if ((this & value) == value) // 注意：这里的 & 操作符可能是自定义的，用于检查祖先关系  
 			{
 				throw new ArgumentException("不能把自己的祖先节点设置为自己的子节点", nameof(value));
 			}
-			else if (index == Count && !Contains(this))
+			// 如果索引等于当前节点子节点的数量，并且新值不是当前节点的子节点，则将其添加到末尾  
+			else if (index == Count && !Contains(value))
 			{
-				AddLast(value);
+				AddLast(value); // 在列表末尾添加新值  
 			}
-			else if (!Contains(this))
+			// 如果新值不是当前节点的子节点，则替换旧节点  
+			else if (!Contains(value)) // 注意：这里可能是检查新值是否已存在于当前节点子节点中  
 			{
+				// 断开旧节点的连接，并连接到新节点  
 				this[index]._parent = null;
 				this[index]._index = 0;
 				this[index].Root = null;
 				this[index].Level = 0;
 				_children[index] = value;
-				value.RemoveSelf(false);
+				value.RemoveSelf(false); // 假设RemoveSelf方法从旧父节点中断开节点（如果有的话）  
 				value._parent = this;
 				value._index = index;
-				value.Root = Root;
-				value.Level = Level + 1;
+				value.Root = Root; // 更新新节点的根引用  
+				value.Level = Level + 1; // 更新新节点的层级  
 			}
 			else
 			{
-				throw new NotImplementedException("未预测到的情形");
+				throw new NotImplementedException("未预测到的情形"); // 理论上，前面的条件应该涵盖了所有情况  
 			}
 		}
 	}
@@ -116,15 +130,14 @@ public sealed class TreeNode<TValue>(TValue? value = default) : IEquatable<TValu
 		set
 		{
 			var parent = RequiredParent;
-			if (parent.Count <= value)
-			{
-				throw new IndexOutOfRangeException("索引越界");
-			}
-			else if (value == Index)
+			ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(value, parent.Count, nameof(value));
+			ArgumentOutOfRangeException.ThrowIfLessThan(value, 0, nameof(value));
+			if (value == Index)
 			{
 				return;
 			}
-			var span = this[..];
+
+			var span = RequiredParent[..];
 			if (value < Index)
 			{
 				span = span[value..(Index + 1)];
@@ -403,7 +416,7 @@ public sealed class TreeNode<TValue>(TValue? value = default) : IEquatable<TValu
 	/// <param name="start">开始位置</param>
 	/// <param name="length">数量</param>
 	/// <returns>跨度</returns>
-	public Span<TreeNode<TValue>> Slice(int start, int length) => CollectionsMarshal.AsSpan(RequiredParent._children).Slice(start, length);
+	public Span<TreeNode<TValue>> Slice(int start, int length) => CollectionsMarshal.AsSpan(_children).Slice(start, length);
 	/// <summary>
 	/// 判断值和自己储存的值是否相等
 	/// </summary>
