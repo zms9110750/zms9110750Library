@@ -1,4 +1,6 @@
-﻿namespace zms9110750Library.StateMachine.Abstract;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace zms9110750Library.StateMachine.Abstract;
 
 
 /// <summary>
@@ -30,5 +32,5 @@ public interface IHierarchyStatusQuery<TState>
 	/// <param name="right">右侧节点。</param>
 	/// <param name="ancestor">公共祖先。</param>
 	/// <returns>是否找到公共祖先。</returns>
-	bool TryGetCommonAncestor(TState left, TState right, out TState ancestor);
+	bool TryGetCommonAncestor(TState left, TState right, [MaybeNullWhen(false)] out TState ancestor);
 }

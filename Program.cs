@@ -3,9 +3,9 @@ using System.Xml.Linq;
 using zms9110750Library.RecipeBalancing;
 using zms9110750Library.StateMachine;
 
+Console.WriteLine();
 
-
-
+/*
 await using StateMachine<PlayerState> StateMachine = new StateMachine<PlayerState>(PlayerState.Idel);
 _ = Task.Run(async () =>
 {
@@ -55,4 +55,4 @@ await Task.Delay(100);
 enum PlayerState
 {
 	Move, Walk, Run, Idel, Swing, Jump, Fall
-} 
+} */

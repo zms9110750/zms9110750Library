@@ -1,4 +1,6 @@
-﻿namespace zms9110750Library.StateMachine.Abstract;
+﻿using zms9110750Library.StateMachine.Mode;
+
+namespace zms9110750Library.StateMachine.Abstract;
 public interface IStateMachine<TState> where TState : notnull
 {
 	/// <summary>
