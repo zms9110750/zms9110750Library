@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -8,7 +7,7 @@ namespace zms9110750Library.NodeTree;
 
 /// <summary>
 /// 节点树
-/// </summary>zzz
+/// </summary>
 /// <typeparam name="TValue">值类型</typeparam>
 /// <param name="value">初始值</param>
 
@@ -17,8 +16,6 @@ public sealed class TreeNode<TValue>(TValue? value = default) : IEquatable<TValu
 	#region 字段
 	private List<TreeNode<TValue>> _children = [];
 	private TreeNode<TValue>? _parent;
-	private TreeNode<TValue>? _root;
-	private int _level;
 	private int _index;
 	#endregion
 	#region 自我状态
@@ -108,14 +105,14 @@ public sealed class TreeNode<TValue>(TValue? value = default) : IEquatable<TValu
 	/// </summary>
 	public int Level
 	{
-		get => _level;
+		get;
 		private set
 		{
-			if (_level != (_level = value))
+			if (field != (field = value))
 			{
 				foreach (var item in _children)
 				{
-					item.Level = _level + 1;
+					item.Level = field + 1;
 				}
 			}
 		}
@@ -135,9 +132,8 @@ public sealed class TreeNode<TValue>(TValue? value = default) : IEquatable<TValu
 			if (value == Index)
 			{
 				return;
-			}
-
-			var span = RequiredParent[..];
+			} 
+			Span<TreeNode<TValue>> span = RequiredParent[..];
 			if (value < Index)
 			{
 				span = span[value..(Index + 1)];
@@ -152,6 +148,8 @@ public sealed class TreeNode<TValue>(TValue? value = default) : IEquatable<TValu
 			}
 		}
 	}
+	
+
 	#endregion
 	#region 临近节点
 	/// <summary>
@@ -183,12 +181,12 @@ public sealed class TreeNode<TValue>(TValue? value = default) : IEquatable<TValu
 	[AllowNull]
 	public TreeNode<TValue> Root
 	{
-		get => _root ?? this;
+		get => field ?? this;
 		private set
 		{
 			if (Root != (value ?? this))
 			{
-				_root = value;
+				field = value;
 				foreach (var item in _children)
 				{
 					item.Root = Root;

@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Concurrent;
 using Nito.AsyncEx;
-using System.Threading.Channels;
 using zms9110750Library.StateMachine.Mode;
 
 namespace zms9110750Library.StateMachine;
@@ -19,7 +18,6 @@ public abstract class StateMachine<TState>(TState state) : IAsyncDisposable wher
 	ServiceProvider _serviceProvider = InitService();
 
 	#endregion
-
 	#region 属性
 	/// <summary>
 	/// 是否已释放

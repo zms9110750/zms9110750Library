@@ -1,11 +1,9 @@
-﻿using System.ComponentModel;
-
-namespace zms9110750Library.StateMachine.Extension;
+﻿namespace zms9110750Library.StateMachine.Extension;
 
 /// <summary>
 /// 配置扩展类
 /// </summary>
-static class ConfigurationExtensions
+internal static class ConfigurationExtensions
 {
 
 	#region 事件同时启动
@@ -30,6 +28,14 @@ static class ConfigurationExtensions
 	/// <returns>表示所有任务完成的 ValueTask</returns>
 	public static ValueTask WhenAll<TArg>(this Func<TArg, ValueTask>? fun, TArg arg)
 	{
+		var p = Delegate.EnumerateInvocationList(fun);
+
+		foreach (var item in p)
+		{
+
+		}
+
+
 		var arr = fun.EnumInvocationList()
 			.Select(s => s.Invoke(arg))
 			.Where(s => !s.IsCompleted)

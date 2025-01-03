@@ -103,7 +103,7 @@ public class StateTransitionTable<TState, TArg> : ITransitionEvent<TArg> where T
 			_disposed = true;
 			if (stateTransitionTable._staticTable.TryGetValue(arg, out var revoke) && revoke == this)
 			{
-				stateTransitionTable._staticTable.Remove(arg);
+				 stateTransitionTable._staticTable.Remove(arg);
 			}
 		}
 	}
