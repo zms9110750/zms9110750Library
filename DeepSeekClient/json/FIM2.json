@@ -1,0 +1,23 @@
+{
+	"id": "12aef10e-d7af-4bf7-a0d4-1b26b4f9cec7",
+	"choices": [
+		{
+			"text": "漂亮！飞龙骑脸怎么输！飞龙骑脸怎么输！飞龙骑脸怎么输！飞龙骑脸怎么输！飞龙骑脸怎么输！飞龙骑脸怎么输！飞龙骑脸怎么输！飞龙骑脸怎么输！飞龙骑脸怎么输",
+			"index": 0,
+			"logprobs": null,
+			"finish_reason": "length"
+		}
+	],
+	"created": 1747264949,
+	"model": "deepseek-chat",
+	"system_fingerprint": "fp_8802369eaa_prod0425fp8",
+	"object": "text_completion",
+	"usage": {
+		"prompt_tokens": 46,
+		"completion_tokens": 64,
+		"total_tokens": 110,
+		"prompt_tokens_details": { "cached_tokens": 0 },
+		"prompt_cache_hit_tokens": 0,
+		"prompt_cache_miss_tokens": 46
+	}
+}

@@ -1,0 +1,211 @@
+[
+	{
+		"id": "ad42a24a-f486-4e5d-b49d-d0b8a1e41396",
+		"object": "chat.completion.chunk",
+		"created": 1747263054,
+		"model": "deepseek-chat",
+		"system_fingerprint": "fp_8802369eaa_prod0425fp8",
+		"choices": [
+			{
+				"index": 0,
+				"delta": {
+					"role": "assistant",
+					"content": ""
+				},
+				"logprobs": null,
+				"finish_reason": null
+			}
+		],
+		"usage": null
+	},
+	{
+		"id": "ad42a24a-f486-4e5d-b49d-d0b8a1e41396",
+		"object": "chat.completion.chunk",
+		"created": 1747263054,
+		"model": "deepseek-chat",
+		"system_fingerprint": "fp_8802369eaa_prod0425fp8",
+		"choices": [
+			{
+				"index": 0,
+				"delta": {
+					"tool_calls": [
+						{
+							"index": 0,
+							"id": "call_0_1e4a63af-0abb-4770-81c7-b4a1c244f347",
+							"type": "function",
+							"function": {
+								"name": "SelectNPC",
+								"arguments": ""
+							}
+						}
+					]
+				},
+				"logprobs": null,
+				"finish_reason": null
+			}
+		],
+		"usage": null
+	},
+	{
+		"id": "ad42a24a-f486-4e5d-b49d-d0b8a1e41396",
+		"object": "chat.completion.chunk",
+		"created": 1747263054,
+		"model": "deepseek-chat",
+		"system_fingerprint": "fp_8802369eaa_prod0425fp8",
+		"choices": [
+			{
+				"index": 0,
+				"delta": {
+					"tool_calls": [
+						{
+							"index": 0,
+							"function": { "arguments": "{\"" }
+						}
+					]
+				},
+				"logprobs": null,
+				"finish_reason": null
+			}
+		],
+		"usage": null
+	},
+	{
+		"id": "ad42a24a-f486-4e5d-b49d-d0b8a1e41396",
+		"object": "chat.completion.chunk",
+		"created": 1747263054,
+		"model": "deepseek-chat",
+		"system_fingerprint": "fp_8802369eaa_prod0425fp8",
+		"choices": [
+			{
+				"index": 0,
+				"delta": {
+					"tool_calls": [
+						{
+							"index": 0,
+							"function": { "arguments": "name" }
+						}
+					]
+				},
+				"logprobs": null,
+				"finish_reason": null
+			}
+		],
+		"usage": null
+	},
+	{
+		"id": "ad42a24a-f486-4e5d-b49d-d0b8a1e41396",
+		"object": "chat.completion.chunk",
+		"created": 1747263054,
+		"model": "deepseek-chat",
+		"system_fingerprint": "fp_8802369eaa_prod0425fp8",
+		"choices": [
+			{
+				"index": 0,
+				"delta": {
+					"tool_calls": [
+						{
+							"index": 0,
+							"function": { "arguments": "\":\"" }
+						}
+					]
+				},
+				"logprobs": null,
+				"finish_reason": null
+			}
+		],
+		"usage": null
+	},
+	{
+		"id": "ad42a24a-f486-4e5d-b49d-d0b8a1e41396",
+		"object": "chat.completion.chunk",
+		"created": 1747263054,
+		"model": "deepseek-chat",
+		"system_fingerprint": "fp_8802369eaa_prod0425fp8",
+		"choices": [
+			{
+				"index": 0,
+				"delta": {
+					"tool_calls": [
+						{
+							"index": 0,
+							"function": { "arguments": "罗" }
+						}
+					]
+				},
+				"logprobs": null,
+				"finish_reason": null
+			}
+		],
+		"usage": null
+	},
+	{
+		"id": "ad42a24a-f486-4e5d-b49d-d0b8a1e41396",
+		"object": "chat.completion.chunk",
+		"created": 1747263054,
+		"model": "deepseek-chat",
+		"system_fingerprint": "fp_8802369eaa_prod0425fp8",
+		"choices": [
+			{
+				"index": 0,
+				"delta": {
+					"tool_calls": [
+						{
+							"index": 0,
+							"function": { "arguments": "恩" }
+						}
+					]
+				},
+				"logprobs": null,
+				"finish_reason": null
+			}
+		],
+		"usage": null
+	},
+	{
+		"id": "ad42a24a-f486-4e5d-b49d-d0b8a1e41396",
+		"object": "chat.completion.chunk",
+		"created": 1747263054,
+		"model": "deepseek-chat",
+		"system_fingerprint": "fp_8802369eaa_prod0425fp8",
+		"choices": [
+			{
+				"index": 0,
+				"delta": {
+					"tool_calls": [
+						{
+							"index": 0,
+							"function": { "arguments": "\"}" }
+						}
+					]
+				},
+				"logprobs": null,
+				"finish_reason": null
+			}
+
+		],
+		"usage": null
+	},
+	{
+		"id": "ad42a24a-f486-4e5d-b49d-d0b8a1e41396",
+		"object": "chat.completion.chunk",
+		"created": 1747263054,
+		"model": "deepseek-chat",
+		"system_fingerprint": "fp_8802369eaa_prod0425fp8",
+		"choices": [
+			{
+				"index": 0,
+				"delta": { "content": "" },
+				"logprobs": null,
+				"finish_reason": "tool_calls"
+			}
+		],
+		"usage": {
+			"prompt_tokens": 164,
+			"completion_tokens": 19,
+			"total_tokens": 183,
+			"prompt_tokens_details": { "cached_tokens": 128 },
+			"prompt_cache_hit_tokens": 128,
+			"prompt_cache_miss_tokens": 36
+		}
+	}
+]
