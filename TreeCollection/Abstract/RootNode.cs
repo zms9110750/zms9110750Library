@@ -1,15 +1,42 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
 namespace zms9110750.TreeCollection.Abstract;
-public abstract class RootNode<TV, TN>(TV value) : INode<TN>, IValue<TV> where TN : RootNode<TV, TN>
+/// <summary>
+/// 实现了基本属性的抽象类
+/// </summary>
+/// <typeparam name="TValue">节点储存值的类型</typeparam>
+/// <typeparam name="TNode">自我约束</typeparam>
+/// <param name="value">初始值</param>
+public abstract class RootNode<TValue, TNode>(TValue value) : INode<TNode>, IValue<TValue> where TNode : RootNode<TValue, TNode>
 {
-	public TV Value { get; set; } = value;
+	/// <summary>
+	/// 结点值
+	/// </summary>
+	public TValue Value { get; set; } = value;
+
+	/// <inheritdoc/>
 	[field: AllowNull]
 	[property: AllowNull]
-	public TN Root { get => field ??= Parent?.Root ?? (TN)this; protected set; }
+	public TNode Root { get => field ??= Parent?.Root ?? (TNode)this; protected set; }
+	/// <inheritdoc/>
 	public int Depth { get => field < 0 ? field = Parent?.Depth + 1 ?? 0 : field; protected set; }
-	protected abstract IEnumerable<TN> ChildrenNode { get; }
-	public TN? Parent
+
+	/// <summary>
+	/// 子结点集合
+	/// </summary>
+	/// <remarks><see cref="Parent"/>的set会自动递归子节点。需要引用这个属性进行遍历</remarks>
+	protected abstract IEnumerable<TNode> ChildrenNode { get; }
+	/// <summary>
+	/// 父结点
+	/// </summary>
+	/// <remarks>派生类进行set时，会自动重置
+	/// <list type="bullet">
+	/// <item><see cref="Root"/></item>
+	/// <item><see cref="Depth"/></item>
+	/// <item><see cref="ChildrenNode"/>的<see cref="Parent"/></item>
+	/// </list>
+	/// </remarks>
+	public TNode? Parent
 	{
 		get; protected set
 		{
@@ -18,7 +45,7 @@ public abstract class RootNode<TV, TN>(TV value) : INode<TN>, IValue<TV> where T
 			Depth = -1;
 			foreach (var item in ChildrenNode)
 			{
-				item.Parent = (TN)this;
+				item.Parent = (TNode)this;
 			}
 		}
 	}

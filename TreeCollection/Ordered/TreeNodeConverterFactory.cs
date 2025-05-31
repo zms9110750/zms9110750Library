@@ -4,8 +4,9 @@ using System.Text.Json.Nodes;
 
 namespace zms9110750.TreeCollection.Ordered;
 
-
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
 public class TreeListNodeConverterFactory : JsonConverterFactory
+
 {
 	public override bool CanConvert(Type typeToConvert)
 	{
@@ -56,3 +57,4 @@ public class TreeListNodeJsonConverter<T> : JsonConverter<TreeNode<T>>
 		jsonObject.WriteTo(writer, options);
 	}
 }
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释

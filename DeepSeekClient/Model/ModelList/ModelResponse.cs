@@ -1,13 +1,12 @@
-﻿using Newtonsoft.Json;
-using System.Text.Json.Serialization;
+﻿using zms9110750.DeepSeekClient.Model.ModelList;
 
 namespace DeepSeekClient.Model.ModelList;
 /// <summary>
-/// 模型列表
+/// 模型响应
 /// </summary>
 /// <param name="Object">其值仅可能为[list]</param>
 /// <param name="Data">模型列表</param>
 public record ModelResponse(
-	[property: JsonPropertyName("object"), JsonProperty("object")] string Object,
-	[property: JsonPropertyName("data"), JsonProperty("data")] List<Model> Data);
+	  string Object,
+	  List<ChatModel> Data);
 

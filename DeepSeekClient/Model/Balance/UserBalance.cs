@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json;
-using System.Text.Json.Serialization;
-
+﻿
 namespace DeepSeekClient.Model.Balance;
 
 /// <summary>
@@ -11,7 +9,7 @@ namespace DeepSeekClient.Model.Balance;
 /// <param name="GrantedBalance">未过期的赠金余额</param>
 /// <param name="ToppedUpBalance">充值余额</param>
 public record UserBalance(
-	[property: JsonPropertyName("currency"), JsonProperty("currency")] string Currency,
-	[property: JsonPropertyName("total_balance"), JsonProperty("total_balance")] string TotalBalance,
-	[property: JsonPropertyName("granted_balance"), JsonProperty("granted_balance")] string GrantedBalance,
-	[property: JsonPropertyName("topped_up_balance"), JsonProperty("topped_up_balance")] string ToppedUpBalance);
+	 Currency Currency,
+	 double TotalBalance,
+	 double GrantedBalance,
+	 double ToppedUpBalance);

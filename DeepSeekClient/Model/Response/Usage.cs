@@ -2,16 +2,34 @@
 using System.Text.Json.Serialization;
 
 namespace DeepSeekClient.Model.Response;
-
+/// <summary>
+/// 表示API调用的token使用情况统计
+/// </summary>
+/// <param name="CompletionTokens">完成部分消耗的token数量</param>
+/// <param name="PromptTokens">提示部分消耗的token数量</param>
+/// <param name="PromptCacheHitTokens">提示缓存命中的token数量</param>
+/// <param name="PromptCacheMissTokens">提示缓存未命中的token数量</param>
+/// <param name="TotalTokens">总消耗token数量</param>
+/// <param name="CompletionTokensDetails">完成部分token的详细使用情况</param>
+/// <param name="PromptTokensDetails">提示部分token的详细使用情况</param>
 public record Usage(
-		[property: JsonPropertyName("completion_tokens"), JsonProperty("completion_tokens")] int CompletionTokens,
-		[property: JsonPropertyName("prompt_tokens"), JsonProperty("prompt_tokens")] int PromptTokens,
-		[property: JsonPropertyName("prompt_cache_hit_tokens"), JsonProperty("prompt_cache_hit_tokens")] int PromptCacheHitTokens,
-		[property: JsonPropertyName("prompt_cache_miss_tokens"), JsonProperty("prompt_cache_miss_tokens")] int PromptCacheMissTokens,
-		[property: JsonPropertyName("total_tokens"), JsonProperty("total_tokens")] int TotalTokens,
-		[property: JsonPropertyName("completion_tokens_details"), JsonProperty("completion_tokens_details"), Obsolete("文档存在。但是返回Json没有")] Usage.CompletionTokensDetail CompletionTokensDetails,
-	    [property: JsonPropertyName("prompt_tokens_details"), JsonProperty("prompt_tokens_details")] Usage.PromptTokensDetail PromptTokensDetails)
+	int CompletionTokens,
+	int PromptTokens,
+	int PromptCacheHitTokens,
+	int PromptCacheMissTokens,
+	int TotalTokens,
+	Usage.CompletionTokensDetail CompletionTokensDetails,
+	Usage.PromptTokensDetail PromptTokensDetails)
 {
-	public record CompletionTokensDetail([property: JsonPropertyName("reasoning_tokens"), JsonProperty("reasoning_tokens")] int ReasoningTokens);
-	public record PromptTokensDetail([property: JsonPropertyName("cached_tokens"), JsonProperty("cached_tokens")] int CachedTokens);
+	/// <summary>
+	/// 完成部分token的详细使用情况
+	/// </summary>
+	/// <param name="ReasoningTokens">用于思维链推理的token数量</param>
+	public record CompletionTokensDetail(int ReasoningTokens);
+
+	/// <summary>
+	/// 提示部分token的详细使用情况
+	/// </summary>
+	/// <param name="CachedTokens">从缓存中读取的token数量</param>
+	public record PromptTokensDetail(int CachedTokens);
 }

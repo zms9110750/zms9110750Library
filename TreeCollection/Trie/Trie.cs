@@ -2,13 +2,22 @@
 
 namespace zms9110750.TreeCollection.Trie;
 
+/// <summary>
+/// 字典树根节点
+/// </summary>
+/// <param name="separator">分隔符集合</param>
 public class Trie(HashSet<char>? separator = null) : TrieBase
 {
 	private BitVector32 _token = new BitVector32();
 	private readonly ReaderWriterLockSlim _lock = new ReaderWriterLockSlim();
 	internal override IReadOnlySet<char> Separator { get; } = separator ?? DefaultSeparator;
 	static IReadOnlySet<char> DefaultSeparator { get; } = new HashSet<char>();
-	protected bool this[int index]
+
+	/// <summary>
+	/// 获取<see cref="_token"/>指定bit位的值
+	/// </summary>
+	/// <param name="index">索引</param>
+	bool this[int index]
 	{
 		get
 		{
@@ -36,14 +45,32 @@ public class Trie(HashSet<char>? separator = null) : TrieBase
 			}
 		}
 	}
-	public void Add(string word)
+
+	/// <inheritdoc/>
+
+	public override void Add(string word)
 	{
 		ArgumentException.ThrowIfNullOrEmpty(word);
-		base[word[0]].Add(word, 0);
+		base[word[0]].Add(word );
 	}
-	public IEnumerable<string> Search(string s)
+
+	/// <summary>
+	/// 搜索字典树中是否存在指定前缀的单词
+	/// </summary>
+	/// <param name="prefix">前缀</param>
+	/// <remarks>分隔符会把文本拆分为多个串。分隔符本身也是一个串。<br/>参数里的分隔符后的字符会查询之后的串的前缀。<br/>
+	/// <code>
+	/// a b匹配:
+	/// ac b
+	/// ac cb b
+	/// 不匹配
+	/// ab
+	/// ac cb
+	/// </code>
+	/// </remarks>
+	public IEnumerable<string> Search(string prefix)
 	{
-		if (string.IsNullOrEmpty(s))
+		if (string.IsNullOrEmpty(prefix))
 			yield break;
 
 		int tokenIndex = AllocateTokenIndex();
@@ -51,7 +78,7 @@ public class Trie(HashSet<char>? separator = null) : TrieBase
 		{
 			foreach (var child in Children.Values)
 			{
-				foreach (var result in child.Search(s, 0, tokenIndex))
+				foreach (var result in child.Search(prefix, 0, tokenIndex))
 				{
 					yield return result;
 				}
@@ -62,6 +89,13 @@ public class Trie(HashSet<char>? separator = null) : TrieBase
 			ReleaseToken(tokenIndex); // 根节点负责释放
 		}
 	}
+
+	/// <summary>
+	/// 分配一个未被占用的token索引
+	/// </summary>
+	/// <returns></returns>
+	/// <exception cref="InvalidOperationException"></exception>
+	/// <remarks>用来传入<seealso cref="TrieNode.Search(string, int, int)"/></remarks>
 	private int AllocateTokenIndex()
 	{
 		for (int retry = 0; retry < 1024; retry++)
@@ -95,6 +129,10 @@ public class Trie(HashSet<char>? separator = null) : TrieBase
 		throw new InvalidOperationException("No available token index.");
 	}
 
+	/// <summary>
+	/// 释放token索引
+	/// </summary>
+	/// <param name="tokenIndex"></param>
 	internal override void ReleaseToken(int tokenIndex)
 	{
 		base.ReleaseToken(tokenIndex);

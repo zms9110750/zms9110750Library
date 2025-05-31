@@ -7,22 +7,49 @@ using zms9110750.TreeCollection.Abstract;
 using zms9110750.TreeCollection.Ordered;
 
 namespace zms9110750.TreeCollection.Ordered;
+
+/// <summary>
+/// 有序树节点
+/// </summary>
+/// <typeparam name="T">储存值类型</typeparam>
+/// <param name="value">初始值</param>
 [JsonConverter(typeof(TreeListNodeConverterFactory))]
 public class TreeNode<T>(T value) : RootNode<T, TreeNode<T>>(value), IList<TreeNode<T>>, IOrderedTree<T, TreeNode<T>>
 {
-	protected List<TreeNode<T>> Children { get; } = new();
+	/// <inheritdoc/>
+	protected override List<TreeNode<T>> ChildrenNode { get; } = new();
+
+	/// <inheritdoc/>
 	public int Index { get; protected set; } = -1;
 
-	public int Count => Children.Count;
+	/// <inheritdoc/>
+	public int Count => ChildrenNode.Count;
 
-	public bool IsReadOnly => ((ICollection<TreeNode<T>>)Children).IsReadOnly;
+	/// <inheritdoc/>
+	public bool IsReadOnly => ((ICollection<TreeNode<T>>)ChildrenNode).IsReadOnly;
 
+	/// <summary>
+	/// 在修改集合时的版本。用于令<see cref="NodeListSlice"/>失效
+	/// </summary>
 	protected int Version { get; set; }
-	protected override IEnumerable<TreeNode<T>> ChildrenNode => Children;
 
+	/// <summary>
+	/// 索引器
+	/// </summary>
+	/// <param name="index">索引</param>
+	/// <returns></returns>
+	/// <exception cref="ArgumentOutOfRangeException">索引非法</exception>
+	/// <remarks>
+	/// <list type="bullet">
+	/// <item>如果有值且索引为Count，则添加到末尾</item>
+	/// <item>如果有值且索引合法，调用<see cref="Replace(TreeNode{T}, TreeNode{T})"/></item>
+	/// <item>如果为null且索引合法，调用<see cref="RemoveAt(int)"/></item>
+	/// <item>如果值为子节点，则调用<see cref="IOrderedTree{TValue, TNode}.MoveChild(int, int)"/></item>
+	/// </list>
+	/// </remarks>
 	public TreeNode<T> this[int index]
 	{
-		get => Children[index]; set
+		get => ChildrenNode[index]; set
 		{
 			if (index < 0 || index > Count)
 			{
@@ -51,11 +78,13 @@ public class TreeNode<T>(T value) : RootNode<T, TreeNode<T>>(value), IList<TreeN
 				}
 				else
 				{
-					Replace(Children[index], value);
+					Replace(ChildrenNode[index], value);
 				}
 			}
 		}
 	}
+
+	/// <inheritdoc/>
 	public TreeNode<T> AddAt(int index, TreeNode<T> node)
 	{
 		ArgumentNullException.ThrowIfNull(node);
@@ -65,10 +94,12 @@ public class TreeNode<T>(T value) : RootNode<T, TreeNode<T>>(value), IList<TreeN
 		}
 		node.Parent?.Remove(node);
 		node.Parent = this;
-		Children.Insert(index, node);
+		ChildrenNode.Insert(index, node);
 		this[index..].UpdateIndex();
 		return node;
 	}
+
+	/// <inheritdoc/>
 
 	public void AddAt(int index, IEnumerable<TreeNode<T>> nodes)
 	{
@@ -82,7 +113,7 @@ public class TreeNode<T>(T value) : RootNode<T, TreeNode<T>>(value), IList<TreeN
 				throw new ArgumentException("Cannot add ancestor node to itself");
 			}
 		}
-		Children.InsertRange(index, list);
+		ChildrenNode.InsertRange(index, list);
 		foreach (var node in list)
 		{
 			node.Parent?.Remove(node);
@@ -91,6 +122,7 @@ public class TreeNode<T>(T value) : RootNode<T, TreeNode<T>>(value), IList<TreeN
 		this[index..].UpdateIndex();
 	}
 
+	/// <inheritdoc/>
 	public void AddAt(int index, params scoped ReadOnlySpan<TreeNode<T>> nodes)
 	{
 		foreach (var node in nodes)
@@ -101,7 +133,7 @@ public class TreeNode<T>(T value) : RootNode<T, TreeNode<T>>(value), IList<TreeN
 				throw new ArgumentException("Cannot add ancestor node to itself");
 			}
 		}
-		Children.InsertRange(index, nodes);
+		ChildrenNode.InsertRange(index, nodes);
 		foreach (var node in nodes)
 		{
 			node.Parent?.Remove(node);
@@ -109,19 +141,22 @@ public class TreeNode<T>(T value) : RootNode<T, TreeNode<T>>(value), IList<TreeN
 		}
 		this[index..].UpdateIndex();
 	}
+
+	/// <inheritdoc/>
 	public TreeNode<T> AddAt(int index, T value)
 	{
 		var node = new TreeNode<T>(value);
 		node.Parent = this;
-		Children.Insert(index, node);
+		ChildrenNode.Insert(index, node);
 		this[index..].UpdateIndex();
 		return node;
 	}
 
+	/// <inheritdoc/>
 	public void AddAt(int index, params IEnumerable<T> values)
 	{
 		var nodes = values.Select(value => new TreeNode<T>(value)).ToArray();
-		Children.InsertRange(index, nodes);
+		ChildrenNode.InsertRange(index, nodes);
 		foreach (var node in nodes)
 		{
 			node.Parent = this;
@@ -129,11 +164,8 @@ public class TreeNode<T>(T value) : RootNode<T, TreeNode<T>>(value), IList<TreeN
 		this[index..].UpdateIndex();
 	}
 
-	public static TreeNode<T> Create(T value)
-	{
-		return new TreeNode<T>(value);
-	}
 
+	/// <inheritdoc/>
 	public bool Replace(TreeNode<T> oldNode, TreeNode<T> newNode)
 	{
 		if (!this.Contains(oldNode))
@@ -146,7 +178,7 @@ public class TreeNode<T>(T value) : RootNode<T, TreeNode<T>>(value), IList<TreeN
 		}
 		var index = oldNode.Index;
 		newNode.Parent?.Remove(newNode);
-		Children[index] = newNode;
+		ChildrenNode[index] = newNode;
 		newNode.Parent = this;
 		newNode.Index = index;
 		oldNode.Index = -1;
@@ -155,6 +187,7 @@ public class TreeNode<T>(T value) : RootNode<T, TreeNode<T>>(value), IList<TreeN
 		return true;
 	}
 
+	/// <inheritdoc/>
 	public TreeNode<T>? Remove(TreeNode<T> item)
 	{
 		if (!this.Contains(item))
@@ -162,27 +195,31 @@ public class TreeNode<T>(T value) : RootNode<T, TreeNode<T>>(value), IList<TreeN
 			return null;
 		}
 		item.Parent = null;
-		Children.Remove(item);
+		ChildrenNode.Remove(item);
 		this[item.Index..].UpdateIndex();
 		item.Index = -1;
 		return item;
 	}
 
+	/// <inheritdoc/>
 	public void CopyTo(TreeNode<T>[] array, int arrayIndex)
 	{
-		((ICollection<TreeNode<T>>)Children).CopyTo(array, arrayIndex);
+		((ICollection<TreeNode<T>>)ChildrenNode).CopyTo(array, arrayIndex);
 	}
 
+	/// <inheritdoc/>
 	public IEnumerator<TreeNode<T>> GetEnumerator()
 	{
-		return ((IEnumerable<TreeNode<T>>)Children).GetEnumerator();
+		return ((IEnumerable<TreeNode<T>>)ChildrenNode).GetEnumerator();
 	}
 
+	/// <inheritdoc/>
 	public TreeNode<T>? RemoveAt(int index)
 	{
-		return Remove(Children[index]);
+		return Remove(ChildrenNode[index]);
 	}
 
+	/// <inheritdoc/>
 	public override string ToString()
 	{
 		StringBuilder sb = new StringBuilder();
@@ -233,6 +270,7 @@ public class TreeNode<T>(T value) : RootNode<T, TreeNode<T>>(value), IList<TreeN
 		stack.Pop();
 	}
 
+	/// <inheritdoc/>
 	public int RemoveAll(Predicate<TreeNode<T>>? match = null)
 	{
 		int removed = 0;
@@ -291,6 +329,8 @@ public class TreeNode<T>(T value) : RootNode<T, TreeNode<T>>(value), IList<TreeN
 	{
 		return Slice(start, length);
 	}
+
+	/// <inheritdoc cref="IOrderedTree{TValue, TNode}.Slice(int, int)"/>
 	public NodeListSlice Slice(int start, int length)
 	{
 		ArgumentOutOfRangeException.ThrowIfNegative(start);
@@ -301,14 +341,26 @@ public class TreeNode<T>(T value) : RootNode<T, TreeNode<T>>(value), IList<TreeN
 
 	IEnumerator IEnumerable.GetEnumerator()
 	{
-		return ((IEnumerable)Children).GetEnumerator();
+		return ((IEnumerable)ChildrenNode).GetEnumerator();
 	}
 
-	public struct NodeListSlice(TreeNode<T> listNode, int start, int length) : IOrderedTree<T, TreeNode<T>>.ISlice
+	/// <summary>
+	/// 节点列表切片
+	/// </summary>
+	/// <param name="listNode">切片的节点</param>
+	/// <param name="start">开始位置</param>
+	/// <param name="length">长度</param>
+	/// <remarks>调用任何修改集合的方法都会使切片失效</remarks>
+	public readonly struct NodeListSlice(TreeNode<T> listNode, int start, int length) : IOrderedTree<T, TreeNode<T>>.ISlice
 	{
-		private readonly Span<TreeNode<T>> Span => CollectionsMarshal.AsSpan(listNode.Children).Slice(start, length);
+		private readonly Span<TreeNode<T>> Span => CollectionsMarshal.AsSpan(listNode.ChildrenNode).Slice(start, length);
 		private readonly int _version = listNode.Version;
 
+		/// <summary>
+		/// 索引器
+		/// </summary>
+		/// <param name="index">索引</param>
+		/// <returns></returns>
 		public TreeNode<T> this[int index]
 		{
 			get
@@ -318,6 +370,7 @@ public class TreeNode<T>(T value) : RootNode<T, TreeNode<T>>(value), IList<TreeN
 			}
 		}
 
+		/// <inheritdoc/>
 		public int Count
 		{
 			get
@@ -327,8 +380,12 @@ public class TreeNode<T>(T value) : RootNode<T, TreeNode<T>>(value), IList<TreeN
 			}
 		}
 
+
+		/// <inheritdoc/>
 		public bool IsValid => listNode.Version != _version;
 
+
+		/// <inheritdoc/>
 		public bool Contains(T value)
 		{
 			ValidateVersion();
@@ -340,12 +397,14 @@ public class TreeNode<T>(T value) : RootNode<T, TreeNode<T>>(value), IList<TreeN
 			return false;
 		}
 
+		/// <inheritdoc/>
 		public Span<TreeNode<T>>.Enumerator GetEnumerator()
 		{
 			ValidateVersion();
 			return Span.GetEnumerator();
 		}
 
+		/// <inheritdoc/>
 		public int IndexOf(T value)
 		{
 			ValidateVersion();
@@ -357,6 +416,21 @@ public class TreeNode<T>(T value) : RootNode<T, TreeNode<T>>(value), IList<TreeN
 			return -1;
 		}
 
+
+		/// <inheritdoc/>
+		public int LastIndexOf(T value)
+		{
+			ValidateVersion();
+			var span = Span;
+			for (int i = Count - 1; i >= 0; i--)
+			{
+				if (EqualityComparer<T>.Default.Equals(span[i].Value, value))
+					return span[i].Index;
+			}
+			return -1;
+		}
+
+		/// <inheritdoc/>
 		public TreeNode<T>? Remove(T value)
 		{
 			ValidateVersion();
@@ -367,7 +441,8 @@ public class TreeNode<T>(T value) : RootNode<T, TreeNode<T>>(value), IList<TreeN
 			return listNode.RemoveAt(IndexOf(value));
 		}
 
-		public int RemoveAll(Predicate<TreeNode<T>>? match = null)
+		/// <inheritdoc/>
+		public  int RemoveAll(Predicate<TreeNode<T>>? match = null)
 		{
 			ValidateVersion();
 			int removed = 0;
@@ -383,6 +458,8 @@ public class TreeNode<T>(T value) : RootNode<T, TreeNode<T>>(value), IList<TreeN
 				listNode.IncrementVersion();
 			return removed;
 		}
+
+		/// <inheritdoc/>
 		public void RotateForward()
 		{
 			ValidateVersion();
@@ -395,7 +472,8 @@ public class TreeNode<T>(T value) : RootNode<T, TreeNode<T>>(value), IList<TreeN
 			UpdateIndex();
 		}
 
-		public void RotateBackward()
+		/// <inheritdoc/>
+		public  void RotateBackward()
 		{
 			ValidateVersion();
 			if (Span.Length < 2)
@@ -407,7 +485,8 @@ public class TreeNode<T>(T value) : RootNode<T, TreeNode<T>>(value), IList<TreeN
 			UpdateIndex();
 		}
 
-		public void UpdateIndex()
+		/// <inheritdoc/>
+		public  void UpdateIndex()
 		{
 			ValidateVersion();
 			for (int i = 0; i < Span.Length; i++)
@@ -418,7 +497,7 @@ public class TreeNode<T>(T value) : RootNode<T, TreeNode<T>>(value), IList<TreeN
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private void ValidateVersion()
+		private  void ValidateVersion()
 		{
 			if (listNode.Version != _version)
 				throw new InvalidOperationException("Collection was modified after slice creation");

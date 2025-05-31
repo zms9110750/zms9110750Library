@@ -10,6 +10,11 @@
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<Authors>zms9110750</Authors>
+		<PackageProjectUrl>https://github.com/zms9110750/zms9110750Library</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/zms9110750/zms9110750Library</RepositoryUrl>
+		<PackageReadmeFile>Readme.md</PackageReadmeFile>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<IncludeSymbols>False</IncludeSymbols>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -21,5 +26,12 @@
 	  <IsTrimmable>False</IsTrimmable>
 	  <IsAotCompatible>False</IsAotCompatible>
 	</PropertyGroup>
+
+	<ItemGroup>
+	  <None Update="Readme.md">
+	    <Pack>True</Pack>
+	    <PackagePath>\</PackagePath>
+	  </None>
+	</ItemGroup>
 
 </Project>

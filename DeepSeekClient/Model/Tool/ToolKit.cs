@@ -1,111 +1,85 @@
 ﻿using DeepSeekClient.Model.Message;
 using System.Collections;
-using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using System.Text.Json.Nodes;
+using zms9110750.DeepSeekClient.Model.Tool.FunctionCall;
+using zms9110750.DeepSeekClient.Model.Tool.FunctionTool;
 
-namespace DeepSeekClient.Model.Tool;
-
-public class ToolKit : IDictionary<string, ToolBase>
+namespace zms9110750.DeepSeekClient.Model.Tool;
+/// <summary>
+/// 工具箱
+/// </summary>
+public class ToolKit : ICollection<Tool>
 {
-	Dictionary<string, ToolBase> Tools { get; } = [];
+	/// <inheritdoc/>
+	public int Count => ((ICollection<Tool>)ToolSet).Count;
 
-	public ICollection<string> Keys => ((IDictionary<string, ToolBase>)Tools).Keys;
+	/// <inheritdoc/>
+	public bool IsReadOnly => ((ICollection<Tool>)ToolSet).IsReadOnly;
 
-	public ICollection<ToolBase> Values => ((IDictionary<string, ToolBase>)Tools).Values;
 
-	public int Count => ((ICollection<KeyValuePair<string, ToolBase>>)Tools).Count;
+	HashSet<Tool> ToolSet { get; } = new HashSet<Tool>();
 
-	public bool IsReadOnly => ((ICollection<KeyValuePair<string, ToolBase>>)Tools).IsReadOnly;
-
-	public ToolBase this[string key] { get => ((IDictionary<string, ToolBase>)Tools)[key]; set => ((IDictionary<string, ToolBase>)Tools)[key] = value; }
-	public ToolChoice? Choice { get; }
-	public void Add(ToolBase tool)
+	/// <inheritdoc/>
+	public void Add(Tool item)
 	{
-		Tools[tool.Key] = tool;
-	}
-	public void Remove(string key)
-	{
-		Tools.Remove(key);
-	}
-	public void Remove(ToolBase tool)
-	{
-		Tools.Remove(tool.Key);
-	}
-	public ToolMessage Invoke(ToolCall call)
-	{
-		// TODO: Implement ToolChoice
-		return new ToolMessage(Tools[call.Key].Invoke(default).ToString(), call.Id);
-	}
-	public override string ToString()
-	{
-		return CloneJson().ToString();
+		((ICollection<Tool>)ToolSet).Add(item);
 	}
 
-	public JsonArray CloneJson()
-	{
-		JsonArray tools = new JsonArray();
-		foreach (var tool in Tools.Values)
-		{
-			JsonObject json = new JsonObject();
-			json["type"] = tool.Type;
-			json[tool.Type] = JsonNode.Parse(tool.ToString());
-			tools.Add(json);
-		}
-		return tools;
-	}
-
-	public void Add(string key, ToolBase value)
-	{
-		((IDictionary<string, ToolBase>)Tools).Add(key, value);
-	}
-
-	public bool ContainsKey(string key)
-	{
-		return ((IDictionary<string, ToolBase>)Tools).ContainsKey(key);
-	}
-
-	bool IDictionary<string, ToolBase>.Remove(string key)
-	{
-		return ((IDictionary<string, ToolBase>)Tools).Remove(key);
-	}
-
-	public bool TryGetValue(string key, [MaybeNullWhen(false)] out ToolBase value)
-	{
-		return ((IDictionary<string, ToolBase>)Tools).TryGetValue(key, out value);
-	}
-
-	public void Add(KeyValuePair<string, ToolBase> item)
-	{
-		((ICollection<KeyValuePair<string, ToolBase>>)Tools).Add(item);
-	}
-
+	/// <inheritdoc/>
 	public void Clear()
 	{
-		((ICollection<KeyValuePair<string, ToolBase>>)Tools).Clear();
+		((ICollection<Tool>)ToolSet).Clear();
 	}
 
-	public bool Contains(KeyValuePair<string, ToolBase> item)
+	/// <inheritdoc/>
+	public bool Contains(Tool item)
 	{
-		return ((ICollection<KeyValuePair<string, ToolBase>>)Tools).Contains(item);
+		return ((ICollection<Tool>)ToolSet).Contains(item);
 	}
 
-	public void CopyTo(KeyValuePair<string, ToolBase>[] array, int arrayIndex)
+	/// <inheritdoc/>
+	public void CopyTo(Tool[] array, int arrayIndex)
 	{
-		((ICollection<KeyValuePair<string, ToolBase>>)Tools).CopyTo(array, arrayIndex);
+		((ICollection<Tool>)ToolSet).CopyTo(array, arrayIndex);
 	}
 
-	public bool Remove(KeyValuePair<string, ToolBase> item)
+	/// <inheritdoc/>
+	public IEnumerator<Tool> GetEnumerator()
 	{
-		return ((ICollection<KeyValuePair<string, ToolBase>>)Tools).Remove(item);
+		return ((IEnumerable<Tool>)ToolSet).GetEnumerator();
 	}
 
-	public IEnumerator<KeyValuePair<string, ToolBase>> GetEnumerator()
+	/// <summary>
+	/// 根据请求查找并调用工具
+	/// </summary>
+	/// <param name="call"></param>
+	/// <param name="options"></param>
+	/// <returns>工具调用的工具消息</returns>
+	/// <exception cref="InvalidOperationException"></exception>
+	/// <remarks>目前只有函数工具</remarks>
+	public MessageTool Invoke(ToolCall call, JsonSerializerOptions? options = null)
 	{
-		return ((IEnumerable<KeyValuePair<string, ToolBase>>)Tools).GetEnumerator();
+		switch (call)
+		{
+			case ToolCallFunction toolCallFunction:
+				var tool = ToolSet.OfType<ToolFunction>().Single(t => t.Function.Name == toolCallFunction.Function.Name);
+				var result = tool.Invoke(toolCallFunction, options);
+				return new MessageTool(result.ToJsonString(options ?? SourceGenerationContext.UnsafeRelaxed), toolCallFunction.Id);
+			default:
+				throw new InvalidOperationException();
+		}
+	}
+	/// <inheritdoc/>
+	public bool Remove(Tool item)
+	{
+		return ((ICollection<Tool>)ToolSet).Remove(item);
 	}
 
 	IEnumerator IEnumerable.GetEnumerator()
 	{
-		return ((IEnumerable)Tools).GetEnumerator();
+		return ((IEnumerable)ToolSet).GetEnumerator();
 	}
 }
+
+

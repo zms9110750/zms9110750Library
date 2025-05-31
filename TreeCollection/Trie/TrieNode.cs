@@ -1,20 +1,36 @@
 ﻿using System.Runtime.InteropServices;
 
 namespace zms9110750.TreeCollection.Trie;
+
+/// <summary>
+/// 负责储存字符的字典树子节点
+/// </summary>
+/// <param name="parent">父节点</param>
 public class TrieNode(Trie parent) : TrieBase(parent)
 {
-	Dictionary<int, HashSet<int>> _token = new Dictionary<int, HashSet<int>>();
+
+	readonly Dictionary<int, HashSet<int>> _token = new Dictionary<int, HashSet<int>>();
+
+	/// <summary>
+	/// 储存的字符。若字典树尚未添加此节点应该存在的文本。则为null。
+	/// </summary>
 	public string? Word { get; private set; }
+
+	/// <inheritdoc/>
+	/// <remarks>获取根节点的分隔符</remarks>
 	internal override IReadOnlySet<char> Separator => Root.Separator;
-	public void Add(string word, int index)
+
+	/// <inheritdoc/>
+	public override void Add(string word)
 	{
+		var index = Depth - 1;
 		if (index >= word.Length)
 		{
 			Word = word;
 			return;
 		}
-		this[word[index]].Add(word, index + 1);
-	}
+		this[word[index]].Add(word);
+	} 
 
 	internal IEnumerable<string> Search(string s, int index, int tokenIndex)
 	{

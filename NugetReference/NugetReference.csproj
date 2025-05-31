@@ -4,8 +4,10 @@
 		<TargetFramework>net9.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
+		<LangVersion>preview</LangVersion>
 		<OutputType>Exe</OutputType>
 	</PropertyGroup>
+	 
 	<ItemGroup>
 		<PackageReference Include="Autofac.Pooling" Version="*" />
 		<PackageReference Include="BenchmarkDotNet" Version="*" /> 
@@ -27,7 +29,8 @@
 		<PackageReference Include="ZLinq.Json" Version="1.4.8" />
 	</ItemGroup>
 	<ItemGroup>
+	  <ProjectReference Include="..\DeepSeekClient\DeepSeekClient.csproj" />
 	  <ProjectReference Include="..\TreeCollection\TreeCollection.csproj" />
-	</ItemGroup>
+	</ItemGroup> 
 	 
 </Project>
