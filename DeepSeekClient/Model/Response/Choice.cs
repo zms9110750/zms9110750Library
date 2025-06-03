@@ -1,5 +1,4 @@
-﻿using DeepSeekClient.Model.Message;
-using DeepSeekClient.Model.Response;
+﻿using zms9110750.DeepSeekClient.Model.Messages;
 using zms9110750.DeepSeekClient.Model.Response.Delta;
 using zms9110750.DeepSeekClient.Model.Response.Logprob;
 

@@ -1,5 +1,4 @@
-﻿
-namespace DeepSeekClient.Model.Balance;
+﻿namespace zms9110750.DeepSeekClient.Model.Balance;
 
 /// <summary>
 /// 货币单位

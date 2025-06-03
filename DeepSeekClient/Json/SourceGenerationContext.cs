@@ -1,20 +1,21 @@
-﻿using DeepSeekClient.Model.Balance;
-using DeepSeekClient.Model.Message;
-using DeepSeekClient.Model.ModelList;
+﻿
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using zms9110750.DeepSeekClient.Beta;
+using zms9110750.DeepSeekClient.Model.Balance;
+using zms9110750.DeepSeekClient.Model.Messages;
+using zms9110750.DeepSeekClient.Model.ModelList;
 using zms9110750.DeepSeekClient.Model.Request;
 using zms9110750.DeepSeekClient.Model.Response;
 
 namespace zms9110750.DeepSeekClient.Model.Tool;
 
-[JsonSourceGenerationOptions(WriteIndented = true,
+[JsonSourceGenerationOptions(
+	WriteIndented = true,
 	PropertyNamingPolicy = JsonKnownNamingPolicy.SnakeCaseLower,
 	UseStringEnumConverter = true,
-	NumberHandling = JsonNumberHandling.AllowReadingFromString,
 	AllowOutOfOrderMetadataProperties = true,
 	DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
 	)]
@@ -26,12 +27,43 @@ namespace zms9110750.DeepSeekClient.Model.Tool;
 [JsonSerializable(typeof(ChatResponse))]
 [JsonSerializable(typeof(ChatResponseFIM))]
 [JsonSerializable(typeof(ChatOption))]
+[JsonSerializable(typeof(FinishReason))]
+
 internal partial class SourceGenerationContext : JsonSerializerContext
 {
 	[field: AllowNull]
-	public static JsonSerializerOptions UnsafeRelaxed => field ??= new JsonSerializerOptions(Default!.Options)
+	public static JsonSerializerOptions UnsafeRelaxed
 	{
-		WriteIndented = false,
-		Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-	};
+		get
+		{
+			if (field == null)
+			{
+				field = new JsonSerializerOptions(Default.Options)
+				{
+					WriteIndented = false,
+					Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+				}; 
+			}
+			return field;
+		}
+	}
+	[field: AllowNull]
+	public static JsonSerializerOptions ArgumentRelaxed
+	{
+		get
+		{
+			if (field == null)
+			{
+				field = new JsonSerializerOptions(UnsafeRelaxed)
+				{
+					PropertyNamingPolicy = null,
+					NumberHandling = JsonNumberHandling.Strict,
+					RespectNullableAnnotations = true,
+					TypeInfoResolver = JsonSerializerOptions.Default.TypeInfoResolver
+				};
+				field.Converters.Add(new JsonStringEnumConverter());
+			}
+			return field;
+		}
+	}
 }

@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 using zms9110750.DeepSeekClient.Model.Tool;
-namespace DeepSeekClient.Model.Message;
+namespace zms9110750.DeepSeekClient.Model.Messages;
 /// <summary>
 /// 工具调用消息
 /// </summary>

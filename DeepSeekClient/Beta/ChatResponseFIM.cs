@@ -1,4 +1,4 @@
-﻿using DeepSeekClient.Model.Response;
+﻿using zms9110750.DeepSeekClient.Model.Response;
 
 namespace zms9110750.DeepSeekClient.Beta;
 /// <summary>

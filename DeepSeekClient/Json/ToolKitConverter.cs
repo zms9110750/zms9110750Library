@@ -1,7 +1,8 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
+using zms9110750.DeepSeekClient.Model.Tool;
 
-namespace zms9110750.DeepSeekClient.Model.Tool;
+namespace zms9110750.DeepSeekClient.Json;
 
 internal class ToolKitConverter : JsonConverter<ToolKit>
 {

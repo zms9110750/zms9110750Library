@@ -1,6 +1,4 @@
-﻿using DeepSeekClient.Model.Response;
-
-namespace zms9110750.DeepSeekClient.Model.Response;
+﻿namespace zms9110750.DeepSeekClient.Model.Response;
 
 /// <summary>
 /// 聊天响应

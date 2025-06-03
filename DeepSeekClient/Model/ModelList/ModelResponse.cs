@@ -1,6 +1,4 @@
-﻿using zms9110750.DeepSeekClient.Model.ModelList;
-
-namespace DeepSeekClient.Model.ModelList;
+﻿namespace zms9110750.DeepSeekClient.Model.ModelList;
 /// <summary>
 /// 模型响应
 /// </summary>

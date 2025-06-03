@@ -1,5 +1,4 @@
-﻿ 
-namespace DeepSeekClient.Model.Balance;
+﻿namespace zms9110750.DeepSeekClient.Model.Balance;
 /// <summary>
 /// 用户余额响应
 /// </summary>

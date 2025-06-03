@@ -1,5 +1,6 @@
-﻿
-namespace DeepSeekClient.Model.Balance;
+﻿using System.Text.Json.Serialization;
+
+namespace zms9110750.DeepSeekClient.Model.Balance;
 
 /// <summary>
 /// 余额详情
@@ -10,6 +11,6 @@ namespace DeepSeekClient.Model.Balance;
 /// <param name="ToppedUpBalance">充值余额</param>
 public record UserBalance(
 	 Currency Currency,
-	 double TotalBalance,
-	 double GrantedBalance,
-	 double ToppedUpBalance);
+	 [property: JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)] double TotalBalance,
+	 [property: JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)] double GrantedBalance,
+	 [property: JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)] double ToppedUpBalance);

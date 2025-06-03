@@ -1,10 +1,11 @@
-﻿using DeepSeekClient.Model.Message;
+﻿
 using Microsoft.Extensions.Primitives;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using zms9110750.DeepSeekClient.Json;
+using zms9110750.DeepSeekClient.Model.Messages;
 using zms9110750.DeepSeekClient.Model.ModelList;
 using zms9110750.DeepSeekClient.Model.Tool;
 
@@ -17,8 +18,11 @@ public class ChatOption
 	/// <summary>
 	/// 消息列表
 	/// </summary>
-	[JsonConverter(typeof(MessageEnumerableConverter))][field: AllowNull] public IEnumerable<Message> Messages { get => field ?? Enumerable.Empty<Message>(); set; }
-
+	[JsonConverter(typeof(MessageEnumerableConverter))][field: AllowNull] public IEnumerable<Message> Messages { get => field ?? MessageDefault; set; }
+	/// <summary>
+	/// 提供一个List作为消息列表。用来省略自行创建的步骤。仅当Messages值为null时，才会使用此值。
+	/// </summary>
+	[JsonIgnore][field: AllowNull] public List<Message> MessageDefault => field ??= new List<Message>();
 	/// <summary>
 	/// 聊天模型
 	/// </summary>
@@ -97,7 +101,8 @@ public class ChatOption
 	public JsonNode? ToolChoice => ChatCompletionNamedToolChoice != null
 				? JsonSerializer.SerializeToNode(ChatCompletionNamedToolChoice, SourceGenerationContext.Default.Options)
 				: ChatCompletionToolChoice != null
-				? JsonValue.Create(ChatCompletionToolChoice) : (JsonNode?)null;
+				? JsonValue.Create(ChatCompletionToolChoice) 
+				: (JsonNode?)null;
 
 	/// <summary>
 	/// 工具选择。默认为<see cref="ChatCompletionToolChoice.Auto"/>。
@@ -121,7 +126,7 @@ public class ChatOption
 	/// </summary>
 	/// <remarks>介于 0 和 20 之间，默认为 0。</remarks>
 	public int? TopLogprobs { get => Model == ChatModel.R1.Id ? null : field; set => field = value is >= 0 and <= 20 or null ? value : throw new ArgumentOutOfRangeException(nameof(value), "Top logprobs must be between 0 and 20."); }
-	
+
 	/// <summary>
 	/// 构造函数
 	/// </summary>
@@ -130,7 +135,7 @@ public class ChatOption
 	{
 		SetModel(ChatModel.V3);
 	}
-	
+
 	/// <summary>
 	/// 设置模型
 	/// </summary>

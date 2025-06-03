@@ -1,7 +1,6 @@
-﻿
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 using zms9110750.DeepSeekClient.Beta;
-namespace DeepSeekClient.Model.Message;
+namespace zms9110750.DeepSeekClient.Model.Messages;
 /// <summary>
 /// 消息基类
 /// </summary>

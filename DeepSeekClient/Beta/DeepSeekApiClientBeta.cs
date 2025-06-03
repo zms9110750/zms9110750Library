@@ -1,5 +1,7 @@
-﻿using System.Net.Http.Json;
+﻿using Polly.Retry;
+using System.Net.Http.Json;
 using System.Text.Json;
+using System.Threading.RateLimiting;
 using zms9110750.DeepSeekClient.Model.ModelList;
 using zms9110750.DeepSeekClient.Model.Response;
 using zms9110750.DeepSeekClient.Model.Tool;
@@ -10,7 +12,8 @@ namespace zms9110750.DeepSeekClient.Beta;
 /// </summary>
 /// <param name="apiKey">DeepSeek的API</param>
 /// <param name="client">网络连接器</param>
-public class DeepSeekApiClientBeta(string apiKey, HttpClient? client = null) : DeepSeekApiClient(apiKey, client)
+public class DeepSeekApiClientBeta(string apiKey, HttpClient? client = null, ReplenishingRateLimiter? limiter = null, AsyncRetryPolicy<HttpResponseMessage>? retryPolicy = null)
+	: DeepSeekApiClient(apiKey, client, limiter, retryPolicy)
 {
 	/// <summary>
 	/// 前缀补全的API地址。
@@ -46,6 +49,7 @@ public class DeepSeekApiClientBeta(string apiKey, HttpClient? client = null) : D
 	/// </summary>
 	/// <param name="prompt">用于生成完成内容的提示</param>
 	/// <param name="suffix">制定被补全内容的后缀</param> 
+	/// <param name="token">取消标记</param>
 	/// <remarks><list type="bullet">
 	/// <item>设个方法会把Stream设置为false</item>
 	/// <item>R1报错。这个方法会设置模型为V3</item>
@@ -74,6 +78,7 @@ public class DeepSeekApiClientBeta(string apiKey, HttpClient? client = null) : D
 	/// </summary>
 	/// <param name="prompt">用于生成完成内容的提示</param> 
 	/// <param name="echo">在输出中，把 prompt 的内容也输出出来</param>
+	/// <param name="token">取消标记</param>
 	/// <remarks><list type="bullet">
 	/// <item>设个方法会把Stream设置为false</item>
 	/// <item>R1报错。这个方法会设置模型为V3</item>
@@ -102,6 +107,7 @@ public class DeepSeekApiClientBeta(string apiKey, HttpClient? client = null) : D
 	/// </summary>
 	/// <param name="prompt">用于生成完成内容的提示</param>
 	/// <param name="suffix">制定被补全内容的后缀</param> 
+	/// <param name="token">取消标记</param>
 	/// <remarks><list type="bullet">
 	/// <item>设个方法会把Stream设置为true</item>
 	/// <item>R1报错。这个方法会设置模型为V3</item>

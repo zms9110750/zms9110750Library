@@ -26,9 +26,10 @@ public partial class ToolFunction : Tool
 	/// <summary>
 	/// 分析一个委托并生成一个函数工具
 	/// </summary>
-	/// <param name="function"></param>
+	/// <param name="function">委托</param>
+	/// <param name="alias">为函数指定别名，如果为null则使用委托方法名</param>
 	/// <exception cref="ArgumentException"></exception>
-	public ToolFunction(Delegate function)
+	public ToolFunction(Delegate function, string? alias = null)
 	{
 		ArgumentNullException.ThrowIfNull(function);
 		if (!function.HasSingleTarget)
@@ -41,7 +42,10 @@ public partial class ToolFunction : Tool
 		}
 		Delegate = function;
 		Parames = Delegate.Method.GetParameters();
-		Function = new Function(Delegate.Method.Name, Delegate.Method.GetCustomAttribute<DescriptionAttribute>()?.Description, new Parameter(Parames));
+		Function = new Function(alias ?? Delegate.Method.Name,
+			Delegate.Method.GetCustomAttribute<DescriptionAttribute>()?.Description
+			?? Delegate.Method.DeclaringType?.FullName
+			, new Parameter(Parames));
 	}
 	/// <summary>
 	/// 执行一个工具调用请求
@@ -70,18 +74,19 @@ public partial class ToolFunction : Tool
 			}
 			else
 			{
+
 				object[] args = new object[Parames.Length];
 				foreach (var parameter in Parames)
 				{
 					if (parameters[parameter.Name!] is JsonNode node)
 					{
-						args[parameter.Position] = JsonSerializer.Deserialize(node.ToString(), parameter.ParameterType)!;
+						args[parameter.Position] = node.Deserialize(parameter.ParameterType, options ?? SourceGenerationContext.ArgumentRelaxed)!;
 					}
 					args[parameter.Position] ??= parameter.DefaultValue!;
 				}
 				result = Delegate.DynamicInvoke(args);
 			}
-			json["result"] = result == null ? null : JsonSerializer.SerializeToNode(result, options);
+			json["result"] = result == null ? null : JsonSerializer.SerializeToNode(result, options ?? SourceGenerationContext.UnsafeRelaxed);
 		}
 		catch (Exception ex)
 		{

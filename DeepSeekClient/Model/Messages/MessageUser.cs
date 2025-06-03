@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace DeepSeekClient.Model.Message;
+namespace zms9110750.DeepSeekClient.Model.Messages;
 /// <summary>
 /// 用户消息
 /// </summary>

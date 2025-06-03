@@ -1,7 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 using zms9110750.DeepSeekClient.Model.Tool;
 
-namespace DeepSeekClient.Model.Message;
+namespace zms9110750.DeepSeekClient.Model.Messages;
 /// <summary>
 /// AI/语言模型消息
 /// </summary>

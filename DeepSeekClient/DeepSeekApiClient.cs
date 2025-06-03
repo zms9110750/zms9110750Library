@@ -1,7 +1,6 @@
-﻿using DeepSeekClient.Model.Balance;
-using DeepSeekClient.Model.ModelList;
-using Polly;
+﻿using Polly;
 using Polly.Retry;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text;
@@ -9,6 +8,8 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.RateLimiting;
+using zms9110750.DeepSeekClient.Model.Balance;
+using zms9110750.DeepSeekClient.Model.ModelList;
 using zms9110750.DeepSeekClient.Model.Request;
 using zms9110750.DeepSeekClient.Model.Response;
 using zms9110750.DeepSeekClient.Model.Response.Delta;
@@ -33,7 +34,9 @@ public class DeepSeekApiClient
 	/// <summary>
 	/// 限流器
 	/// </summary>
-	protected TokenBucketRateLimiter Limiter { get; } = new TokenBucketRateLimiter(new TokenBucketRateLimiterOptions
+	[field: AllowNull]
+	[AllowNull]
+	protected ReplenishingRateLimiter Limiter => field ??= new TokenBucketRateLimiter(new TokenBucketRateLimiterOptions
 	{
 		TokenLimit = 50,
 		TokensPerPeriod = 8,
@@ -44,10 +47,12 @@ public class DeepSeekApiClient
 	/// <summary>
 	/// 重试器
 	/// </summary>
-	/// <remarks>仅针对<see cref="HttpStatusCode.TooManyRequests"/>重试5次</remarks>
-	protected AsyncRetryPolicy<HttpResponseMessage> RetryPolicy { get; } = Policy
+	/// <remarks>仅针对<see cref="HttpStatusCode.TooManyRequests"/>重试2次</remarks>
+	[field: AllowNull]
+	[AllowNull]
+	protected AsyncRetryPolicy<HttpResponseMessage> RetryPolicy => field ??= Policy
 		.HandleResult<HttpResponseMessage>(r => r.StatusCode == HttpStatusCode.TooManyRequests)
-		.WaitAndRetryAsync(retryCount: 5, sleepDurationProvider: (retryAttempt) => TimeSpan.FromSeconds(retryAttempt));
+		.WaitAndRetryAsync(retryCount: 2, sleepDurationProvider: (retryAttempt) => TimeSpan.FromSeconds(retryAttempt));
 
 	/// <summary>
 	/// 网络访问连接器
@@ -62,13 +67,13 @@ public class DeepSeekApiClient
 	/// <summary>
 	/// 构造函数
 	/// </summary>
-	/// <param name="apiKey"></param>
-	/// <param name="client"></param>
-	public DeepSeekApiClient(string apiKey, HttpClient? client = null)
+	public DeepSeekApiClient(string apiKey, HttpClient? client = null, ReplenishingRateLimiter? limiter = null, AsyncRetryPolicy<HttpResponseMessage>? retryPolicy = null)
 	{
 		client ??= new HttpClient();
 		Http = client;
 		Http.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", $"Bearer {apiKey}");
+		Limiter = limiter;
+		RetryPolicy = retryPolicy;
 	}
 
 	/// <summary>
@@ -98,16 +103,16 @@ public class DeepSeekApiClient
 	/// <summary>
 	/// 获取模型列表
 	/// </summary> 
-	public async Task<ModelResponse> GetListModelsAsync(string modelName, CancellationToken token = default)
+	public async Task<ModelResponse> GetListModelsAsync(CancellationToken token = default)
 	{
 		return (await (await SendAsync("https://api.deepseek.com/models", HttpMethod.Get, token)).Content.ReadFromJsonAsync(SourceGenerationContext.Default.ModelResponse, token))!;
 	}
 	/// <summary>
 	/// 获取用户余额
 	/// </summary> 
-	public async Task<UserResponse> GetUserBalanceAsync(string modelName, CancellationToken token = default)
+	public async Task<UserResponse> GetUserBalanceAsync(CancellationToken token = default)
 	{
-		return( await (await SendAsync("https://api.deepseek.com/user/balance", HttpMethod.Get, token)).Content.ReadFromJsonAsync(SourceGenerationContext.Default.UserResponse, token))!;
+		return (await (await SendAsync("https://api.deepseek.com/user/balance", HttpMethod.Get, token)).Content.ReadFromJsonAsync(SourceGenerationContext.Default.UserResponse, token))!;
 	}
 	/// <summary>
 	/// 发送请求

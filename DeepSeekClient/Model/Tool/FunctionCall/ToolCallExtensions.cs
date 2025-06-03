@@ -10,11 +10,9 @@ public static class ToolCallExtensions
 	/// <summary>
 	/// 接受委托作为参数自动创建<see cref="ToolFunction"/>
 	/// </summary>
-	/// <param name="kit"></param>
-	/// <param name="function"></param>
-	public static void Add(this ToolKit kit, Delegate function)
+	public static void Add(this ToolKit kit, Delegate function,string? alias=null)
 	{
-		kit.Add(new ToolFunction(function));
+		kit.Add(new ToolFunction(function, alias));
 	}
 }
 

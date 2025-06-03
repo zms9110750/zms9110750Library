@@ -1,11 +1,12 @@
-﻿
+﻿using System;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace DeepSeekClient.Model.Response;
+namespace zms9110750.DeepSeekClient.Model.Response;
 
 /// <summary>
 /// 模型停止生成 token 的原因。
-/// </summary>
+/// </summary> 
 public enum FinishReason
 {
 	/// <summary>
@@ -15,11 +16,11 @@ public enum FinishReason
 	/// <summary>
 	/// 模型自然停止生成，或遇到 stop 序列中列出的字符串。
 	/// </summary>
-	 Stop,
+	Stop,
 	/// <summary>
 	/// 输出长度达到了模型上下文长度限制，或达到了 max_tokens 的限制。
 	/// </summary>
-	 Length,
+	Length,
 	/// <summary>
 	/// 输出内容因触发过滤策略而被过滤。
 	/// </summary>
@@ -36,4 +37,4 @@ public enum FinishReason
 	/// 因我方主动中断网络连接而结束。
 	/// </summary>
 	ConnectionAborted
-}
+} 
