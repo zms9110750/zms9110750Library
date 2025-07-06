@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TreeCollection", "TreeColle
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeepSeekClient", "DeepSeekClient\DeepSeekClient.csproj", "{26D8D32C-4B6C-FF87-5892-8C9A8F66265E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FiniteStateMachine", "FiniteStateMachine\FiniteStateMachine.csproj", "{5F947C13-B796-0F96-26F9-C12DDCB56265}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{26D8D32C-4B6C-FF87-5892-8C9A8F66265E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{26D8D32C-4B6C-FF87-5892-8C9A8F66265E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{26D8D32C-4B6C-FF87-5892-8C9A8F66265E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5F947C13-B796-0F96-26F9-C12DDCB56265}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5F947C13-B796-0F96-26F9-C12DDCB56265}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5F947C13-B796-0F96-26F9-C12DDCB56265}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5F947C13-B796-0F96-26F9-C12DDCB56265}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

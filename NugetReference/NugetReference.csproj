@@ -1,11 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net9.0</TargetFramework>
+		<TargetFramework>net9</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<LangVersion>preview</LangVersion>
 		<OutputType>Exe</OutputType>
+		<PublishAot>False</PublishAot>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -15,7 +16,8 @@
 	<ItemGroup>
 		<PackageReference Include="Autofac.Pooling" Version="*" />
 		<PackageReference Include="BenchmarkDotNet" Version="*" /> 
-		<PackageReference Include="HtmlAgilityPack" Version="*" />
+		<PackageReference Include="HtmlAgilityPack" Version="*" /> 
+		<PackageReference Include="Jint" Version="4.2.2" />
 		<PackageReference Include="Markdig" Version="*" /> 
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="*" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="*" />
@@ -30,7 +32,8 @@
 		<PackageReference Include="ZiggyCreatures.FusionCache.Serialization.SystemTextJson" Version="*" />
 		<PackageReference Include="ZLinq.FileSystem" Version="1.4.8" />
 		<PackageReference Include="ZLinq.Godot" Version="1.4.8" />
-		<PackageReference Include="ZLinq.Json" Version="1.4.8" />
+		<PackageReference Include="ZLinq.Json" Version="1.4.8" /> 
+		<PackageReference Include="System.Net.ServerSentEvents" Version="9.0.6" /> 
 	</ItemGroup>
 	<ItemGroup>
 	  <ProjectReference Include="..\DeepSeekClient\DeepSeekClient.csproj" />

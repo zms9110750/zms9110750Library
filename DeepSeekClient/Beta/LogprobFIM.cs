@@ -5,6 +5,4 @@
 /// <param name="Tokens">token列表</param>
 /// <param name="TokenLogprobs">token对应的概率列表</param>
 /// <param name="TopLogprobs">这个位置的token的候选项及其概率列表</param>
-public record LogprobFIM(string[] Tokens, double[] TokenLogprobs, Dictionary<string, double> []TopLogprobs);
-
-
+public record LogprobFIM(string[] Tokens, double[] TokenLogprobs, Dictionary<string, double> []TopLogprobs); 

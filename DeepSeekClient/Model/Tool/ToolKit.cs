@@ -2,8 +2,9 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using zms9110750.DeepSeekClient.Model.Messages;
-using zms9110750.DeepSeekClient.Model.Tool.FunctionCall;
+using zms9110750.DeepSeekClient.Model.Tool.Functions;
 using zms9110750.DeepSeekClient.Model.Tool.FunctionTool;
+using zms9110750.DeepSeekClient.ModelDelta.Tool;
 
 namespace zms9110750.DeepSeekClient.Model.Tool;
 /// <summary>
@@ -65,7 +66,7 @@ public class ToolKit : ICollection<Tool>
 			case ToolCallFunction toolCallFunction:
 				var tool = ToolSet.OfType<ToolFunction>().Single(t => t.Function.Name == toolCallFunction.Function.Name);
 				var result = tool.Invoke(toolCallFunction, options);
-				return new MessageTool(result.ToJsonString(options ?? SourceGenerationContext.UnsafeRelaxed), toolCallFunction.Id);
+				return new MessageTool(result.ToJsonString(options ?? SourceGenerationContext.NetworkOptions), toolCallFunction.Id);
 			default:
 				throw new InvalidOperationException();
 		}
