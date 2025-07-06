@@ -7,8 +7,8 @@ namespace zms9110750.DeepSeekClient.Json;
 internal class ToolKitConverter : JsonConverter<ToolKit>
 {
 	public override ToolKit? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-	{
-		throw new NotImplementedException();
+	{ 
+		return JsonSerializer.Deserialize<ToolKit>(ref reader, options);
 	}
 
 	public override void Write(Utf8JsonWriter writer, ToolKit value, JsonSerializerOptions options)
@@ -21,7 +21,7 @@ internal class ToolKitConverter : JsonConverter<ToolKit>
 		else
 		{
 			// 使用源生成上下文序列化
-			JsonSerializer.Serialize(writer, value, SourceGenerationContext.NetworkOptions);
+			JsonSerializer.Serialize(writer, value, SourceGenerationContext.Default.ToolKit);
 		}
 	}
 }

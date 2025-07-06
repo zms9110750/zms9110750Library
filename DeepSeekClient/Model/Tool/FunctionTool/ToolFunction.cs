@@ -4,8 +4,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
-using zms9110750.DeepSeekClient.Model.Tool.Functions;
-using zms9110750.DeepSeekClient.ModelDelta.Tool;
+using zms9110750.DeepSeekClient.Model.Tool.FunctionCall;
 
 namespace zms9110750.DeepSeekClient.Model.Tool.FunctionTool;
 
@@ -81,13 +80,13 @@ public partial class ToolFunction : Tool
 				{
 					if (parameters[parameter.Name!] is JsonNode node)
 					{
-						args[parameter.Position] = node.Deserialize(parameter.ParameterType, options ?? SourceGenerationContext.InternalOptions)!;
+						args[parameter.Position] = node.Deserialize(parameter.ParameterType, options ?? SourceGenerationContext.ArgumentRelaxed)!;
 					}
 					args[parameter.Position] ??= parameter.DefaultValue!;
 				}
 				result = Delegate.DynamicInvoke(args);
 			}
-			json["result"] = result == null ? null : JsonSerializer.SerializeToNode(result, options ?? SourceGenerationContext.NetworkOptions);
+			json["result"] = result == null ? null : JsonSerializer.SerializeToNode(result, options ?? SourceGenerationContext.UnsafeRelaxed);
 		}
 		catch (Exception ex)
 		{

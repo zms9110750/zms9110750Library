@@ -3,7 +3,7 @@ using System.Reflection;
 using System.Text.Json.Nodes;
 using System.Text.Json.Schema;
 
-namespace zms9110750.DeepSeekClient.Model.Tool.Functions;
+namespace zms9110750.DeepSeekClient.Model.Tool.FunctionTool;
 
 /// <summary>
 /// 参数列表
@@ -34,7 +34,7 @@ public class Parameter
 		var required = new List<string>();
 		foreach (var parameter in parameters)
 		{
-			var json = SourceGenerationContext.InternalOptions.GetJsonSchemaAsNode(parameter.ParameterType).AsObject();
+			var json = SourceGenerationContext.ArgumentRelaxed.GetJsonSchemaAsNode(parameter.ParameterType).AsObject();
 			if (parameter.GetCustomAttribute<DescriptionAttribute>()?.Description is string description)
 			{
 				json["description"] = description;

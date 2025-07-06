@@ -1,10 +1,10 @@
-﻿
+﻿using Polly.Retry;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Threading.RateLimiting;
 using zms9110750.DeepSeekClient.Model.ModelList;
 using zms9110750.DeepSeekClient.Model.Response;
 using zms9110750.DeepSeekClient.Model.Tool;
-using zms9110750.DeepSeekClient.ModelDelta.Response;
 
 namespace zms9110750.DeepSeekClient.Beta;
 /// <summary>
@@ -12,8 +12,8 @@ namespace zms9110750.DeepSeekClient.Beta;
 /// </summary>
 /// <param name="apiKey">DeepSeek的API</param>
 /// <param name="client">网络连接器</param>
-public class DeepSeekApiClientBeta(string apiKey, HttpClient? client = null)
-	: DeepSeekApiClient(apiKey, client)
+public class DeepSeekApiClientBeta(string apiKey, HttpClient? client = null, ReplenishingRateLimiter? limiter = null, AsyncRetryPolicy<HttpResponseMessage>? retryPolicy = null)
+	: DeepSeekApiClient(apiKey, client, limiter, retryPolicy)
 {
 	/// <summary>
 	/// 前缀补全的API地址。
@@ -33,15 +33,15 @@ public class DeepSeekApiClientBeta(string apiKey, HttpClient? client = null)
 	/// <item>R1不生效</item>
 	/// <item>logprobs不能和R1同时存在。这个方法会设置模型为V3</item>
 	/// </list></remarks>
-	public async Task<ChatResponse<Choice>> ChatBetaAsync(CancellationToken token = default)
+	public async Task<ChatResponse> ChatBetaAsync(CancellationToken token = default)
 	{
 		Option.SetModel(ChatModel.V3);
 		var temp = Option.Tools;
 		Option.Tools = null;
-		var node = JsonSerializer.SerializeToNode(Option, SourceGenerationContext.NetworkOptions)!.AsObject();
+		var node = JsonSerializer.SerializeToNode(Option, SourceGenerationContext.Default.ChatOption)!.AsObject();
 		Option.Tools = temp;
 		using var response = await SendAsync(ChatServerUrlBeta, node, token);
-		return (await response.Content.ReadFromJsonAsync<ChatResponse<Choice>>(SourceGenerationContext.NetworkOptions, token))!;
+		return (await response.Content.ReadFromJsonAsync(SourceGenerationContext.Default.ChatResponse, token))!;
 	}
 
 	/// <summary>
@@ -56,10 +56,10 @@ public class DeepSeekApiClientBeta(string apiKey, HttpClient? client = null)
 	/// <item>Tools无效</item>
 	/// <item>logprobs需要为int。这个方法会把top_logprobs复制给logprobs</item>
 	/// </list></remarks>
-	public async Task<ChatResponse<ChoiceFIM>> FIMAsync(string prompt, string? suffix = null, CancellationToken token = default)
+	public async Task<ChatResponseFIM> FIMAsync(string prompt, string? suffix = null, CancellationToken token = default)
 	{
 		Option.Stream = false;
-		var node = JsonSerializer.SerializeToNode(Option, SourceGenerationContext.NetworkOptions)!.AsObject();
+		var node = JsonSerializer.SerializeToNode(Option, SourceGenerationContext.Default.ChatOption)!.AsObject();
 		if (suffix != null)
 		{
 			node["suffix"] = suffix;
@@ -70,7 +70,7 @@ public class DeepSeekApiClientBeta(string apiKey, HttpClient? client = null)
 			node["logprobs"] = node["top_logprobs"]?.DeepClone();
 		}
 		using var response = await SendAsync(ChatServerUrlBetaFIM, node, token);
-		return (await response.Content.ReadFromJsonAsync<ChatResponse<ChoiceFIM>>(SourceGenerationContext.NetworkOptions, token))!;
+		return (await response.Content.ReadFromJsonAsync(SourceGenerationContext.Default.ChatResponseFIM, token))!;
 	}
 
 	/// <summary>
@@ -86,10 +86,10 @@ public class DeepSeekApiClientBeta(string apiKey, HttpClient? client = null)
 	/// <item>logprobs需要为int。这个方法会把top_logprobs复制给logprobs</item> 
 	/// <item>echo不能和suffix同时存在。因此只能选择方法重载一种访问。</item> 
 	/// </list></remarks>
-	public async Task<ChatResponse<ChoiceFIM>> FIMAsync(string prompt, bool echo, CancellationToken token = default)
+	public async Task<ChatResponseFIM> FIMAsync(string prompt, bool echo, CancellationToken token = default)
 	{
 		Option.Stream = false;
-		var node = JsonSerializer.SerializeToNode(Option, SourceGenerationContext.NetworkOptions)!.AsObject();
+		var node = JsonSerializer.SerializeToNode(Option, SourceGenerationContext.Default.ChatOption)!.AsObject();
 		if (echo)
 		{
 			node["echo"] = true;
@@ -100,7 +100,7 @@ public class DeepSeekApiClientBeta(string apiKey, HttpClient? client = null)
 			node["logprobs"] = node["top_logprobs"]?.DeepClone();
 		}
 		using var response = await SendAsync(ChatServerUrlBetaFIM, node, token);
-		return (await response.Content.ReadFromJsonAsync<ChatResponse<ChoiceFIM>>(SourceGenerationContext.NetworkOptions, token))!;
+		return (await response.Content.ReadFromJsonAsync(SourceGenerationContext.Default.ChatResponseFIM, token))!;
 	}
 	/// <summary>
 	/// R1报错。stream有效。Tools无效。echo不能和suffix同时存在。  
@@ -114,10 +114,10 @@ public class DeepSeekApiClientBeta(string apiKey, HttpClient? client = null)
 	/// <item>Tools无效</item>
 	/// <item>logprobs需要为int。这个方法会把top_logprobs复制给logprobs</item>
 	/// </list></remarks>
-	public async Task<ChatResponseDelta<ChoiceFIM>> FIMStreamAsync(string prompt, string? suffix = null, CancellationToken token = default)
+	public async Task<ResponseFIMDelta> FIMStreamAsync(string prompt, string? suffix = null, CancellationToken token = default)
 	{
 		Option.Stream = true;
-		var node = JsonSerializer.SerializeToNode(Option, SourceGenerationContext.NetworkOptions)!.AsObject();
+		var node = JsonSerializer.SerializeToNode(Option, SourceGenerationContext.Default.ChatOption)!.AsObject();
 		if (suffix != null)
 		{
 			node["suffix"] = suffix;
@@ -127,8 +127,8 @@ public class DeepSeekApiClientBeta(string apiKey, HttpClient? client = null)
 		{
 			node["logprobs"] = node["top_logprobs"]?.DeepClone();
 		}
-		var response = await SendAsync(ChatServerUrlBetaFIM, node, token);
-		return new ChatResponseDelta<ChoiceFIM>(await response.Content.ReadAsStreamAsync(token), token, response);
+		using var response = await SendAsync(ChatServerUrlBetaFIM, node, token);
+		return new ResponseFIMDelta(await response.Content.ReadAsStreamAsync(), token, response);
 	}
 
 	/// <summary>
@@ -142,13 +142,12 @@ public class DeepSeekApiClientBeta(string apiKey, HttpClient? client = null)
 	/// <item>Tools无效</item>
 	/// <item>logprobs需要为int。这个方法会把top_logprobs复制给logprobs</item> 
 	/// <item>echo不能和suffix同时存在。因此只能选择方法重载一种访问。</item> 
-	/// <item>echo不能和logprobs同时存在。</item> 
 	/// </list></remarks>
-	public async Task<ChatResponseDelta<ChoiceFIM>> FIMStreamAsync(string prompt, bool echo, CancellationToken token = default)
+	public async Task<ResponseFIMDelta> FIMStreamAsync(string prompt, bool echo, CancellationToken token = default)
 	{
 		Option.Stream = true;
-		var node = JsonSerializer.SerializeToNode(Option, SourceGenerationContext.NetworkOptions)!.AsObject();
-		if (echo && Option.TopLogprobs == null)
+		var node = JsonSerializer.SerializeToNode(Option, SourceGenerationContext.Default.ChatOption)!.AsObject();
+		if (echo)
 		{
 			node["echo"] = true;
 		}
@@ -157,7 +156,7 @@ public class DeepSeekApiClientBeta(string apiKey, HttpClient? client = null)
 		{
 			node["logprobs"] = node["top_logprobs"]?.DeepClone();
 		}
-		var response = await SendAsync(ChatServerUrlBetaFIM, node, token);
-		return new ChatResponseDelta<ChoiceFIM>(await response.Content.ReadAsStreamAsync(token), token, response);
+		using var response = await SendAsync(ChatServerUrlBetaFIM, node, token);
+		return new ResponseFIMDelta(await response.Content.ReadAsStreamAsync(), token, response);
 	}
 }

@@ -1,5 +1,4 @@
 ﻿using System.Text.Json.Serialization;
-using zms9110750.DeepSeekClient.Json;
 using zms9110750.DeepSeekClient.Model.Tool;
 
 namespace zms9110750.DeepSeekClient.Model.Messages;
@@ -13,9 +12,4 @@ namespace zms9110750.DeepSeekClient.Model.Messages;
 /// <param name="Prefix">前缀内容开关</param>
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "role")]
 [JsonDerivedType(typeof(MessageAssistant), typeDiscriminator: "assistant")]
-public record MessageAssistant(
-	string? Content,
-	string? ReasoningContent = null,
-	string? Name = null,
-	[property: JsonConverter(typeof(MessageAssistantToolCallArrayConverter))] ToolCall[]? ToolCalls = null,
-	bool? Prefix = null) : Message(Content, Name);
+public record MessageAssistant(string? Content, string? ReasoningContent = null, string? Name = null, List<ToolCall>? ToolCalls = null, bool? Prefix = null) : Message(Content, Name);

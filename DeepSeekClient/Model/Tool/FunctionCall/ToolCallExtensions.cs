@@ -1,6 +1,6 @@
 ﻿using zms9110750.DeepSeekClient.Model.Tool.FunctionTool;
 
-namespace zms9110750.DeepSeekClient.Model.Tool;
+namespace zms9110750.DeepSeekClient.Model.Tool.FunctionCall;
 
 /// <summary>
 /// 工具箱扩展。

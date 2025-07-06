@@ -6,7 +6,7 @@ namespace zms9110750.DeepSeekClient.Model.Response;
 
 /// <summary>
 /// 模型停止生成 token 的原因。
-/// </summary>
+/// </summary> 
 public enum FinishReason
 {
 	/// <summary>
@@ -24,15 +24,15 @@ public enum FinishReason
 	/// <summary>
 	/// 输出内容因触发过滤策略而被过滤。
 	/// </summary>
-	  ContentFilter,
+	[JsonStringEnumMemberName("content_filter")] ContentFilter,
 	/// <summary>
 	/// 由于后端推理资源受限，请求被打断。
 	/// </summary>
-	  InsufficientSystemResource,
+	[JsonStringEnumMemberName("insufficient_system_resource")] InsufficientSystemResource,
 	/// <summary>
 	/// 调用工具
 	/// </summary>
-	  ToolCalls,
+	[JsonStringEnumMemberName("tool_calls")] ToolCalls,
 	/// <summary>
 	/// 因我方主动中断网络连接而结束。
 	/// </summary>

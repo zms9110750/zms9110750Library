@@ -1,5 +1,5 @@
 ﻿using System.Text.Json.Serialization;
-using zms9110750.DeepSeekClient.Model.Tool.Functions; 
+using zms9110750.DeepSeekClient.Model.Tool.FunctionCall;
 
 namespace zms9110750.DeepSeekClient.Model.Tool;
 /// <summary>

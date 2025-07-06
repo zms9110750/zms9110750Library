@@ -1,0 +1,178 @@
+﻿using System;
+using System.Runtime.CompilerServices;
+using System.Text.Json;
+using System.Threading.Channels;
+using zms9110750.DeepSeekClient.Model.Tool;
+
+namespace zms9110750.DeepSeekClient.Model.Response.Delta;
+
+/// <summary>
+/// 流式聊天增量合并器
+/// </summary>
+public sealed class ChatResponseDelta : IAsyncEnumerable<Choice>, IDisposable
+{
+	private const string StreamDoneSign = "[DONE]";
+	private const string StreamDataSign = "data: ";
+	private const int StreamDataLength = 6;
+	private List<Choice> ChoicesMerge { get; } = new();
+	private List<Choice> ChoicesAll { get; } = new();
+	private HashSet<Channel<Choice>> Observers { get; } = new();
+	private CancellationTokenSource InternalCts { get; }
+	private Task<ChatResponse?> ReadingTask { get; }
+	private bool Disposed => InternalCts.IsCancellationRequested;
+	private HashSet<IDisposable>? Disposables { get; }
+	private ChatResponse? Start { get; set; }
+	Stream Stream { get; }
+	/// <summary>
+	/// 创建一个新的流式合并器
+	/// </summary>
+	/// <param name="stream">带有内容的流</param>
+	/// <param name="externalCt">取消令牌</param>
+	/// <param name="disposables">需要跟着这个实例一起释放的其他东西</param>
+	public ChatResponseDelta(Stream stream, CancellationToken externalCt = default, params IEnumerable<IDisposable>? disposables)
+	{
+		Stream = stream;
+		InternalCts = CancellationTokenSource.CreateLinkedTokenSource(externalCt);
+		Disposables = disposables?.ToHashSet();
+		ReadingTask = ReadStreamAsync();
+	}
+
+	/// <summary>
+	/// 获取最后合并的结果
+	/// </summary>
+	public TaskAwaiter<ChatResponse?> GetAwaiter() => ReadingTask.GetAwaiter();
+
+	/// <summary>
+	/// 获取中途的增量数据
+	/// </summary>
+	/// <param name="cancellationToken"></param>
+	/// <returns></returns>
+	public async IAsyncEnumerator<Choice> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+	{
+		for (int i = 0; i < ChoicesAll.Count; i++)
+		{
+			cancellationToken.ThrowIfCancellationRequested();
+			yield return ChoicesAll[i];
+			//i.LogExpression();
+		}
+		Channel<Choice> channel;
+		lock (Observers)
+		{
+			if (Disposed)
+			{
+				yield break;
+			}
+			channel = Channel.CreateUnbounded<Choice>();
+			Observers.Add(channel);
+		}
+
+		try
+		{
+			await foreach (var choice in channel.Reader.ReadAllAsync(cancellationToken))
+			{
+				yield return choice;
+			}
+		}
+		finally
+		{
+			lock (Observers)
+			{
+				Observers.Remove(channel);
+			}
+		}
+	}
+
+	private async Task<ChatResponse?> ReadStreamAsync()
+	{
+		await Task.Yield();
+		using (this)
+		using (var reader = new StreamReader(Stream))
+		{
+			string? line;
+			while (!reader.EndOfStream && !InternalCts.IsCancellationRequested)
+			{
+				try
+				{
+					line = await reader.ReadLineAsync(InternalCts.Token);
+					if ((line?.StartsWith(StreamDataSign)) != true)
+					{
+						continue;
+					}
+					line = line.Substring(StreamDataLength);
+					if (line == StreamDoneSign)
+					{
+						break;
+					}
+				}
+				catch (OperationCanceledException)
+				{
+					break;
+				}
+				var chunk = JsonSerializer.Deserialize(line, SourceGenerationContext.Default.ChatResponse)!;
+				if ((Start ??= chunk).Id != chunk.Id)
+				{
+					throw new InvalidOperationException($"Response id not match. expect:[{Start?.Id} ],[actual:{chunk.Id}]");
+				}
+
+				foreach (var choice in chunk.Choices)
+				{
+					ChoicesAll.Add(choice);
+					if (choice.Index < ChoicesMerge.Count)
+						ChoicesMerge[choice.Index].Delta?.Merge(choice.Delta!);
+					else
+						ChoicesMerge.Add(choice);
+
+					lock (Observers)
+					{
+						foreach (var ch in Observers)
+						{
+							ch.Writer.TryWrite(choice);
+						}
+					}
+				}
+				if (chunk.Usage != null)
+				{
+					return Start with
+					{
+						Choices = ChoicesMerge.ConvertAll(c => c.ToFinish()),
+						Usage = chunk.Usage // 包含最新Usage数据
+					};
+				}
+			}
+			return Start == null ? null : Start with
+			{
+				Choices = ChoicesMerge.ConvertAll(c => c.ToFinish() is var end &&
+						 end.FinishReason == null ? end with { FinishReason = FinishReason.ConnectionAborted } : end)
+			};
+		}
+	}
+
+	/// <summary>
+	/// 释放资源
+	/// </summary>
+	public void Dispose()
+	{
+		if (Disposed)
+		{
+			return;
+		}
+		InternalCts.Cancel();
+		InternalCts.Dispose();
+		lock (Observers)
+		{
+			foreach (var ch in Observers)
+			{
+				ch.Writer.Complete();
+			}
+			Observers.Clear();
+		}
+		Stream.Dispose();
+		if (Disposables != null)
+		{
+			foreach (var disposable in Disposables)
+			{
+				disposable.Dispose();
+			}
+		}
+	}
+}

@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace zms9110750.DeepSeekClient.Model.Tool.Functions;
+namespace zms9110750.DeepSeekClient.Model.Tool.FunctionCall;
 /// <summary>
 /// 函数工具调用请求
 /// </summary>
