@@ -1,4 +1,6 @@
-﻿namespace zms9110750.TreeCollection.Ordered;
+﻿using zms9110750.TreeCollection.Abstract;
+
+namespace zms9110750.TreeCollection.Ordered;
 
 /// <summary>
 /// 为<see cref="IOrderedTree{TValue, TNode}"/>提供扩展方法。并为实现类提供对接口默认实现的调用。
@@ -199,6 +201,8 @@ public static class OrderedTreeExtensions
 		where TNode : IOrderedTree<TValue, TNode>
 		=> tree.Remove(value);
 
+	/// <param name="tree">要操作的树</param>
+	/// <param name="value">要移除的值</param>
 	/// <param name="range">如果具有范围则转由<see cref="IOrderedTree{TValue, TNode}.ISlice"/>执行</param>
 	/// <inheritdoc cref="IOrderedTree{TValue, TNode}.Remove(TValue)"/>
 	public static TNode? Remove<TValue, TNode>(this IOrderedTree<TValue, TNode> tree, TValue value, Range? range = null)
@@ -227,6 +231,35 @@ public static class OrderedTreeExtensions
 			(Range ran, Predicate<TValue> m) => tree[ran].RemoveAll(node => m(node.Value))
 		};
 	#endregion
+
+	/// <summary>
+	/// 垂直添加节点 - 第一个元素添加到指定位置，后续元素递归添加为子节点
+	/// </summary>
+	/// <typeparam name="TValue">节点值的类型</typeparam>
+	/// <typeparam name="TNode">节点类型</typeparam>
+	/// <param name="tree">目标树</param>
+	/// <param name="index">插入位置的索引</param>
+	/// <param name="nodes">要添加的节点值集合</param>
+	/// <returns>最后添加的节点</returns>
+	/// <remarks>
+	/// 1. 第一个元素将添加到指定索引位置
+	/// 2. 后续每个元素将作为前一个元素的子节点添加
+	/// 3. 如果集合为空，返回默认值
+	/// </remarks>
+	public static TNode? AddVertically<TValue, TNode>(this IOrderedTree<TValue, TNode> tree, Index index, params IEnumerable<TValue> nodes) where TNode : IOrderedTree<TValue, TNode>
+	{
+		using var e = nodes.GetEnumerator();
+		if (!e.MoveNext())
+		{
+			return default;
+		}
+		var currentNode = tree.AddAt(index, e.Current);
+		while (e.MoveNext())
+		{
+			currentNode = currentNode.Add(e.Current);
+		}
+		return currentNode;
+	}
 
 	/// <inheritdoc cref="IOrderedTree{TValue, TNode}.Replace(TNode, TNode)"/>
 	public static bool Replace<TValue, TNode>(this IOrderedTree<TValue, TNode> tree, TNode oldValue, TNode newValue)

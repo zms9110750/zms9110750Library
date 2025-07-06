@@ -3,4 +3,4 @@
 /// 概率列表容器
 /// </summary>
 /// <param name="Content">内容</param>
-public record LogprobsContainer(TokenAlternates[] Content);
+public record LogprobsContainer(List<TokenAlternates> Content);

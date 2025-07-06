@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace zms9110750.DeepSeekClient.Model.Tool.FunctionTool;
+namespace zms9110750.DeepSeekClient.Model.Tool.Functions;
 /// <summary>
 /// 函数工具描述
 /// </summary>

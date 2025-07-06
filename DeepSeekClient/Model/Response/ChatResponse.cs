@@ -10,11 +10,17 @@
 /// <param name="SystemFingerint">模型运行时的后端配置的指纹。</param>
 /// <param name="Choices">模型生成的补全内容的选择列表。但是永远只有一个元素。</param>
 /// <param name="Usage">该对话补全请求的用量信息。</param>
-public record ChatResponse(
+public record ChatResponse<TChoice>(
 	 string Id,
 	 string Object,
 	 long Created,
 	 string Model,
 	 string SystemFingerint,
-	 List<Choice> Choices,
-	 Usage Usage);
+	 List<TChoice> Choices,
+	 Usage Usage)
+{
+	public ChatResponse<TConvert> With<TConvert>(IEnumerable<TConvert> converts)
+	{
+		return new ChatResponse<TConvert>(Id, Object, Created, Model, SystemFingerint, converts.ToList(), Usage);
+	}
+}

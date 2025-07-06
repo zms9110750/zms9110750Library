@@ -5,7 +5,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<LangVersion>preview</LangVersion>
-		<Version>1.1.0</Version>
+		<Version>0.2.0</Version>
 		<RootNamespace>zms9110750.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
 		<AssemblyName>zms9110750.$(MSBuildProjectName)</AssemblyName>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -13,36 +13,34 @@
 		<RepositoryType>git</RepositoryType>
 		<PackageProjectUrl>https://github.com/zms9110750/zms9110750Library</PackageProjectUrl>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<GenerateDocumentationFile>False</GenerateDocumentationFile>
 		<PackageReadmeFile>Readme.md</PackageReadmeFile>
-		<PackageReleaseNotes>让函数工具允许别名。函数工具集合不允许同名和重载。
-因为无法从json反推参数类型。
-
-把函数参数的成员从internal提升到public。允许序列化。
-不要手动更改他们。</PackageReleaseNotes>
+		<PackageReleaseNotes>
+			调整命名空间。调整反射，允许工具参数为非基本类型。
+		</PackageReleaseNotes>
+		<Description></Description>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-	  <IsAotCompatible>True</IsAotCompatible>
-	  <IsTrimmable>True</IsTrimmable>
+		<IsAotCompatible>True</IsAotCompatible>
+		<IsTrimmable>True</IsTrimmable>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-	  <IsAotCompatible>True</IsAotCompatible>
-	  <IsTrimmable>True</IsTrimmable>
+		<IsAotCompatible>True</IsAotCompatible>
+		<IsTrimmable>True</IsTrimmable>
 	</PropertyGroup>
-	 
+
 	<ItemGroup>
-	  <PackageReference Include="Microsoft.Extensions.Primitives" Version="9.*" />
-	  <PackageReference Include="Polly" Version="8.*" />
-	  <PackageReference Include="System.Threading.RateLimiting" Version="9.*" />
+		<PackageReference Include="Microsoft.Extensions.Primitives" Version="9.*" />
+		<PackageReference Include="System.Net.ServerSentEvents" Version="9.*" />
 	</ItemGroup>
-	 
+
 	<ItemGroup>
-	  <None Update="Readme.md">
-	    <Pack>True</Pack>
-	    <PackagePath>\</PackagePath>
-	  </None>
+		<None Update="Readme.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
 	</ItemGroup>
-	 
+
 </Project>

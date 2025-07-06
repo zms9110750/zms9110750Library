@@ -97,8 +97,7 @@ public class TreeNode<T>(T value) : RootNode<T, TreeNode<T>>(value), IList<TreeN
 		ChildrenNode.Insert(index, node);
 		this[index..].UpdateIndex();
 		return node;
-	}
-
+	} 
 	/// <inheritdoc/>
 
 	public void AddAt(int index, IEnumerable<TreeNode<T>> nodes)

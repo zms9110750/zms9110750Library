@@ -10,8 +10,7 @@ internal class MessageEnumerableConverter : JsonConverter<IEnumerable<Message>>
 {
 	public override IEnumerable<Message>? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
 	{
-		// 不需要反序列化逻辑，直接使用默认行为
-		return JsonSerializer.Deserialize<List<Message>>(ref reader, options);
+		throw new NotImplementedException();
 	}
 
 	public override void Write(Utf8JsonWriter writer, IEnumerable<Message> value, JsonSerializerOptions options)
@@ -27,7 +26,7 @@ internal class MessageEnumerableConverter : JsonConverter<IEnumerable<Message>>
 				continue;
 			}
 			// 3. 为每个消息创建JsonObject
-			var messageObj = JsonSerializer.SerializeToNode(message, SourceGenerationContext.Default.Message)!.AsObject();
+			var messageObj = JsonSerializer.SerializeToNode(message, SourceGenerationContext.NetworkOptions)!.AsObject();
 			messageObj.Remove("reasoning_content");
 			jsonArray.Add(messageObj);
 		}

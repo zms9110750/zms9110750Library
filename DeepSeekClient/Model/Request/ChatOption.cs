@@ -90,8 +90,8 @@ public class ChatOption
 	/// <summary>
 	/// 工具集
 	/// </summary>
-	/// <remarks>使用<see cref="ToolKit.Add(Tool.Tool)"/>方法传入委托即可绑定。但初始是null，必须先创建一个</remarks>
-	[JsonConverter(typeof(ToolKitConverter))] public ToolKit? Tools { get; set; }
+	/// <remarks>使用<see cref="ToolKit.Add(Tool.Tool)"/>方法传入委托即可绑定</remarks>
+	[JsonConverter(typeof(ToolKitConverter))] public ToolKit? Tools { get; set; } = new ToolKit();
 
 	/// <summary>
 	/// 工具选择。因为是类型联合，此项不能手动修改。
@@ -99,9 +99,9 @@ public class ChatOption
 	/// <remarks>若<see cref="ChatCompletionNamedToolChoice"/>有值，则使用其值<br/>
 	/// 否则使用<see cref="ChatCompletionToolChoice"/>的值。</remarks>
 	public JsonNode? ToolChoice => ChatCompletionNamedToolChoice != null
-				? JsonSerializer.SerializeToNode(ChatCompletionNamedToolChoice, SourceGenerationContext.Default.Options)
+				? JsonSerializer.SerializeToNode(ChatCompletionNamedToolChoice, SourceGenerationContext.NetworkOptions)
 				: ChatCompletionToolChoice != null
-				? JsonValue.Create(ChatCompletionToolChoice) 
+				? JsonValue.Create(ChatCompletionToolChoice)
 				: (JsonNode?)null;
 
 	/// <summary>
