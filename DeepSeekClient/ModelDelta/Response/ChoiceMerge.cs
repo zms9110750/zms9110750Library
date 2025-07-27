@@ -5,7 +5,7 @@ using zms9110750.DeepSeekClient.ModelDelta.Messages;
 
 namespace zms9110750.DeepSeekClient.ModelDelta.Response;
 
-public class ChoiceMerge(ChoiceDelta source) : IMerge<ChoiceDelta>
+internal class ChoiceMerge(ChoiceDelta source) : IMerge<ChoiceDelta>
 {
 	int Index { get; } = source.Index;
 	List<TokenAlternates>? Logprobs { get; } = source.Logprobs?.Content.ToList();

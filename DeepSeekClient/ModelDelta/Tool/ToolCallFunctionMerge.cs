@@ -3,7 +3,7 @@ using zms9110750.DeepSeekClient.Model.Tool.Functions;
 
 namespace zms9110750.DeepSeekClient.ModelDelta.Tool;
 
-public class ToolCallFunctionMerge(ToolCallFunction initial) : ToolCallMerge<ToolCallFunction>(initial)
+internal class ToolCallFunctionMerge(ToolCallFunction initial) : ToolCallMerge<ToolCallFunction>(initial)
 {
 	public string Name { get; } = initial.Function.Name;
 	StringBuilder Arguments { get; } = new StringBuilder(initial.Function.Arguments);

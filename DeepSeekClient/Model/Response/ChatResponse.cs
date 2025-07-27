@@ -19,7 +19,7 @@ public record ChatResponse<TChoice>(
 	 List<TChoice> Choices,
 	 Usage Usage)
 {
-	public ChatResponse<TConvert> With<TConvert>(IEnumerable<TConvert> converts)
+	internal ChatResponse<TConvert> With<TConvert>(IEnumerable<TConvert> converts)
 	{
 		return new ChatResponse<TConvert>(Id, Object, Created, Model, SystemFingerint, converts.ToList(), Usage);
 	}

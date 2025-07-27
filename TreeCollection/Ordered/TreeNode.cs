@@ -213,7 +213,9 @@ public class TreeNode<T>(T value) : RootNode<T, TreeNode<T>>(value), IList<TreeN
 	}
 
 	/// <inheritdoc/>
+#pragma warning disable CS8766 // 返回类型中引用类型的为 Null 性与隐式实现的成员不匹配(可能是由于为 Null 性特性)。
 	public TreeNode<T>? RemoveAt(int index)
+#pragma warning restore CS8766 // 返回类型中引用类型的为 Null 性与隐式实现的成员不匹配(可能是由于为 Null 性特性)。
 	{
 		return Remove(ChildrenNode[index]);
 	}

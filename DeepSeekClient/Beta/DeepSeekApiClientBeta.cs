@@ -136,6 +136,7 @@ public class DeepSeekApiClientBeta(string apiKey, HttpClient? client = null)
 	/// </summary>
 	/// <param name="prompt">用于生成完成内容的提示</param>
 	/// <param name="echo">在输出中，把 prompt 的内容也输出出来</param>
+	/// <param name="token">取消令牌</param>
 	/// <remarks><list type="bullet">
 	/// <item>设个方法会把Stream设置为true</item>
 	/// <item>R1报错。这个方法会设置模型为V3</item>

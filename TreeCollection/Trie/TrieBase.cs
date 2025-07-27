@@ -18,7 +18,7 @@ public abstract class TrieBase : INode<TrieBase>
 		get
 		{
 			ref var childNode = ref CollectionsMarshal.GetValueRefOrAddDefault(Children, c, out _);
-			return childNode ??= new TrieNode(Root);
+			return childNode ??= new TrieNode(this);
 		}
 	}
 

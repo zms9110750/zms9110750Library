@@ -18,11 +18,14 @@ public sealed class ChatResponseDelta<TDelta> : IAsyncEnumerable<TDelta>, IDispo
 	private List<TDelta> ChoicesDelta { get; } = new();
 	private SemaphoreSlim Semaphore { get; } = new(1);
 	private CancellationTokenSource InternalCts { get; }
+	/// <summary>
+	/// 流结束时返回的Usage
+	/// </summary>
 	public Task<Usage?> ReadingTask { get; }
 	private bool Disposed => InternalCts.IsCancellationRequested;
 	private HashSet<IDisposable>? Disposables { get; }
-	Stream Stream { get; }
-	public ChatResponse<TDelta>? Start { get; private set => field ??= value; }
+	private Stream Stream { get; } 
+	internal ChatResponse<TDelta>? Start { get; private set => field ??= value; }
 	/// <summary>
 	/// 创建一个新的流式合并器
 	/// </summary>

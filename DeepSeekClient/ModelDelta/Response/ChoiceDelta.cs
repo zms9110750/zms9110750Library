@@ -16,7 +16,7 @@ public record ChoiceDelta(
 	 MessageAssistant Delta,
 	 FinishReason? FinishReason)
 {
-	public Choice ToChoice()
+	internal Choice ToChoice()
 	{
 		return new Choice(Index, Logprobs, Delta, FinishReason);
 	}

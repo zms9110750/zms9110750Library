@@ -1,4 +1,5 @@
-﻿using zms9110750.DeepSeekClient.Model.Tool.FunctionTool;
+﻿
+using zms9110750.DeepSeekClient.Model.Tool.Functions;
 
 namespace zms9110750.DeepSeekClient.Model.Tool;
 

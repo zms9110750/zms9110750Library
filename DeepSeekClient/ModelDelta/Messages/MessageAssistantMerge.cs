@@ -3,7 +3,7 @@ using zms9110750.DeepSeekClient.Model.Messages;
 using zms9110750.DeepSeekClient.ModelDelta.Tool;
 namespace zms9110750.DeepSeekClient.ModelDelta.Messages;
 
-public class MessageAssistantMerge() : IMerge<MessageAssistant>
+internal class MessageAssistantMerge() : IMerge<MessageAssistant>
 {
 	StringBuilder Content { get; } = new StringBuilder();
 	StringBuilder ReasoningContent { get; } = new StringBuilder();

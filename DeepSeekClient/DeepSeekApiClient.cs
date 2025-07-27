@@ -88,8 +88,7 @@ public class DeepSeekApiClient
 	}
 	/// <summary>
 	/// 发送请求
-	/// </summary>  
-	/// <remarks>默认<see cref="RetryPolicy"/>在遇到<see cref="HttpStatusCode.TooManyRequests"/>时会自动重试。</remarks>
+	/// </summary>   
 	/// <exception cref="HttpRequestException"></exception>
 	protected async Task<HttpResponseMessage> SendAsync(string url, JsonNode content, CancellationToken token = default)
 	{
@@ -104,8 +103,7 @@ public class DeepSeekApiClient
 	}
 	/// <summary>
 	/// 发送请求
-	/// </summary>  
-	/// <remarks>默认<see cref="RetryPolicy"/>在遇到<see cref="HttpStatusCode.TooManyRequests"/>时会自动重试。</remarks>
+	/// </summary>   
 	/// <exception cref="HttpRequestException"></exception>
 	protected async Task<HttpResponseMessage> SendAsync(string url, HttpMethod httpMethod, CancellationToken token = default)
 	{

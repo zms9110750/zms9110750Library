@@ -3,8 +3,15 @@ using zms9110750.DeepSeekClient.Beta;
 using zms9110750.DeepSeekClient.Model.Response;
 
 namespace zms9110750.DeepSeekClient.ModelDelta.Response;
+/// <summary>
+/// 为<see cref="ChatResponseDelta{T}"/>提供await支持
+/// </summary>
 public static class ChatResponseDeltaExtensions
 {
+	/// <summary>
+	/// 获取<see cref="ChatResponse{ChoiceDelta}"/>的合并结果
+	/// </summary> 
+	/// <exception cref="InvalidOperationException"></exception>
 	public static TaskAwaiter<ChatResponse<Choice>> GetAwaiter(this ChatResponseDelta<ChoiceDelta> delta)
 	{
 		return Task.Run(async () =>
@@ -28,6 +35,10 @@ public static class ChatResponseDeltaExtensions
 				return delta?.Start?.With(merge.Select(s => s.ToFinish().ToChoice()))!;
 			}).GetAwaiter();
 	}
+	/// <summary>
+	/// 获取<see cref="ChatResponse{ChoiceFIM}"/>的合并结果
+	/// </summary> 
+	/// <exception cref="InvalidOperationException"></exception>
 	public static TaskAwaiter<ChatResponse<ChoiceFIM>> GetAwaiter(this ChatResponseDelta<ChoiceFIM> delta)
 	{
 		return Task.Run(async () =>

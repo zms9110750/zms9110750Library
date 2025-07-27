@@ -51,7 +51,7 @@ public class Trie(HashSet<char>? separator = null) : TrieBase
 	public override void Add(string word)
 	{
 		ArgumentException.ThrowIfNullOrEmpty(word);
-		base[word[0]].Add(word );
+		base[word[0]].Add(word);
 	}
 
 	/// <summary>

@@ -2,7 +2,7 @@
 using zms9110750.DeepSeekClient.Model.Tool.Functions;
 namespace zms9110750.DeepSeekClient.ModelDelta.Tool;
 
-public abstract class ToolCallMerge<T>(ToolCall initial) : ToolCallMerge(initial), IMerge<T> where T : ToolCall
+internal abstract class ToolCallMerge<T>(ToolCall initial) : ToolCallMerge(initial), IMerge<T> where T : ToolCall
 {
 	public abstract void Merge(T source);
 	public override void Merge(ToolCall source)
@@ -18,7 +18,7 @@ public abstract class ToolCallMerge<T>(ToolCall initial) : ToolCallMerge(initial
 	}
 	public override abstract T ToFinish();
 }
-public abstract class ToolCallMerge(ToolCall initial) : IMerge<ToolCall>
+internal abstract class ToolCallMerge(ToolCall initial) : IMerge<ToolCall>
 {
 	public int Index { get; } = initial.Index;
 	public string Id { get; } = initial.Id;

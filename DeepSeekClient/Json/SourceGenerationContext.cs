@@ -64,10 +64,23 @@ internal partial class SourceGenerationContext : JsonSerializerContext
 			new DefaultJsonTypeInfoResolver()) // 回退到反射 			 
 		};
 }
-
+/// <summary>
+/// 公开的序列化配置
+/// </summary>
 public static class PublicSourceGenerationContext
 {
+	/// <summary>
+	/// 网络传输配置（蛇形命名 + 无转义 + 压缩）
+	/// </summary>
 	public static JsonSerializerOptions NetworkOptions { get; } = SourceGenerationContext.NetworkOptions;
+
+	/// <summary>
+	/// 程序内部配置（原名 + 无转义 + 压缩）
+	/// </summary>
 	public static JsonSerializerOptions InternalOptions { get; } = SourceGenerationContext.InternalOptions;
+
+	/// <summary>
+	/// 调试配置（蛇形命名 + 格式化 + 动态源选择）
+	/// </summary>
 	public static JsonSerializerOptions DebugOptions { get; } = SourceGenerationContext.DebugOptions;
 }

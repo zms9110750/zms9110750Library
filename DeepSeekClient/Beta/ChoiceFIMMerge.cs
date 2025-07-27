@@ -3,8 +3,8 @@ using zms9110750.DeepSeekClient.Model.Response;
 using zms9110750.DeepSeekClient.ModelDelta;
 
 namespace zms9110750.DeepSeekClient.Beta;
-
-public class ChoiceFIMMerge(ChoiceFIM source) : IMerge<ChoiceFIM>
+ 
+internal class ChoiceFIMMerge(ChoiceFIM source) : IMerge<ChoiceFIM>
 {
 	int Index { get; } = source.Index;
 	StringBuilder Text { get; } = new StringBuilder(source.Text);

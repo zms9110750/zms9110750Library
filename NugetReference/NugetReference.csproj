@@ -1,43 +1,41 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net9</TargetFramework>
+		<TargetFramework>net9.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<LangVersion>preview</LangVersion>
 		<OutputType>Exe</OutputType>
 		<PublishAot>False</PublishAot>
-	</PropertyGroup>
-
-	<ItemGroup>
-	  <Compile Remove="RateLimiterTester.cs" />
-	</ItemGroup>
-	 
+	</PropertyGroup> 
 	<ItemGroup>
 		<PackageReference Include="Autofac.Pooling" Version="*" />
-		<PackageReference Include="BenchmarkDotNet" Version="*" /> 
-		<PackageReference Include="HtmlAgilityPack" Version="*" /> 
+		<PackageReference Include="BenchmarkDotNet" Version="*" />
+		<PackageReference Include="HtmlAgilityPack" Version="*" />
 		<PackageReference Include="Jint" Version="4.2.2" />
-		<PackageReference Include="Markdig" Version="*" /> 
+		<PackageReference Include="Markdig" Version="*" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="*" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="*" />
-		<PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="*" />
+		<PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="9.7.0" />
 		<PackageReference Include="Microsoft.Extensions.Localization" Version="*" />
 		<PackageReference Include="Newtonsoft.Json.Schema" Version="*" />
 		<PackageReference Include="SharpCompress" Version="*" />
 		<PackageReference Include="System.Linq.Async" Version="*" />
 		<PackageReference Include="System.Reactive" Version="*" />
-		<PackageReference Include="Microsoft.Extensions.Caching.Hybrid" Version="*" /> 
-		<PackageReference Include="NeoSmart.Caching.Sqlite" Version="*" />  
-		<PackageReference Include="ZiggyCreatures.FusionCache.Serialization.SystemTextJson" Version="*" />
+		<PackageReference Include="Microsoft.Extensions.Caching.Hybrid" Version="*" />
+		<PackageReference Include="NeoSmart.Caching.Sqlite" Version="*" /> 
 		<PackageReference Include="ZLinq.FileSystem" Version="1.4.8" />
 		<PackageReference Include="ZLinq.Godot" Version="1.4.8" />
-		<PackageReference Include="ZLinq.Json" Version="1.4.8" /> 
-		<PackageReference Include="System.Net.ServerSentEvents" Version="9.0.6" /> 
+		<PackageReference Include="ZLinq.Json" Version="1.4.8" />
+		<PackageReference Include="System.Net.ServerSentEvents" Version="9.0.6" />
 	</ItemGroup>
 	<ItemGroup>
-	  <ProjectReference Include="..\DeepSeekClient\DeepSeekClient.csproj" />
-	  <ProjectReference Include="..\TreeCollection\TreeCollection.csproj" />
-	</ItemGroup> 
-	 
+		<ProjectReference Include="..\DeepSeekClient\DeepSeekClient.csproj" />
+		<ProjectReference Include="..\TreeCollection\TreeCollection.csproj" />
+	</ItemGroup>
+	<ItemGroup> 
+		<PackageReference Include="NeoSmart.Caching.Sqlite" Version="9.0.1" />
+		<PackageReference Include="ZiggyCreatures.FusionCache" Version="2.3.0" />
+		<PackageReference Include="ZiggyCreatures.FusionCache.Serialization.SystemTextJson" Version="2.3.0" />
+	</ItemGroup>
 </Project>

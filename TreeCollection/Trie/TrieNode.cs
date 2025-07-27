@@ -6,7 +6,7 @@ namespace zms9110750.TreeCollection.Trie;
 /// 负责储存字符的字典树子节点
 /// </summary>
 /// <param name="parent">父节点</param>
-public class TrieNode(Trie parent) : TrieBase(parent)
+public class TrieNode(TrieBase parent) : TrieBase(parent)
 {
 
 	readonly Dictionary<int, HashSet<int>> _token = new Dictionary<int, HashSet<int>>();
@@ -28,8 +28,8 @@ public class TrieNode(Trie parent) : TrieBase(parent)
 		{
 			Word = word;
 			return;
-		}
-		this[word[index]].Add(word);
+		} 
+		base[word[index]].Add(word);
 	} 
 
 	internal IEnumerable<string> Search(string s, int index, int tokenIndex)

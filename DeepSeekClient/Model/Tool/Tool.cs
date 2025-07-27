@@ -2,7 +2,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
-using zms9110750.DeepSeekClient.Model.Tool.FunctionTool;
+using zms9110750.DeepSeekClient.Model.Tool.Functions;
 
 namespace zms9110750.DeepSeekClient.Model.Tool;
 /// <summary>

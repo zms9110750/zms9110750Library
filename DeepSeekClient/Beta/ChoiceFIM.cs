@@ -11,4 +11,5 @@ namespace zms9110750.DeepSeekClient.Beta;
 /// <param name="Text">补全的文字</param>
 /// <param name="Index">索引</param>
 /// <param name="Logprobs">概率列表</param>
+/// <param name="FinishReason">结束原因</param>
 public record ChoiceFIM(string Text, int Index, LogprobFIM? Logprobs, FinishReason? FinishReason);

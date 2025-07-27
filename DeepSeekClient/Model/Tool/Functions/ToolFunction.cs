@@ -3,11 +3,9 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
-using System.Text.RegularExpressions;
-using zms9110750.DeepSeekClient.Model.Tool.Functions;
-using zms9110750.DeepSeekClient.ModelDelta.Tool;
+using System.Text.RegularExpressions; 
 
-namespace zms9110750.DeepSeekClient.Model.Tool.FunctionTool;
+namespace zms9110750.DeepSeekClient.Model.Tool.Functions;
 
 /// <summary>
 /// 函数工具
