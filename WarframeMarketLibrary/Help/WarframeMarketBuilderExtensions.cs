@@ -16,7 +16,7 @@ namespace WarframeMarketLibrary.Help;
 /// <summary>
 /// 依赖注入扩展
 /// </summary>
-public static class WarframeMarketClientBuilderExtensions
+public static class WarframeMarketBuilderExtensions
 {
 	/// <summary>
 	/// 注册WarframeMarketClient
@@ -69,6 +69,7 @@ public static class WarframeMarketClientBuilderExtensions
 			.WithSerializer(sp => sp.GetRequiredService<IFusionCacheSerializer>())
 			.WithDistributedCache(sp => sp.GetRequiredService<IDistributedCache>());
 		services.AddSingleton<WarframeMarketClient>();
+		services.AddSingleton(ArcanePackage.Create());
 		return services;
 	}
 }

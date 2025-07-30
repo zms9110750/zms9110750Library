@@ -1,4 +1,5 @@
-﻿using WarframeMarketLibrary.Model.Users;
+﻿using WarframeMarketLibrary.Model.Item;
+using WarframeMarketLibrary.Model.Users;
 
 namespace WarframeMarketLibrary.Model.Orders;
 /// <summary>
@@ -28,7 +29,7 @@ public record Order(
 	byte? PerTrade,
 	byte? Rank,
 	byte? Charges,
-	string? Subtype,
+	ItemSubtypes? Subtype,
 	byte? AmberStars,
 	byte? CyanStars,
 	bool Visible,

@@ -53,7 +53,7 @@ public class WarframeMarketClient([FromKeyedServices(nameof(WarframeMarketClient
 	/// <param name="cancellation"></param>
 	/// <returns></returns>
 	/// <exception cref="ArgumentException"></exception>
-	public async Task<T> Get<T>(string url, CachePolicy policy = CachePolicy.Moment, JsonSerializerOptions? serializerOptions = null, CancellationToken cancellation = default)
+	public async Task<T> GetAsync<T>(string url, CachePolicy policy = CachePolicy.Moment, JsonSerializerOptions? serializerOptions = null, CancellationToken cancellation = default)
 	{
 		serializerOptions ??= JsonOptions;
 		return (
@@ -148,7 +148,7 @@ public class WarframeMarketClient([FromKeyedServices(nameof(WarframeMarketClient
 	/// </summary>
 	/// <param name="key">缓存键</param>
 	/// <returns></returns>
-	public async Task RemoveCache(string key)
+	public async Task RemoveCacheAsync(string key)
 	{
 		memoryCache?.Remove(key);
 		fusionCache?.Remove(key);
@@ -160,9 +160,9 @@ public class WarframeMarketClient([FromKeyedServices(nameof(WarframeMarketClient
 	/// </summary>
 	/// <param name="cancellation"></param>
 	/// <returns></returns>
-	public Task<Response<Version>> GetVersion(CancellationToken cancellation = default)
+	public Task<Response<Version>> GetVersionAsync(CancellationToken cancellation = default)
 	{
-		return Get<Response<Version>>("v2/versions", CachePolicy.Minute, cancellation: cancellation);
+		return GetAsync<Response<Version>>("v2/versions", CachePolicy.Minute, cancellation: cancellation);
 	}
 
 	/// <summary>
@@ -170,14 +170,14 @@ public class WarframeMarketClient([FromKeyedServices(nameof(WarframeMarketClient
 	/// </summary>
 	/// <param name="cancellation"></param>
 	/// <returns></returns>
-	public async Task<ItemCache> GetItemCache(CancellationToken cancellation = default)
+	public async Task<ItemCache> GetItemCacheAsync(CancellationToken cancellation = default)
 	{
-		var version = GetVersion(cancellation);
-		var itemList = await Get<ItemList>("v2/items", CachePolicy.Day, cancellation: cancellation);
+		var version = GetVersionAsync(cancellation);
+		var itemList = await GetAsync<ItemList>("v2/items", CachePolicy.Day, cancellation: cancellation);
 		if (itemList.ApiVersion != (await version).ApiVersion)
 		{
-			await RemoveCache("v2/items");
-			itemList = await Get<ItemList>("v2/items", CachePolicy.Day, cancellation: cancellation);
+			await RemoveCacheAsync("v2/items");
+			itemList = await GetAsync<ItemList>("v2/items", CachePolicy.Day, cancellation: cancellation);
 		}
 		return new ItemCache(itemList);
 	}
@@ -188,9 +188,9 @@ public class WarframeMarketClient([FromKeyedServices(nameof(WarframeMarketClient
 	/// <param name="slug">物品的slug</param>
 	/// <param name="cancellation"></param>
 	/// <returns></returns>
-	public Task<Response<Item>> GetItem(string slug, CancellationToken cancellation = default)
+	public Task<Response<Item>> GetItemAsync(string slug, CancellationToken cancellation = default)
 	{
-		return Get<Response<Item>>($"v2/item/{slug}", CachePolicy.Day, cancellation: cancellation);
+		return GetAsync<Response<Item>>($"v2/item/{slug}", CachePolicy.Day, cancellation: cancellation);
 	}
 
 	/// <summary>
@@ -199,9 +199,9 @@ public class WarframeMarketClient([FromKeyedServices(nameof(WarframeMarketClient
 	/// <param name="itemShort">物品实体</param>
 	/// <param name="cancellation"></param>
 	/// <returns></returns>
-	public Task<Response<Item>> GetItem(ItemShort itemShort, CancellationToken cancellation = default)
+	public Task<Response<Item>> GetItemAsync(ItemShort itemShort, CancellationToken cancellation = default)
 	{
-		return GetItem(itemShort.Slug, cancellation);
+		return GetItemAsync(itemShort.Slug, cancellation);
 	}
 
 	/// <summary>
@@ -210,9 +210,9 @@ public class WarframeMarketClient([FromKeyedServices(nameof(WarframeMarketClient
 	/// <param name="slug">物品的slug</param>
 	/// <param name="cancellation"></param>
 	/// <returns></returns>
-	public Task<Response<ItemSet>> GetItemSet(string slug, CancellationToken cancellation = default)
+	public Task<Response<ItemSet>> GetItemSetAsync(string slug, CancellationToken cancellation = default)
 	{
-		return Get<Response<ItemSet>>($"v2/item/{slug}/set", CachePolicy.Moment, cancellation: cancellation);
+		return GetAsync<Response<ItemSet>>($"v2/item/{slug}/set", CachePolicy.Moment, cancellation: cancellation);
 	}
 
 	/// <summary>
@@ -221,9 +221,9 @@ public class WarframeMarketClient([FromKeyedServices(nameof(WarframeMarketClient
 	/// <param name="itemShort">物品实体</param>
 	/// <param name="cancellation"></param>
 	/// <returns></returns>
-	public Task<Response<ItemSet>> GetItemSet(ItemShort itemShort, CancellationToken cancellation = default)
+	public Task<Response<ItemSet>> GetItemSetAsync(ItemShort itemShort, CancellationToken cancellation = default)
 	{
-		return GetItemSet(itemShort.Slug, cancellation);
+		return GetItemSetAsync(itemShort.Slug, cancellation);
 	}
 
 	/// <summary>
@@ -231,9 +231,9 @@ public class WarframeMarketClient([FromKeyedServices(nameof(WarframeMarketClient
 	/// </summary>
 	/// <param name="cancellation"></param>
 	/// <returns></returns>
-	public Task<Response<Order[]>> GetOrdersRecent(CancellationToken cancellation = default)
+	public Task<Response<Order[]>> GetOrdersRecentAsync(CancellationToken cancellation = default)
 	{
-		return Get<Response<Order[]>>($"v2/orders/recent", CachePolicy.Moment, cancellation: cancellation);
+		return GetAsync<Response<Order[]>>($"v2/orders/recent", CachePolicy.Moment, cancellation: cancellation);
 	}
 
 	/// <summary>
@@ -242,9 +242,9 @@ public class WarframeMarketClient([FromKeyedServices(nameof(WarframeMarketClient
 	/// <param name="slug">物品的slug</param>
 	/// <param name="cancellation"></param>
 	/// <returns></returns>
-	public Task<Response<Order[]>> GetOrdersItem(string slug, CancellationToken cancellation = default)
+	public Task<Response<Order[]>> GetOrdersItemAsync(string slug, CancellationToken cancellation = default)
 	{
-		return Get<Response<Order[]>>($"v2/orders/item/{slug}", CachePolicy.Moment, cancellation: cancellation);
+		return GetAsync<Response<Order[]>>($"v2/orders/item/{slug}", CachePolicy.Moment, cancellation: cancellation);
 	}
 
 	/// <summary>
@@ -253,9 +253,9 @@ public class WarframeMarketClient([FromKeyedServices(nameof(WarframeMarketClient
 	/// <param name="itemShort">物品实体</param>
 	/// <param name="cancellation"></param>
 	/// <returns></returns>
-	public Task<Response<Order[]>> GetOrdersItem(ItemShort itemShort, CancellationToken cancellation = default)
+	public Task<Response<Order[]>> GetOrdersItemAsync(ItemShort itemShort, CancellationToken cancellation = default)
 	{
-		return GetOrdersItem(itemShort.Slug, cancellation);
+		return GetOrdersItemAsync(itemShort.Slug, cancellation);
 	}
 
 	/// <summary>
@@ -264,9 +264,9 @@ public class WarframeMarketClient([FromKeyedServices(nameof(WarframeMarketClient
 	/// <param name="slug">物品的slug</param>
 	/// <param name="cancellation"></param>
 	/// <returns></returns>
-	public async Task<Response<OrderTop>> GetOrdersItemTop(string slug, CancellationToken cancellation = default)
+	public async Task<Response<OrderTop>> GetOrdersItemTopAsync(string slug, CancellationToken cancellation = default)
 	{
-		return await Get<Response<OrderTop>>($"v2/orders/item/{slug}/top", CachePolicy.Minute, cancellation: cancellation);
+		return await GetAsync<Response<OrderTop>>($"v2/orders/item/{slug}/top", CachePolicy.Minute, cancellation: cancellation);
 	}
 	/// <summary>
 	/// 获取指定物品的在线用户中买单卖单各前5个，并附带查询参数
@@ -275,13 +275,13 @@ public class WarframeMarketClient([FromKeyedServices(nameof(WarframeMarketClient
 	/// <param name="query">查询参数</param>
 	/// <param name="cancellation"></param>
 	/// <returns></returns>
-	public async Task<Response<OrderTop>> GetOrdersItemTop(string slug, OrderTopQueryParameter query, CancellationToken cancellation = default)
+	public async Task<Response<OrderTop>> GetOrdersItemTopAsync(string slug, OrderTopQueryParameter query, CancellationToken cancellation = default)
 	{
 		using var node = JsonSerializer.SerializeToDocument(query, options ?? SourceGenerationContext.V2);
 		using var encodedContent = new FormUrlEncodedContent(node.RootElement.EnumerateObject().Select(s => new KeyValuePair<string, string>(s.Name, s.Value.ToString())));
 		string queryString = await encodedContent.ReadAsStringAsync(cancellation);
 
-		return await Get<Response<OrderTop>>($"v2/orders/item/{slug}/top?{queryString}", CachePolicy.Minute, cancellation: cancellation);
+		return await GetAsync<Response<OrderTop>>($"v2/orders/item/{slug}/top?{queryString}", CachePolicy.Minute, cancellation: cancellation);
 	}
 	/// <summary>
 	/// 获取指定物品的在线用户中买单卖单各前5个，并附带查询参数
@@ -290,11 +290,11 @@ public class WarframeMarketClient([FromKeyedServices(nameof(WarframeMarketClient
 	/// <param name="query">查询参数</param>
 	/// <param name="cancellation"></param>
 	/// <returns></returns>
-	public Task<Response<OrderTop>> GetOrdersItemTop(ItemShort itemShort, OrderTopQueryParameter? query = null, CancellationToken cancellation = default)
+	public Task<Response<OrderTop>> GetOrdersItemTopAsync(ItemShort itemShort, OrderTopQueryParameter? query = null, CancellationToken cancellation = default)
 	{
 		return query is OrderTopQueryParameter queryPara
-			? GetOrdersItemTop(itemShort.Slug, queryPara, cancellation)
-			: GetOrdersItemTop(itemShort.Slug, cancellation);
+			? GetOrdersItemTopAsync(itemShort.Slug, queryPara, cancellation)
+			: GetOrdersItemTopAsync(itemShort.Slug, cancellation);
 	}
 
 	/// <summary>
@@ -303,9 +303,9 @@ public class WarframeMarketClient([FromKeyedServices(nameof(WarframeMarketClient
 	/// <param name="slug">用户的wm用户名</param>
 	/// <param name="cancellation"></param>
 	/// <returns></returns>
-	public Task<Response<Order[]>> GetOrdersFromUser(string slug, CancellationToken cancellation = default)
+	public Task<Response<Order[]>> GetOrdersFromUserAsync(string slug, CancellationToken cancellation = default)
 	{
-		return Get<Response<Order[]>>($"v2/orders/user/{slug}", CachePolicy.Minute, cancellation: cancellation);
+		return GetAsync<Response<Order[]>>($"v2/orders/user/{slug}", CachePolicy.Minute, cancellation: cancellation);
 	}
 	/// <summary>
 	/// 获取用户的公开订单
@@ -313,9 +313,9 @@ public class WarframeMarketClient([FromKeyedServices(nameof(WarframeMarketClient
 	/// <param name="user">用户的wm用户名</param>
 	/// <param name="cancellation"></param>
 	/// <returns></returns>
-	public Task<Response<Order[]>> GetOrdersFromUser(User user, CancellationToken cancellation = default)
+	public Task<Response<Order[]>> GetOrdersFromUserAsync(User user, CancellationToken cancellation = default)
 	{
-		return GetOrdersFromUser(user.Slug, cancellation);
+		return GetOrdersFromUserAsync(user.Slug, cancellation);
 	}
 
 	/// <summary>
@@ -324,9 +324,9 @@ public class WarframeMarketClient([FromKeyedServices(nameof(WarframeMarketClient
 	/// <param name="slug">用户的wm用户名</param>
 	/// <param name="cancellation"></param>
 	/// <returns></returns>
-	public Task<Response<User>> GetUser(string slug, CancellationToken cancellation = default)
+	public Task<Response<User>> GetUserAsync(string slug, CancellationToken cancellation = default)
 	{
-		return Get<Response<User>>($"v2/user/{slug}", CachePolicy.Minute, cancellation: cancellation);
+		return GetAsync<Response<User>>($"v2/user/{slug}", CachePolicy.Minute, cancellation: cancellation);
 	}
 
 	/// <summary>
@@ -335,9 +335,9 @@ public class WarframeMarketClient([FromKeyedServices(nameof(WarframeMarketClient
 	/// <param name="slug">物品的slug</param>
 	/// <param name="cancellation"></param>
 	/// <returns></returns>
-	public Task<Statistic> GetStatistic(string slug, CancellationToken cancellation = default)
+	public Task<Statistic> GetStatisticAsync(string slug, CancellationToken cancellation = default)
 	{
-		return Get<Statistic>($"v1/items/{slug}/statistics", CachePolicy.Statistic, SourceGenerationContext.V1, cancellation: cancellation);
+		return GetAsync<Statistic>($"v1/items/{slug}/statistics", CachePolicy.Statistic, SourceGenerationContext.V1, cancellation: cancellation);
 	}
 
 	/// <summary>
@@ -346,8 +346,8 @@ public class WarframeMarketClient([FromKeyedServices(nameof(WarframeMarketClient
 	/// <param name="itemShort">物品实体</param>
 	/// <param name="cancellation"></param>
 	/// <returns></returns>
-	public Task<Statistic> GetStatistic(ItemShort itemShort, CancellationToken cancellation = default)
+	public Task<Statistic> GetStatisticAsync(ItemShort itemShort, CancellationToken cancellation = default)
 	{
-		return GetStatistic(itemShort.Slug, cancellation);
+		return GetStatisticAsync(itemShort.Slug, cancellation);
 	}
 }
