@@ -14,7 +14,7 @@ namespace zms9110750.DeepSeekClient.Model.Messages;
 /// <item><see cref="MessageTool"/></item>
 /// </list>
 /// </remarks>
-[JsonPolymorphic(TypeDiscriminatorPropertyName = "role")]
+[JsonPolymorphic(TypeDiscriminatorPropertyName = "role", UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FallBackToNearestAncestor)]
 [JsonDerivedType(typeof(MessageUser), typeDiscriminator: "user")]
 [JsonDerivedType(typeof(MessageAssistant), typeDiscriminator: "assistant")]
 [JsonDerivedType(typeof(MessageSystem), typeDiscriminator: "system")]

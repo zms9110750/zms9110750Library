@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Threading.RateLimiting;
 using WarframeMarketLibrary.Model;
 using WarframeMarketLibrary.Model.Item;
 using WarframeMarketLibrary.Model.Orders;
@@ -26,6 +27,7 @@ namespace WarframeMarketLibrary.Help;
 /// <param name="options">Json序列化设置</param>
 public class WarframeMarketClient([FromKeyedServices(nameof(WarframeMarketClient))] HttpClient http, IMemoryCache? memoryCache = null, IFusionCache? fusionCache = null, HybridCache? hybridCache = null, JsonSerializerOptions? options = null)
 {
+	RateLimiter RateLimiter { get; } = new ConcurrencyLimiter(new ConcurrencyLimiterOptions { PermitLimit = 20, QueueLimit = 300 });
 
 	JsonSerializerOptions JsonOptions => options ?? SourceGenerationContext.V2;
 
@@ -44,6 +46,7 @@ public class WarframeMarketClient([FromKeyedServices(nameof(WarframeMarketClient
 	}
 #pragma warning restore CS1573 // 参数在 XML 注释中没有匹配的 param 标记(但其他参数有)
 
+
 	/// <summary>
 	/// 访问WarframeMarket的API，并序列化后返回结果
 	/// </summary>
@@ -51,7 +54,6 @@ public class WarframeMarketClient([FromKeyedServices(nameof(WarframeMarketClient
 	/// <param name="url">相对url</param>
 	/// <param name="policy">缓存策略</param>
 	/// <param name="cancellation"></param>
-	/// <returns></returns>
 	/// <exception cref="ArgumentException"></exception>
 	public async Task<T> GetAsync<T>(string url, CachePolicy policy = CachePolicy.Moment, JsonSerializerOptions? serializerOptions = null, CancellationToken cancellation = default)
 	{
@@ -69,6 +71,7 @@ public class WarframeMarketClient([FromKeyedServices(nameof(WarframeMarketClient
 		{
 			try
 			{
+				using var a = await RateLimiter.AcquireAsync(1, ct);
 				return (await http.GetFromJsonAsync<T>(url, serializerOptions, ct))!;
 			}
 			catch (JsonException)

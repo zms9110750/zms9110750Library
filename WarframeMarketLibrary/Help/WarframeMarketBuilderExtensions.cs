@@ -27,7 +27,7 @@ public static class WarframeMarketBuilderExtensions
 	/// <param name="permitLimit">每秒的许可数</param>
 	/// <param name="cachePath">缓存路径</param>
 	/// <returns></returns>
-	public static IServiceCollection AddWarframeMarketClient(this IServiceCollection services, Language language = Language.ZhHans, int queueSec = 30, int permitLimit = 4, string cachePath = "cache.sqlit.db")
+	public static IServiceCollection AddWarframeMarketClient(this IServiceCollection services, Language language = Language.ZhHans, int queueSec = 30, int permitLimit = 4, string cachePath = "cache.sqlite.db")
 	{
 		services.AddHttpClient<WarframeMarketClient>(client =>
 		{

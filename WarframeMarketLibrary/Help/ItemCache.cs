@@ -15,7 +15,7 @@ namespace WarframeMarketLibrary.Help;
 public class ItemCache : IReadOnlyDictionary<string, ItemShort>
 {
 	Dictionary<string, ItemShort> KeyOfItem { get; } = new Dictionary<string, ItemShort>();
-	Trie Trie { get; } = new Trie([' ', '·']);
+	Trie Trie { get; } = new Trie([' ', '·', '_']);
 
 	/// <inheritdoc/> 
 	public IEnumerable<string> Keys => ((IReadOnlyDictionary<string, ItemShort>)KeyOfItem).Keys;

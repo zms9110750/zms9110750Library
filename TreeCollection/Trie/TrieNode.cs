@@ -28,19 +28,17 @@ public class TrieNode(TrieBase parent) : TrieBase(parent)
 		{
 			Word = word;
 			return;
-		} 
+		}
 		base[word[index]].Add(word);
 	} 
-
 	internal IEnumerable<string> Search(string s, int index, int tokenIndex)
-	{
+	{ 
 		ref var set = ref CollectionsMarshal.GetValueRefOrAddDefault(_token, tokenIndex, out _);
 		set ??= [];
 		if (!set.Add(index))
 		{
 			yield break;
 		}
-
 		if (index >= s.Length)
 		{
 			if (Word != null)
@@ -55,24 +53,16 @@ public class TrieNode(TrieBase parent) : TrieBase(parent)
 			yield break;
 		}
 		var currentChar = s[index];
+		if (Children.TryGetValue(currentChar, out var childNode))
+		{
+			foreach (var match in childNode.Search(s, index + 1, tokenIndex))
+				yield return match;
+		}
 		if (Separator.Contains(currentChar))
 		{
-			if (Children.TryGetValue(currentChar, out var childNode))
-			{
-				foreach (var match in childNode.Search(s, index + 1, tokenIndex))
-					yield return match;
-			}
 			foreach (var item in Children.Values)
 			{
 				foreach (var match in item.Search(s, index, tokenIndex))
-					yield return match;
-			}
-		}
-		else
-		{
-			if (Children.TryGetValue(currentChar, out var childNode))
-			{
-				foreach (var match in childNode.Search(s, index + 1, tokenIndex))
 					yield return match;
 			}
 		}

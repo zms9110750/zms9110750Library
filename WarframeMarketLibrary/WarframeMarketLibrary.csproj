@@ -19,7 +19,8 @@
 	  <EmbeddedResource Include="Help\赋能包.xml" />
 	</ItemGroup>
 
-	<ItemGroup> 
+	<ItemGroup>
+		<PackageReference Include="System.Linq.Async" Version="*" />
 		<PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="9.7.0" />
 		<PackageReference Include="zms9110750.TreeCollection" Version="1.1.0" />
 		<PackageReference Include="NeoSmart.Caching.Sqlite.AspNetCore" Version="9.0.1" />
