@@ -1,86 +1,55 @@
-﻿
-using System.Diagnostics.CodeAnalysis;
-using System.Text;
-using System.Text.Encodings.Web;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+﻿using System.Text.Encodings.Web;
 using System.Text.Json.Serialization.Metadata;
-using zms9110750.DeepSeekClient.Beta;
-using zms9110750.DeepSeekClient.Model.Balance;
-using zms9110750.DeepSeekClient.Model.Messages;
-using zms9110750.DeepSeekClient.Model.ModelList;
-using zms9110750.DeepSeekClient.Model.Request;
-using zms9110750.DeepSeekClient.Model.Response;
-using zms9110750.DeepSeekClient.ModelDelta.Response;
+using zms9110750.DeepSeekClient.Model;
+using zms9110750.DeepSeekClient.Model.Chat.Request;
+using zms9110750.DeepSeekClient.Model.Chat.Response;
+using zms9110750.DeepSeekClient.Model.Chat.Response.Delta;
 
-namespace zms9110750.DeepSeekClient.Model.Tool;
+namespace zms9110750.DeepSeekClient.Json;
 
-[JsonSourceGenerationOptions(
-	PropertyNamingPolicy = JsonKnownNamingPolicy.SnakeCaseLower,  // 属性名转为蛇形命名（如：userName → user_name）
-	UseStringEnumConverter = true,              // 枚举值转为字符串（但特性无法指定蛇形命名，需在实例覆盖）
-	AllowOutOfOrderMetadataProperties = true,   // 允许元属性乱序（如JSON字段顺序和类定义不一致）
-	DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull  // 自动忽略null值
-)]
-[JsonSerializable(typeof(UserResponse))]
-[JsonSerializable(typeof(Message))]
-[JsonSerializable(typeof(ModelResponse))]
-[JsonSerializable(typeof(ToolCall))]
-[JsonSerializable(typeof(Tool))]
-[JsonSerializable(typeof(ChatResponse<Choice>))]
-[JsonSerializable(typeof(ChatResponse<ChoiceFIM>))]
-[JsonSerializable(typeof(ChatResponse<ChoiceDelta>))]
-[JsonSerializable(typeof(ChatOption))]
-[JsonSerializable(typeof(FinishReason))]
+[JsonSerializable(typeof(BalanceResponse))]
+[JsonSerializable(typeof(ChatModelResponse))]
+[JsonSerializable(typeof(IChatRequest))]
+[JsonSerializable(typeof(IFIMRequest))]
+[JsonSerializable(typeof(ChatResponse<ChatChoice>))]
+[JsonSerializable(typeof(ChatResponse<ChatDelta>))]
+[JsonSerializable(typeof(ChatResponse<FIMChoice>))]
+internal partial class SourceGenerationContext : JsonSerializerContext;
 
-internal partial class SourceGenerationContext : JsonSerializerContext
-{
-	// 网络传输配置（蛇形命名 + 无转义 + 压缩）
-	[field: AllowNull]
-	public static JsonSerializerOptions NetworkOptions => field ??=
-		new JsonSerializerOptions(Default.Options) // 必须显式继承
-		{
-			Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping, // 完全禁用转义（如/不转义为\/）
-			Converters = { new JsonStringEnumConverter(JsonNamingPolicy.SnakeCaseLower) } // 覆盖特性，强制枚举蛇形命名（如FirstValue → first_value） 
-		};
-
-	// 程序内部配置（原名 + 无转义 + 压缩）
-	[field: AllowNull]
-	public static JsonSerializerOptions InternalOptions => field ??=
-		new JsonSerializerOptions(Default.Options)
-		{
-			Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping, // 完全禁用转义
-			PropertyNamingPolicy = null,         // 禁用蛇形命名，保持原始属性名（如userName）
-		};
-
-	// 调试配置（蛇形命名 + 格式化 + 动态源选择）
-	[field: AllowNull]
-	public static JsonSerializerOptions DebugOptions => field ??=
-		new JsonSerializerOptions(Default.Options)
-		{
-			WriteIndented = true,                // 格式化输出（带缩进和换行）
-			Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping, // 完全禁用转义 
-			TypeInfoResolver = JsonTypeInfoResolver.Combine(
-			Default.Options.TypeInfoResolver,  // 优先使用源生成
-			new DefaultJsonTypeInfoResolver()) // 回退到反射 			 
-		};
-}
 /// <summary>
-/// 公开的序列化配置
+/// 公开Json序列化配置
 /// </summary>
 public static class PublicSourceGenerationContext
 {
-	/// <summary>
-	/// 网络传输配置（蛇形命名 + 无转义 + 压缩）
-	/// </summary>
-	public static JsonSerializerOptions NetworkOptions { get; } = SourceGenerationContext.NetworkOptions;
+
+	private static JsonSerializerOptions Default { get; } =
+		new JsonSerializerOptions()
+		{
+			Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping, // 完全禁用转义 
+			TypeInfoResolver = JsonTypeInfoResolver.Combine(
+				SourceGenerationContext.Default.Options.TypeInfoResolver,  // 优先使用源生成
+				new DefaultJsonTypeInfoResolver()), // 回退到反射 		
+			AllowOutOfOrderMetadataProperties = true,// 允许元属性乱序
+			DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull, // 忽略null值属性
+		};
+
 
 	/// <summary>
 	/// 程序内部配置（原名 + 无转义 + 压缩）
 	/// </summary>
-	public static JsonSerializerOptions InternalOptions { get; } = SourceGenerationContext.InternalOptions;
+	public static JsonSerializerOptions InternalOptions { get; } =
+		new JsonSerializerOptions(Default)
+		{
+			Converters = { new JsonStringEnumConverter() }
+		};
 
 	/// <summary>
-	/// 调试配置（蛇形命名 + 格式化 + 动态源选择）
+	/// 网络传输配置（蛇形命名 + 无转义 + 压缩）
 	/// </summary>
-	public static JsonSerializerOptions DebugOptions { get; } = SourceGenerationContext.DebugOptions;
+	public static JsonSerializerOptions NetworkOptions { get; } =
+		new JsonSerializerOptions(Default) // 必须显式继承
+		{
+			Converters = { new JsonStringEnumConverter(JsonNamingPolicy.SnakeCaseLower) },  // 覆盖特性，强制枚举蛇形命名（如FirstValue → first_value） 
+			PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
+		}; 
 }

@@ -1,18 +1,14 @@
-﻿using System.Text.Json.Serialization;
-using zms9110750.DeepSeekClient.Model.Tool;
+﻿using zms9110750.DeepSeekClient.Model.Chat.Tool;
 
 namespace zms9110750.DeepSeekClient.Json;
-using System.Text.Json;
-using System.Text.Json.Nodes;
 
-internal class MessageAssistantToolCallArrayConverter : JsonConverter<ToolCall[]>
+internal class MessageAssistantToolCallArrayConverter : JsonConverter<List<IToolCall>>
 {
-	public override ToolCall[]? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+	public override List<IToolCall>? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
 	{
 		using JsonDocument doc = JsonDocument.ParseValue(ref reader);
 		JsonElement root = doc.RootElement;
-		ToolCall[] result = new ToolCall[root.GetArrayLength()];
-		int index = 0;
+		List<IToolCall> result = new List<IToolCall>(root.GetArrayLength());
 		foreach (var element in root.EnumerateArray())
 		{
 			JsonObject? obj = null;
@@ -28,12 +24,12 @@ internal class MessageAssistantToolCallArrayConverter : JsonConverter<ToolCall[]
 					}
 				}
 			}
-			result[index++] = obj == null ? element.Deserialize<ToolCall>(options)! : obj.Deserialize<ToolCall>(options)!;
+			result.Add(obj == null ? element.Deserialize<IToolCall>(options)! : obj.Deserialize<IToolCall>(options)!);
 		}
 		return result;
 	}
 
-	public override void Write(Utf8JsonWriter writer, ToolCall[] value, JsonSerializerOptions options)
+	public override void Write(Utf8JsonWriter writer, List<IToolCall> value, JsonSerializerOptions options)
 	{
 		JsonSerializer.Serialize(writer, value, options);
 	}

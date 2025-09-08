@@ -1,15 +1,11 @@
-﻿
+﻿using Microsoft.AspNetCore.Components.WebAssembly.Http;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Text;
-using System.Text.Json;
-using System.Text.Json.Nodes;
-using zms9110750.DeepSeekClient.Model.Balance;
-using zms9110750.DeepSeekClient.Model.ModelList;
-using zms9110750.DeepSeekClient.Model.Request;
-using zms9110750.DeepSeekClient.Model.Response;
-using zms9110750.DeepSeekClient.Model.Tool;
-using zms9110750.DeepSeekClient.ModelDelta.Response;
+using zms9110750.DeepSeekClient.Model;
+using zms9110750.DeepSeekClient.Model.Chat.Request;
+using zms9110750.DeepSeekClient.Model.Chat.Response;
+using zms9110750.DeepSeekClient.Model.Chat.Response.Delta;
 
 namespace zms9110750.DeepSeekClient;
 /// <summary>
@@ -17,8 +13,7 @@ namespace zms9110750.DeepSeekClient;
 /// </summary>
 /// <remarks>重要API：<list type="bullet">
 /// <item><see cref="ChatAsync"/></item>
-/// <item><see cref="ChatStreamAsync"/></item>
-/// <item><see cref="Option"/></item>
+/// <item><see cref="OptionDefault"/></item>
 /// </list> </remarks>
 public class DeepSeekApiClient
 {
@@ -26,6 +21,16 @@ public class DeepSeekApiClient
 	/// 基本对话的API地址
 	/// </summary>
 	public const string ChatServerUrl = "https://api.deepseek.com/chat/completions";
+	/// <summary>
+	/// Beta测试版API地址
+	/// </summary>
+	public const string ChatServerUrlBeta = "https://api.deepseek.com/beta/chat/completions";
+
+	/// <summary>
+	/// application/json
+	/// </summary>
+	protected static MediaTypeHeaderValue MediaHeader { get; } = new MediaTypeHeaderValue("application/json");
+
 
 	/// <summary>
 	/// 网络访问连接器
@@ -33,9 +38,19 @@ public class DeepSeekApiClient
 	protected HttpClient Http { get; }
 
 	/// <summary>
-	/// 伴随请求一起发送的设置项
+	/// 后备默认请求体
 	/// </summary>
-	public ChatOption Option { get; set => field = value ?? throw new ArgumentNullException(nameof(value)); } = new ChatOption();
+	public ChatRequest OptionDefault { get; set => field = value ?? throw new ArgumentNullException(nameof(OptionDefault)); } = new ChatRequest();
+
+	/// <summary>
+	/// 伴随请求一起发送的设置项
+	/// </summary> 
+	public IChatRequest OptionChat { get => field ?? OptionDefault; set; }
+
+	/// <summary>
+	/// 伴随FIM请求一起发送的设置项
+	/// </summary> 
+	public IFIMRequest OptionFIM { get => field ?? OptionDefault; set; }
 
 	/// <summary>
 	/// 构造函数
@@ -50,66 +65,73 @@ public class DeepSeekApiClient
 	}
 
 	/// <summary>
-	/// 基本对话
-	/// </summary> 
-	/// <remarks>这个方法会把<see cref="Option"/>的<see cref="ChatOption.Stream"/>设置为null</remarks>
-	public async Task<ChatResponse<Choice>> ChatAsync(CancellationToken token = default)
+	/// 发送一个聊天请求
+	/// </summary>
+	/// <param name="token"></param>
+	/// <returns></returns>
+	/// <exception cref="HttpRequestException"></exception>
+	public async Task<IAsyncEnumerable<IChatResponse<IChatChoice>>> ChatAsync(CancellationToken token = default)
 	{
-		Option.Stream = null;
-		var node = JsonSerializer.SerializeToNode(Option, SourceGenerationContext.NetworkOptions);
-		using var response = await SendAsync(ChatServerUrl, node!, token);
-		return (await response.Content.ReadFromJsonAsync<ChatResponse<Choice>>(SourceGenerationContext.NetworkOptions, token))!;
+		string url = OptionChat.Prefix ? ChatServerUrlBeta : ChatServerUrl;
+		bool stream = OptionChat.Stream == true;
+		HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Post, url)
+		{
+			Content = new StringContent(JsonSerializer.Serialize(OptionChat, PublicSourceGenerationContext.NetworkOptions), MediaHeader)
+		}.SetBrowserResponseStreamingEnabled(true);
+
+		var response = await Http.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, token);
+
+		return !response.IsSuccessStatusCode
+			? throw new HttpRequestException($"{await response.Content.ReadAsStringAsync(token)}"
+				, response.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.UnprocessableEntity ? new ArgumentException(await response.RequestMessage?.Content?.ReadAsStringAsync(token)!) : null
+				, response.StatusCode)
+			: stream
+			? new ChatResponseDelta<ChatDelta>(await response.Content.ReadAsStreamAsync(token), token, response)
+			: AsyncEnumerableEx.Return((await response.Content.ReadFromJsonAsync<ChatResponse<ChatChoice>>(PublicSourceGenerationContext.NetworkOptions, token))!);
 	}
 
 	/// <summary>
-	/// 基本对话流式响应
+	/// 前后缀补全
 	/// </summary>
-	/// <remarks>这个方法会把<see cref="Option"/>的<see cref="ChatOption.Stream"/>设置为true</remarks>
-	public async Task<ChatResponseDelta<ChoiceDelta>> ChatStreamAsync(CancellationToken token = default)
+	/// <param name="token"></param>
+	/// <returns></returns>
+	/// <exception cref="HttpRequestException"></exception>
+	/// <remarks>这个API在Beta测试，之后可能更改。</remarks>
+	[Obsolete("This API is in beta testing and may change in future releases. Use with caution.")]
+	public async Task<IAsyncEnumerable<IChatResponse<FIMChoice>>> FIMAsync(CancellationToken token = default)
 	{
-		Option.Stream = true;
-		var node = JsonSerializer.SerializeToNode(Option, SourceGenerationContext.NetworkOptions);
-		var response = await SendAsync(ChatServerUrl, node!, token);
-		return new ChatResponseDelta<ChoiceDelta>(await response.Content.ReadAsStreamAsync(token), token, response);
+		string url = "https://api.deepseek.com/beta/completions";
+
+		bool stream = OptionFIM.Stream == true;
+		HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Post, url)
+		{
+			Content = new StringContent(JsonSerializer.Serialize(OptionFIM, PublicSourceGenerationContext.NetworkOptions), MediaHeader)
+		}.SetBrowserResponseStreamingEnabled(true);
+
+		var response = await Http.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, token);
+
+		return !response.IsSuccessStatusCode
+			? throw new HttpRequestException($"{await response.Content.ReadAsStringAsync(token)}"
+				, response.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.UnprocessableEntity ? new ArgumentException(await response.RequestMessage?.Content?.ReadAsStringAsync(token)!) : null
+				, response.StatusCode)
+			: stream
+			? new ChatResponseDelta<FIMChoice>(await response.Content.ReadAsStreamAsync(token), token, response)
+			: AsyncEnumerableEx.Return((await response.Content.ReadFromJsonAsync<ChatResponse<FIMChoice>>(PublicSourceGenerationContext.NetworkOptions, token))!);
 	}
+
 	/// <summary>
 	/// 获取模型列表
 	/// </summary> 
-	public async Task<ModelResponse> GetListModelsAsync(CancellationToken token = default)
+	public Task<ChatModelResponse> GetListModelsAsync(CancellationToken token = default)
 	{
-		return (await (await SendAsync("https://api.deepseek.com/models", HttpMethod.Get, token)).Content.ReadFromJsonAsync<ModelResponse>(SourceGenerationContext.NetworkOptions, token))!;
+		return Http.GetFromJsonAsync<ChatModelResponse>("https://api.deepseek.com/models", PublicSourceGenerationContext.NetworkOptions, token)!;
 	}
+
 	/// <summary>
 	/// 获取用户余额
 	/// </summary> 
-	public async Task<UserResponse> GetUserBalanceAsync(CancellationToken token = default)
+	public Task<BalanceResponse> GetUserBalanceAsync(CancellationToken token = default)
 	{
-		return (await (await SendAsync("https://api.deepseek.com/user/balance", HttpMethod.Get, token)).Content.ReadFromJsonAsync<UserResponse>(SourceGenerationContext.NetworkOptions, token))!;
-	}
-	/// <summary>
-	/// 发送请求
-	/// </summary>   
-	/// <exception cref="HttpRequestException"></exception>
-	protected async Task<HttpResponseMessage> SendAsync(string url, JsonNode content, CancellationToken token = default)
-	{
-		var requestMessage = new HttpRequestMessage(HttpMethod.Post, url)
-		{
-			Content = new StringContent(content!.ToJsonString(SourceGenerationContext.NetworkOptions), Encoding.UTF8, "application/json"),
-		};
-		var response = await Http.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, token);
-		return !response.IsSuccessStatusCode
-			? throw new HttpRequestException(await response.Content.ReadAsStringAsync(token) + "\nRequestMessage:" + await response.RequestMessage?.Content?.ReadAsStringAsync(token)!, null, response.StatusCode)
-			: response;
-	}
-	/// <summary>
-	/// 发送请求
-	/// </summary>   
-	/// <exception cref="HttpRequestException"></exception>
-	protected async Task<HttpResponseMessage> SendAsync(string url, HttpMethod httpMethod, CancellationToken token = default)
-	{
-		var response = await Http.SendAsync(new HttpRequestMessage(httpMethod, url), HttpCompletionOption.ResponseHeadersRead, token);
-		return !response.IsSuccessStatusCode
-		? throw new HttpRequestException(await response.Content.ReadAsStringAsync(token) + "\nRequestMessage:" + await response.RequestMessage?.Content?.ReadAsStringAsync()!, null, response.StatusCode)
-		: response;
+		return Http.GetFromJsonAsync<BalanceResponse>("https://api.deepseek.com/user/balance", PublicSourceGenerationContext.NetworkOptions, token)!;
 	}
 }
