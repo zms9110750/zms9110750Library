@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
+		<TargetFramework>net9.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<LangVersion>preview</LangVersion>
@@ -19,20 +19,22 @@
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-	  <IsTrimmable>False</IsTrimmable>
-	  <IsAotCompatible>False</IsAotCompatible>
+		<IsTrimmable>False</IsTrimmable>
+		<IsAotCompatible>False</IsAotCompatible>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-	  <IsTrimmable>False</IsTrimmable>
-	  <IsAotCompatible>False</IsAotCompatible>
+		<IsTrimmable>False</IsTrimmable>
+		<IsAotCompatible>False</IsAotCompatible>
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <None Update="Readme.md">
-	    <Pack>True</Pack>
-	    <PackagePath>\</PackagePath>
-	  </None>
+		<None Update="Readme.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
 	</ItemGroup>
-
+	<ItemGroup>
+		<ProjectReference Include="..\InterfaceImplAsExtensionGenerator\InterfaceImplAsExtensionGenerator.csproj"     />
+	</ItemGroup>
 </Project>

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.13.35931.197
+VisualStudioVersion = 17.14.36414.22
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NugetReference", "NugetReference\NugetReference.csproj", "{A10A9AC7-7603-4317-AA82-7F95018A18E1}"
 EndProject
@@ -12,6 +12,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FiniteStateMachine", "FiniteStateMachine\FiniteStateMachine.csproj", "{5F947C13-B796-0F96-26F9-C12DDCB56265}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WarframeMarketLibrary", "WarframeMarketLibrary\WarframeMarketLibrary.csproj", "{CAA7E7C0-8BDA-4A2B-A421-CFE745CD4B75}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InterfaceImplAsExtensionGenerator", "InterfaceImplAsExtensionGenerator\InterfaceImplAsExtensionGenerator.csproj", "{28323B10-6421-464F-B5FF-B08516131D07}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{CAA7E7C0-8BDA-4A2B-A421-CFE745CD4B75}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CAA7E7C0-8BDA-4A2B-A421-CFE745CD4B75}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CAA7E7C0-8BDA-4A2B-A421-CFE745CD4B75}.Release|Any CPU.Build.0 = Release|Any CPU
+		{28323B10-6421-464F-B5FF-B08516131D07}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28323B10-6421-464F-B5FF-B08516131D07}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28323B10-6421-464F-B5FF-B08516131D07}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{28323B10-6421-464F-B5FF-B08516131D07}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

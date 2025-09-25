@@ -8,7 +8,7 @@
 		<OutputType>Exe</OutputType>
 		<PublishAot>False</PublishAot>
 		<UserSecretsId>992b82a8-b20a-466c-b522-8bd8393e5f02</UserSecretsId>
-	</PropertyGroup> 
+	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="Autofac.Pooling" Version="*" />
 		<PackageReference Include="BenchmarkDotNet" Version="*" />
@@ -24,14 +24,15 @@
 		<PackageReference Include="System.Linq.Async" Version="*" />
 		<PackageReference Include="System.Reactive" Version="*" />
 		<PackageReference Include="Microsoft.Extensions.Caching.Hybrid" Version="*" />
-		<PackageReference Include="NeoSmart.Caching.Sqlite" Version="*" /> 
+		<PackageReference Include="NeoSmart.Caching.Sqlite" Version="*" />
 		<PackageReference Include="ZLinq.FileSystem" Version="1.4.8" />
 		<PackageReference Include="ZLinq.Godot" Version="1.4.8" />
 		<PackageReference Include="ZLinq.Json" Version="1.4.8" />
-		<PackageReference Include="System.Net.ServerSentEvents" Version="9.0.8" />  
-		<ProjectReference Include="..\DeepSeekClient\DeepSeekClient.csproj" /> 
-		<ProjectReference Include="..\TreeCollection\TreeCollection.csproj" /> 
+		<PackageReference Include="System.Net.ServerSentEvents" Version="9.0.8" />
 		<PackageReference Include="ZiggyCreatures.FusionCache" Version="2.3.0" />
 		<PackageReference Include="ZiggyCreatures.FusionCache.Serialization.SystemTextJson" Version="2.3.0" />
+	</ItemGroup>
+	<ItemGroup> 
+		<ProjectReference Include="..\InterfaceImplAsExtensionGenerator\InterfaceImplAsExtensionGenerator.csproj"  OutputItemType="Analyzer"  />
 	</ItemGroup>
 </Project>

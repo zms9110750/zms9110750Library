@@ -1,0 +1,11 @@
+﻿global using Microsoft.CodeAnalysis;
+global using System;
+global using System.Linq;
+global using System.Collections.Immutable;
+global using Microsoft.CodeAnalysis.CSharp;
+global using System.Text;
+global using System.Collections.Generic; 
+global using Microsoft.CodeAnalysis.CSharp.Syntax;
+global using System.Collections.Concurrent;
+global using zms9110750.InterfaceImplAsExtensionGenerator.SyntaxProcessors;
+global using System.Globalization;
