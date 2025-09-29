@@ -18,8 +18,8 @@
 `TypeNameSuffix`|生成的扩展类型名称后缀|`Extension`|
 `NamespaceSuffix`|命名空间追加字符串||追加的字符串会作为子命名空间
 `InstanceParameterName`|实例参数的默认名称|`instance`|
-`DefaultGenerateMembers`|默认要生成的成员类型| `Property | Method`|目前信誉发不支持索引器和事件
-`UseLegacySyntax`|是否使用旧语法|`false`|启用老语法，会全部以扩展方法形式生成
+`DefaultGenerateMembers`|默认要生成的成员类型| `Property | Method`|目前新语法不支持索引器和事件。在支持的时候可以自行启用
+`UseLegacySyntax`|是否使用旧语法|`false`|启用老语法，会全部以扩展方法形式生成。方法名和新语法一样。
 
 
 ### 接口扩展特性

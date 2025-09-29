@@ -1,11 +1,9 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace zms9110750.TreeCollection.Abstract;
+﻿namespace zms9110750.TreeCollection.Abstract;
 
 /// <summary>
 /// 树节点接口
 /// </summary>
-/// <typeparam name="TNode">自我约束</typeparam>
+/// <typeparam name="TNode">自我约束</typeparam> 
 public interface INode<TNode> where TNode : INode<TNode>
 {
 	/// <summary>

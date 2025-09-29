@@ -1,52 +1,53 @@
-using zms9110750.InterfaceImplAsExtensionGenerator.Config;
+ï»¿using zms9110750.InterfaceImplAsExtensionGenerator.Config;
 
 namespace zms9110750.InterfaceImplAsExtensionGenerator.SyntaxProcessors;
 
 abstract class ClassAnalyzer(GlobalConfigAnalyzer globalConfig) : BaseAnalyzer
 {
 	/// <summary>
-	/// È«¾ÖÅäÖÃ·ÖÎöÆ÷
+	/// å…¨å±€é…ç½®åˆ†æå™¨
 	/// </summary>
 	public GlobalConfigAnalyzer GlobalConfig { get; } = globalConfig;
 
 	/// <summary>
-	/// ÒªÀ©Õ¹µÄ½Ó¿ÚÀàĞÍ
+	/// è¦æ‰©å±•çš„æ¥å£ç±»å‹
 	/// </summary>
 	public abstract INamedTypeSymbol? InterfaceType { get; }
 
 	/// <summary>
-	/// ÌØĞÔ¶¨ÒåµÄÊµÀı²ÎÊıµÄÃû³Æ
+	/// ç‰¹æ€§å®šä¹‰çš„å®ä¾‹å‚æ•°çš„åç§°
 	/// </summary>
 	protected abstract string? AttributeInstanceParameterName { get; }
 
 	/// <summary>
-	/// ÌØĞÔ¶¨ÒåµÄÄ¬ÈÏÉú³ÉµÄ³ÉÔ±ÀàĞÍ
+	/// ç‰¹æ€§å®šä¹‰çš„é»˜è®¤ç”Ÿæˆçš„æˆå‘˜ç±»å‹
 	/// </summary>
 	protected abstract GenerateMembers AttributeDefaultGenerateMembers { get; }
 	/// <summary>
-	/// ÌØĞÔ¶¨ÒåµÄÀ©Õ¹ÀàµÄÃû³Æ
+	/// ç‰¹æ€§å®šä¹‰çš„æ‰©å±•ç±»çš„åç§°
 	/// </summary>
 	protected abstract string? AttributeExtensionClassName { get; }
 	/// <summary>
-	/// ÌØĞÔ¶¨ÒåµÄÀ©Õ¹ÀàËùÔÚµÄÃüÃû¿Õ¼ä
+	/// ç‰¹æ€§å®šä¹‰çš„æ‰©å±•ç±»æ‰€åœ¨çš„å‘½åç©ºé—´
 	/// </summary>
 	protected abstract string? AttributeExtensionClassNamespace { get; }
 
 	/// <summary>
-	/// ÊµÀı²ÎÊıµÄÃû³Æ
+	/// å®ä¾‹å‚æ•°çš„åç§°
 	/// </summary>
 	public string InstanceParameterName => AttributeInstanceParameterName ?? GlobalConfig.InstanceParameterName!;
 
 	/// <summary>
-	/// Ä¬ÈÏÉú³ÉµÄ³ÉÔ±ÀàĞÍ
+	/// é»˜è®¤ç”Ÿæˆçš„æˆå‘˜ç±»å‹
 	/// </summary>
 	public GenerateMembers DefaultGenerateMembers => AttributeDefaultGenerateMembers == default ? GlobalConfig.DefaultGenerateMembers : AttributeDefaultGenerateMembers;
 	/// <summary>
-	/// À©Õ¹ÀàµÄÃû³Æ
+	/// æ‰©å±•ç±»çš„åç§°
 	/// </summary>
 	public string ExtensionClassName => AttributeExtensionClassName ?? InterfaceType!.Name + GlobalConfig.TypeNameSuffix;
+
 	/// <summary>
-	/// À©Õ¹ÀàËùÔÚµÄÃüÃû¿Õ¼ä
+	/// æ‰©å±•ç±»æ‰€åœ¨çš„å‘½åç©ºé—´
 	/// </summary>
 	public string ExtensionClassNamespace
 	{
@@ -69,14 +70,33 @@ abstract class ClassAnalyzer(GlobalConfigAnalyzer globalConfig) : BaseAnalyzer
 			return space;
 		}
 	}
-
+	public ImmutableArray<ITypeParameterSymbol> GenericsWithContaining
+	{
+		get
+		{
+			if (InterfaceType == null)
+			{
+				return ImmutableArray<ITypeParameterSymbol>.Empty;
+			}
+			if (field.IsDefault)
+			{
+				IEnumerable<ITypeSymbol> parames = InterfaceType.TypeArguments;
+				for (var inter = InterfaceType.ContainingType; inter != null; inter = inter.ContainingType)
+				{
+					parames = inter.TypeArguments.Concat(parames);
+				}
+				field = parames.OfType<ITypeParameterSymbol>().ToImmutableArray();
+			}
+			return field;
+		}
+	}
 	protected ClassAnalyzer(ISymbol symbol) : this(new GlobalConfigAnalyzer(symbol.ContainingAssembly))
 	{
 	}
 	public override StringBuilder ToString(StringBuilder code)
 	{
 		code ??= new StringBuilder();
-		// ´¦ÀíÃüÃû¿Õ¼ä
+		// å¤„ç†å‘½åç©ºé—´
 		if (!string.IsNullOrEmpty(ExtensionClassNamespace) && ExtensionClassNamespace != "<global namespace>")
 		{
 			code.Append("namespace ").Append(ExtensionClassNamespace);
@@ -95,37 +115,35 @@ abstract class ClassAnalyzer(GlobalConfigAnalyzer globalConfig) : BaseAnalyzer
 		code.AppendLine(ExtensionClassName);
 		code.AppendLine("{");
 
-		// ´¦ÀíĞÂÓï·¨£ºÉú³ÉÀ©Õ¹¿é
+		// å¤„ç†æ–°è¯­æ³•ï¼šç”Ÿæˆæ‰©å±•å—
 		if (!GlobalConfig.UseLegacySyntax)
 		{
-			var typeParameters = InterfaceType!.TypeArguments.OfType<ITypeParameterSymbol>().ToImmutableArray();
-
 			code.Append("    extension");
-			if (typeParameters.Any())
+			if (GenericsWithContaining.Any())
 			{
 				code.Append("<");
-				code.AppendJoin(", ", typeParameters.Select(arg => arg.Name));
+				code.AppendJoin(", ", GenericsWithContaining.Select(p => p.Name));
 				code.Append(">");
 			}
 			code.Append("(");
-			code.Append(InterfaceType.ToGlobalDisplayString());
+			code.Append(InterfaceType!.ToGlobalDisplayString());
 			code.Append(" ");
 			code.Append(InstanceParameterName);
 			code.AppendLine(")");
-			foreach (var item in typeParameters)
+			foreach (var item in GenericsWithContaining)
 			{
 				GenerateConstraints(code, item);
 			}
 			code.AppendLine("    {");
 		}
 
-		// ±éÀúËùÓĞ³ÉÔ±²¢Éú³É´úÂë
+		// éå†æ‰€æœ‰æˆå‘˜å¹¶ç”Ÿæˆä»£ç 
 		foreach (var member in InterfaceType!.GetMembers().Where(IsAccessible))
 		{
 			new MemberAnalyzer(member, this).ToString(code);
 		}
 
-		// ´¦ÀíĞÂÓï·¨£º¹Ø±ÕÀ©Õ¹¿é
+		// å¤„ç†æ–°è¯­æ³•ï¼šå…³é—­æ‰©å±•å—
 		if (!GlobalConfig.UseLegacySyntax)
 		{
 			code.AppendLine("    }");
@@ -133,13 +151,14 @@ abstract class ClassAnalyzer(GlobalConfigAnalyzer globalConfig) : BaseAnalyzer
 
 		code.AppendLine("}");
 
-		// ¹Ø±ÕÃüÃû¿Õ¼ä£¨¾ÉÓï·¨£©
+		// å…³é—­å‘½åç©ºé—´ï¼ˆæ—§è¯­æ³•ï¼‰
 		if (GlobalConfig.UseLegacySyntax && !string.IsNullOrEmpty(ExtensionClassNamespace) && ExtensionClassNamespace != "<global namespace>")
 		{
 			code.AppendLine("}");
 		}
 		return code;
 	}
+
 }
 
 class InterfaceImplAnalyzer : ClassAnalyzer
@@ -193,4 +212,6 @@ class ExtendWithInterfaceImplAnalyzer : ClassAnalyzer
 	protected override GenerateMembers AttributeDefaultGenerateMembers { get; }
 	protected override string? AttributeExtensionClassName { get; }
 	protected override string? AttributeExtensionClassNamespace { get; }
+
+
 }

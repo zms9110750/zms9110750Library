@@ -1,65 +1,65 @@
-using zms9110750.InterfaceImplAsExtensionGenerator.Config;
+﻿using zms9110750.InterfaceImplAsExtensionGenerator.Config;
 
 namespace zms9110750.InterfaceImplAsExtensionGenerator.SyntaxProcessors;
 
 
 /// <summary>
-/// �������򼯼����ȫ������
+/// 分析程序集级别的全局配置
 /// </summary>
 class GlobalConfigAnalyzer
 {
 	/// <summary>
-	/// ���ɵ���չ�������ƺ�׺
+	/// 生成的扩展类型名称后缀
 	/// </summary>
 	/// <remarks>
-	/// �������Զ�������չ��ʱ׷�ӵ�ԭ��������
-	/// ����ԭ����Ϊ ITest����׺Ϊ"Extension"�������� TestExtension��
+	/// 用于在自动生成扩展类时追加到原类型名后。
+	/// 例如原类型为 ITest，后缀为"Extension"，则生成 TestExtension。
 	/// </remarks>
 	public string? TypeNameSuffix { get; }
 
 	/// <summary>
-	/// �����ռ�׷���ַ���
+	/// 命名空间追加字符串
 	/// </summary>
 	/// <remarks>
-	/// ������չ��ʱ׷�ӵ�ԭ�����ռ����ַ�����
-	/// ��Ϊ null ����ַ��������ַ�����ʾʹ��ԭ�����ռ䣩��
+	/// 生成扩展类时追加到原命名空间后的字符串。
+	/// 可为 null 或空字符串（空字符串表示使用原命名空间）。
 	/// </remarks>
 	public string? NamespaceSuffix { get; }
 
 	/// <summary>
-	/// ʵ��������Ĭ������
+	/// 实例参数的默认名称
 	/// </summary>
 	/// <remarks>
-	/// ��չ�����б�ʾʵ���Ĳ������ơ�
-	/// �ӿڡ���Ա���Կɸ��Ǵ�ֵ��δ����ʱʹ�ô˴����á�
+	/// 扩展方法中表示实例的参数名称。
+	/// 接口、成员特性可覆盖此值，未覆盖时使用此处配置。
 	/// </remarks>
 	public string InstanceParameterName { get; }
 
 	/// <summary>
-	/// Ĭ��Ҫ���ɵĳ�Ա���ͣ���λö�٣�
+	/// 默认要生成的成员类型（按位枚举）
 	/// </summary>
 	/// <remarks>
-	/// ȫ��Ĭ�����ɵĳ�Ա������ϣ�������+��������
-	/// �ӿڡ���Ա���Կɸ��Ǵ�ֵ��δ����ʱʹ�ô˴����á�
+	/// 全局默认生成的成员类型组合（如属性+方法）。
+	/// 接口、成员特性可覆盖此值，未覆盖时使用此处配置。
 	/// </remarks>
 	public GenerateMembers DefaultGenerateMembers { get; }
 
 	/// <summary>
-	/// �Ƿ�ʹ�þ��﷨����չ������ʽ��������չ
+	/// 是否使用旧语法（扩展方法形式）生成扩展
 	/// </summary>
 	/// <remarks>
-	/// Ϊ true ʱʹ�ô�ͳ��չ�����﷨��Ϊ false ʱʹ������չ���﷨��
-	/// δ����ʱĬ��Ϊ false������ʹ�����﷨����
+	/// 为 true 时使用传统扩展方法语法；为 false 时使用新扩展块语法。
+	/// 未设置时默认为 false（优先使用新语法）。
 	/// </remarks>
 	public bool UseLegacySyntax { get; }
 
 	/// <summary>
-	/// ��ʼ��ȫ�����÷�����
+	/// 初始化全局配置分析器
 	/// </summary>
-	/// <param name="assemblySymbol">���򼯷���</param>
+	/// <param name="assemblySymbol">程序集符号</param>
 	/// <remarks>
-	/// �ӳ�����������ȡȫ��������Ϣ��
-	/// ���û���ҵ��������ԣ���ʹ��Ĭ��ֵ��
+	/// 从程序集特性中提取全局配置信息。
+	/// 如果没有找到配置特性，则使用默认值。
 	/// </remarks>
 	public GlobalConfigAnalyzer(IAssemblySymbol assemblySymbol)
 	{
@@ -76,7 +76,7 @@ class GlobalConfigAnalyzer
 		}
 		else
 		{
-			// ʹ��Ĭ��ֵ
+			// 使用默认值
 			TypeNameSuffix = InterfaceImplAsExtensionGlobalAttribute.DefaultTypeNameSuffix;
 			InstanceParameterName = InterfaceImplAsExtensionGlobalAttribute.DefaultInstanceParameterName;
 			DefaultGenerateMembers = InterfaceImplAsExtensionGlobalAttribute.DefaultGenerateMembersValue;

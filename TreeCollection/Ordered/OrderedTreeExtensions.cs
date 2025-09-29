@@ -1,302 +1,167 @@
 ﻿using zms9110750.TreeCollection.Abstract;
+using zms9110750.TreeCollection.Trie;
 
 namespace zms9110750.TreeCollection.Ordered;
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
 
 /// <summary>
 /// 为<see cref="IOrderedTree{TValue, TNode}"/>提供扩展方法。并为实现类提供对接口默认实现的调用。
 /// </summary>
-public static class OrderedTreeExtensions
+public static partial class IOrderedTreeExtension
 {
-	#region Properties
-
-	/// <typeparam name="TValue">节点值的类型</typeparam>
-	/// <typeparam name="TNode">节点类型</typeparam>
-	/// <param name="tree">扩展方法依附的实例</param> 
-	/// <remarks>当接口具有默认实现时，此方法以扩展方法提供成员调用</remarks>
-	/// <inheritdoc cref="IOrderedTree{TValue, TNode}.Index"/>
-	public static int GetIndex<TValue, TNode>(this IOrderedTree<TValue, TNode> tree)
-		where TNode : IOrderedTree<TValue, TNode>
-		=> tree.Index;
-
-	/// <summary>
-	/// 获得第一个子节点
-	/// </summary>
-	/// <remarks>没有合法节点时返回null</remarks>
-	/// <inheritdoc cref="GetIndex{TValue, TNode}(IOrderedTree{TValue, TNode})"/>
-	public static TNode? GetFirstChild<TValue, TNode>(this IOrderedTree<TValue, TNode> tree)
-		where TNode : IOrderedTree<TValue, TNode>
-	{
-		return tree.Count > 0 ? tree[0] : default;
-	}
-
-	/// <summary>
-	/// 获得最后一个子节点
-	/// </summary>
-	/// <inheritdoc cref="GetFirstChild{TValue, TNode}(IOrderedTree{TValue, TNode})"/>
-
-	public static TNode? GetLastChild<TValue, TNode>(this IOrderedTree<TValue, TNode> tree)
-		where TNode : IOrderedTree<TValue, TNode>
-	{
-		return tree.Count > 0 ? tree[^1] : default;
-	}
-
-	/// <summary>
-	/// 获得前一个兄弟节点
-	/// </summary>
-	/// <inheritdoc cref="GetFirstChild{TValue, TNode}(IOrderedTree{TValue, TNode})"/>
-	public static TNode? GetPreviousSibling<TValue, TNode>(this IOrderedTree<TValue, TNode> node)
-		where TNode : IOrderedTree<TValue, TNode>
-	{
-		return node.Parent == null || node.Index <= 0 ? default : node.Parent[node.Index - 1];
-	}
-
-	/// <summary>
-	/// 获得后一个兄弟节点
-	/// </summary>
-	/// <inheritdoc cref="GetFirstChild{TValue, TNode}(IOrderedTree{TValue, TNode})"/>
-	public static TNode? GetNextSibling<TValue, TNode>(this IOrderedTree<TValue, TNode> node)
-		where TNode : IOrderedTree<TValue, TNode>
-	{
-		return node.Parent == null || node.Index >= node.Parent.Count - 1 ? default : node.Parent[node.Index + 1];
-	}
-
-	#endregion
-
-	#region AddAt
-	/// <inheritdoc cref="IOrderedTree{TValue, TNode}.AddAt(int, TNode)"/>
-	public static TNode AddAt<TValue, TNode>(this IOrderedTree<TValue, TNode> tree, Index index, TNode node)
-		where TNode : IOrderedTree<TValue, TNode>
-		=> tree.AddAt(index.GetOffset(tree.Count), node);
-
-	/// <inheritdoc cref="IOrderedTree{TValue, TNode}.AddAt(int, IEnumerable{TNode})"/>
-	public static void AddAt<TValue, TNode>(this IOrderedTree<TValue, TNode> tree, Index index, IEnumerable<TNode> node)
-		where TNode : IOrderedTree<TValue, TNode>
-		=> tree.AddAt(index.GetOffset(tree.Count), node);
-
-	/// <inheritdoc cref="IOrderedTree{TValue, TNode}.AddAt(int, ReadOnlySpan{TNode})"/>
-	public static void AddAt<TValue, TNode>(this IOrderedTree<TValue, TNode> tree, Index index, params ReadOnlySpan<TNode> node)
-		where TNode : IOrderedTree<TValue, TNode>
-		=> tree.AddAt(index.GetOffset(tree.Count), node);
-
-	/// <inheritdoc cref="IOrderedTree{TValue, TNode}.AddAt(int, TValue)"/>
-	public static TNode AddAt<TValue, TNode>(this IOrderedTree<TValue, TNode> tree, Index index, TValue node)
-		where TNode : IOrderedTree<TValue, TNode>
-		=> tree.AddAt(index.GetOffset(tree.Count), node);
-
-	/// <inheritdoc cref="IOrderedTree{TValue, TNode}.AddAt(int, IEnumerable{TValue})"/>
-	public static void AddAt<TValue, TNode>(this IOrderedTree<TValue, TNode> tree, Index index, params IEnumerable<TValue> node)
-		where TNode : IOrderedTree<TValue, TNode>
-		=> tree.AddAt(index.GetOffset(tree.Count), node);
-	#endregion
-
-	#region AddLast
-
-	/// <summary>
-	/// 将节点添加到最后
-	/// </summary>
-	/// <inheritdoc cref="GetIndex{TValue, TNode}(IOrderedTree{TValue, TNode})"/>
-	public static TNode Add<TValue, TNode>(this IOrderedTree<TValue, TNode> tree, TNode values)
-		where TNode : IOrderedTree<TValue, TNode>
-		=> tree.AddAt(tree.Count, values);
-
-	/// <inheritdoc cref="Add{TValue, TNode}(IOrderedTree{TValue, TNode}, TNode)"/>
-	public static void Add<TValue, TNode>(this IOrderedTree<TValue, TNode> tree, params IEnumerable<TNode> values)
+	extension<TValue, TNode>(IOrderedTree<TValue, TNode> instance)
 			where TNode : IOrderedTree<TValue, TNode>
-			=> tree.AddAt(tree.Count, values);
+	{
+		/// <summary>
+		/// 获得第一个子节点。不存在时返回null
+		/// </summary>
+		public TNode? FirstChild => instance.Count > 0 ? instance[0] : default;
+		/// <summary>
+		/// 获得最后个子节点。不存在时返回null
+		/// </summary>
+		public TNode? LastChild => instance.Count > 0 ? instance[0] : default;
 
-	/// <inheritdoc cref="Add{TValue, TNode}(IOrderedTree{TValue, TNode}, TNode)"/>
-	public static void Add<TValue, TNode>(this IOrderedTree<TValue, TNode> tree, ReadOnlySpan<TNode> values)
-		where TNode : IOrderedTree<TValue, TNode>
-		=> tree.AddAt(tree.Count, values);
+		/// <summary>
+		/// 获得前一个兄弟节点。不存在时返回null
+		/// </summary>
+		public TNode? PreviousSibling => instance.Parent == null || instance.Index <= 0 ? default : instance.Parent[instance.Index - 1];
 
-	/// <summary>
-	/// 将值添加到最后
-	/// </summary>
-	/// <inheritdoc cref="Add{TValue, TNode}(IOrderedTree{TValue, TNode}, TNode)"/>
-	public static TNode Add<TValue, TNode>(this IOrderedTree<TValue, TNode> tree, TValue values)
-		where TNode : IOrderedTree<TValue, TNode>
-		=> tree.AddAt(tree.Count, values);
+		/// <summary>
+		/// 获得后一个兄弟节点。不存在时返回null
+		/// </summary>
+		public TNode? NextSibling => instance.Parent == null || instance.Index >= instance.Parent.Count - 1 ? default : instance.Parent[instance.Index + 1];
 
-	/// <inheritdoc cref="Add{TValue, TNode}(IOrderedTree{TValue, TNode}, TValue)"/>
-	public static void Add<TValue, TNode>(this IOrderedTree<TValue, TNode> tree, params IEnumerable<TValue> values)
-	   where TNode : IOrderedTree<TValue, TNode>
-	   => tree.AddAt(tree.Count, values);
+		/// <inheritdoc cref="IOrderedTree{TValue, TNode}.AddAt(int, TNode)"/>
+		public TNode AddAt(Index index, TNode node) => instance.AddAt(index.GetOffset(instance.Count), node);
 
+		/// <inheritdoc cref="IOrderedTree{TValue, TNode}.AddAt(int, IEnumerable{TNode})"/>
+		public void AddAt(Index index, IEnumerable<TNode> nodes) => instance.AddAt(index.GetOffset(instance.Count), nodes);
 
-	#endregion
+		/// <inheritdoc cref="IOrderedTree{TValue, TNode}.AddAt(int, ReadOnlySpan{TNode})"/>
+		public void AddAt(Index index, params ReadOnlySpan<TNode> nodes) => instance.AddAt(index.GetOffset(instance.Count), nodes);
 
-	#region AddFirst
-	/// <summary>
-	/// 将节点添加到开头
-	/// </summary>
-	/// <inheritdoc cref="GetIndex{TValue, TNode}(IOrderedTree{TValue, TNode})"/>
-	public static TNode AddFirst<TValue, TNode>(this IOrderedTree<TValue, TNode> tree, TNode values)
-		where TNode : IOrderedTree<TValue, TNode>
-		=> tree.AddAt(0, values);
+		/// <inheritdoc cref="IOrderedTree{TValue, TNode}.AddAt(int, TValue)"/>
+		public TNode AddAt(Index index, TValue node) => instance.AddAt(index.GetOffset(instance.Count), node);
 
-	/// <inheritdoc cref="AddFirst{TValue, TNode}(IOrderedTree{TValue, TNode}, TNode)"/>
-	public static void AddFirst<TValue, TNode>(this IOrderedTree<TValue, TNode> tree, params IEnumerable<TNode> values)
-			where TNode : IOrderedTree<TValue, TNode>
-			=> tree.AddAt(0, values);
+		/// <inheritdoc cref="IOrderedTree{TValue, TNode}.AddAt(int, IEnumerable{TValue})"/>
+		public void AddAt(Index index, params IEnumerable<TValue> nodes) => instance.AddAt(index.GetOffset(instance.Count), nodes);
 
-	/// <inheritdoc cref="AddFirst{TValue, TNode}(IOrderedTree{TValue, TNode}, TNode)"/>
-	public static void AddFirst<TValue, TNode>(this IOrderedTree<TValue, TNode> tree, params ReadOnlySpan<TNode> values)
-		where TNode : IOrderedTree<TValue, TNode>
-		=> tree.AddAt(0, values);
+		/// <summary>
+		/// 将节点添加到最后
+		/// </summary>
+		public TNode Add(TNode node) => instance.AddAt(instance.Count, node);
 
-	/// <summary>
-	/// 将值添加到开头
-	/// </summary>
-	/// <inheritdoc cref="AddFirst{TValue, TNode}(IOrderedTree{TValue, TNode}, TNode)"/>
-	public static TNode AddFirst<TValue, TNode>(this IOrderedTree<TValue, TNode> tree, TValue values)
-		where TNode : IOrderedTree<TValue, TNode>
-		=> tree.AddAt(0, values);
+		/// <inheritdoc cref="Add{TValue, TNode}(IOrderedTree{TValue, TNode}, TNode)"/>
+		public void Add(IEnumerable<TNode> nodes) => instance.AddAt(instance.Count, nodes);
 
-	/// <inheritdoc cref="AddFirst{TValue, TNode}(IOrderedTree{TValue, TNode}, TValue)"/>
-	public static void AddFirst<TValue, TNode>(this IOrderedTree<TValue, TNode> tree, params IEnumerable<TValue> values)
-		where TNode : IOrderedTree<TValue, TNode>
-		=> tree.AddAt(0, values);
+		/// <inheritdoc cref="Add{TValue, TNode}(IOrderedTree{TValue, TNode}, TNode)"/>
 
-	#endregion
+		public void Add(params ReadOnlySpan<TNode> nodes) => instance.AddAt(instance.Count, nodes);
 
-	#region AddSiblings
+		/// <summary>
+		/// 将值添加到最后
+		/// </summary>
+		public TNode Add(TValue value) => instance.AddAt(instance.Count, value);
 
-	/// <summary>
-	/// 将节点添加到自己的前面
-	/// </summary>
-	/// <inheritdoc cref="GetIndex{TValue, TNode}(IOrderedTree{TValue, TNode})"/>
-	public static TNode AddBefore<TValue, TNode>(this IOrderedTree<TValue, TNode> node, TNode newNode)
-		where TNode : IOrderedTree<TValue, TNode> => node.Parent == null
-			? throw new InvalidOperationException("Root node cannot have siblings")
-			: node.Parent.AddAt(node.Index, newNode);
+		/// <inheritdoc cref="Add{TValue, TNode}(IOrderedTree{TValue, TNode}, TNode)"/>
+		public void Add(params IEnumerable<TValue> values) => instance.AddAt(instance.Count, values);
 
-	/// <inheritdoc cref="AddBefore{TValue, TNode}(IOrderedTree{TValue, TNode}, TNode)"/>
-	public static TNode AddBefore<TValue, TNode>(this IOrderedTree<TValue, TNode> node, TValue value)
-		where TNode : IOrderedTree<TValue, TNode> => node.Parent == null
-			? throw new InvalidOperationException("Root node cannot have siblings")
-			: node.Parent.AddAt(node.Index, value);
+		/// <summary>
+		/// 将节点添加到开头
+		/// </summary>
+		public TNode AddFirst(TNode node) => instance.AddAt(0, node);
 
-	/// <summary>
-	/// 将节点添加到自己的后面
-	/// </summary>
-	/// <inheritdoc cref="AddBefore{TValue, TNode}(IOrderedTree{TValue, TNode}, TNode)"/>
-	public static TNode AddAfter<TValue, TNode>(this IOrderedTree<TValue, TNode> node, TNode newNode)
-		where TNode : IOrderedTree<TValue, TNode> => node.Parent == null
-			? throw new InvalidOperationException("Root node cannot have siblings")
-			: node.Parent.AddAt(node.Index + 1, newNode);
+		/// <inheritdoc cref="AddFirst{TValue, TNode}(IOrderedTree{TValue, TNode}, TNode)"/>
+		public void AddFirst(IEnumerable<TNode> nodes) => instance.AddAt(0, nodes);
 
+		/// <inheritdoc cref="AddFirst{TValue, TNode}(IOrderedTree{TValue, TNode}, TNode)"/>
+		public void AddFirst(params ReadOnlySpan<TNode> nodes) => instance.AddAt(0, nodes);
 
-	/// <inheritdoc cref="AddAfter{TValue, TNode}(IOrderedTree{TValue, TNode}, TNode)"/>
-	public static TNode AddAfter<TValue, TNode>(this IOrderedTree<TValue, TNode> node, TValue value)
-		where TNode : IOrderedTree<TValue, TNode> => node.Parent == null
-			? throw new InvalidOperationException("Root node cannot have siblings")
-			: node.Parent.AddAt(node.Index + 1, value);
+		/// <summary>
+		/// 将值添加到开头
+		/// </summary>
+		public TNode AddFirst(TValue value) => instance.AddAt(0, value);
 
-	#endregion
+		/// <inheritdoc cref="AddFirst{TValue, TNode}(IOrderedTree{TValue, TNode}, TValue)"/>
+		public void AddFirst(params IEnumerable<TValue> values) => instance.AddAt(0, values);
 
-	#region Remove 
+		/// <summary>
+		/// 将节点添加到自己的前面
+		/// </summary>
+		public TNode AddBefore(TNode node) => instance.RequiredParent.AddAt(instance.Index, node);
 
-	/// <inheritdoc cref="IOrderedTree{TValue, TNode}.Remove(TNode)"/>
-	public static TNode? Remove<TValue, TNode>(this IOrderedTree<TValue, TNode> tree, TNode value)
-		where TNode : IOrderedTree<TValue, TNode>
-		=> tree.Remove(value);
+		/// <inheritdoc cref="AddBefore{TValue, TNode}(IOrderedTree{TValue, TNode}, TNode)"/>
+		public TNode AddBefore(TValue value) => instance.RequiredParent.AddAt(instance.Index, value);
 
-	/// <param name="tree">要操作的树</param>
-	/// <param name="value">要移除的值</param>
-	/// <param name="range">如果具有范围则转由<see cref="IOrderedTree{TValue, TNode}.ISlice"/>执行</param>
-	/// <inheritdoc cref="IOrderedTree{TValue, TNode}.Remove(TValue)"/>
-	public static TNode? Remove<TValue, TNode>(this IOrderedTree<TValue, TNode> tree, TValue value, Range? range = null)
-			where TNode : IOrderedTree<TValue, TNode>
-			=> range is not Range ran ? tree.Remove(value) : tree[ran].Remove(value);
+		/// <summary>
+		/// 将节点添加到自己的后面
+		/// </summary>
+		public TNode AddAfter(TNode newNode) => instance.RequiredParent.AddAt(instance.Index + 1, newNode);
 
-	/// <inheritdoc cref="IOrderedTree{TValue, TNode}.RemoveAt(int)"/>
-	public static TNode? RemoveAt<TValue, TNode>(this IOrderedTree<TValue, TNode> tree, Index index)
-		where TNode : IOrderedTree<TValue, TNode>
-		=> tree.RemoveAt(index.GetOffset(tree.Count));
+		/// <inheritdoc cref="AddAfter{TValue, TNode}(IOrderedTree{TValue, TNode}, TNode)"/>
+		public TNode AddAfter(TValue value) => instance.RequiredParent.AddAt(instance.Index + 1, value);
+		 
+		/// <inheritdoc cref="IOrderedTree{TValue, TNode}.Remove(TValue)"/>
+		public TNode? Remove(TValue value, Range? range = null) => range is not Range ran
+			? instance.Remove(value)
+			: instance[ran].Remove(value);
 
-	/// <inheritdoc cref="IOrderedTree{TValue, TNode}.RemoveAll(Predicate{TNode})"/>
-	public static int RemoveAll<TValue, TNode>(this IOrderedTree<TValue, TNode> tree, Predicate<TNode>? match = null, Range? range = null)
-		where TNode : IOrderedTree<TValue, TNode>
-		=> range is not Range ran ? tree.RemoveAll(match) : tree[ran].RemoveAll(match);
+		/// <inheritdoc cref="IOrderedTree{TValue, TNode}.RemoveAt(int)"/>
+		public TNode? RemoveAt(Index index) => instance.RemoveAt(index.GetOffset(instance.Count));
 
-	/// <inheritdoc cref="IOrderedTree{TValue, TNode}.RemoveAll(Predicate{TNode})"/>
-	/// <remarks>会转为对<see cref="IOrderedTree{TValue, TNode}.RemoveAll(Predicate{TNode})"/>的调用和对<see cref="IOrderedTree{TValue, TNode}.ISlice"/>的调用</remarks>
-	public static int RemoveAll<TValue, TNode>(this IOrderedTree<TValue, TNode> tree, Predicate<TValue>? match = null, Range? range = null)
-		where TNode : IOrderedTree<TValue, TNode>
-		=> (range, match) switch
+		/// <inheritdoc cref="IOrderedTree{TValue, TNode}.RemoveAll(Predicate{TNode})"/>
+		public int RemoveAll(Predicate<TNode>? match = null, Range? range = null) => range is not Range ran
+			? instance.RemoveAll(match)
+			: instance[ran].RemoveAll(match);
+
+		/// <inheritdoc cref="IOrderedTree{TValue, TNode}.RemoveAll(Predicate{TNode})"/>
+		public int RemoveAll(Predicate<TValue>? match = null, Range? range = null) => (range, match) switch
 		{
-			(null, null) => tree.RemoveAll(null),
-			(Range ran, null) => tree[ran].RemoveAll(null),
-			(null, Predicate<TValue> m) => tree.RemoveAll(node => m(node.Value)),
-			(Range ran, Predicate<TValue> m) => tree[ran].RemoveAll(node => m(node.Value))
+			(null, null) => instance.RemoveAll(null),
+			(Range ran, null) => instance[ran].RemoveAll(null),
+			(null, Predicate<TValue> m) => instance.RemoveAll(node => m(node.Value)),
+			(Range ran, Predicate<TValue> m) => instance[ran].RemoveAll(node => m(node.Value))
 		};
-	#endregion
 
-	/// <summary>
-	/// 垂直添加节点 - 第一个元素添加到指定位置，后续元素递归添加为子节点
-	/// </summary>
-	/// <typeparam name="TValue">节点值的类型</typeparam>
-	/// <typeparam name="TNode">节点类型</typeparam>
-	/// <param name="tree">目标树</param>
-	/// <param name="index">插入位置的索引</param>
-	/// <param name="nodes">要添加的节点值集合</param>
-	/// <returns>最后添加的节点</returns>
-	/// <remarks>
-	/// 1. 第一个元素将添加到指定索引位置
-	/// 2. 后续每个元素将作为前一个元素的子节点添加
-	/// 3. 如果集合为空，返回默认值
-	/// </remarks>
-	public static TNode? AddVertically<TValue, TNode>(this IOrderedTree<TValue, TNode> tree, Index index, params IEnumerable<TValue> nodes) where TNode : IOrderedTree<TValue, TNode>
-	{
-		using var e = nodes.GetEnumerator();
-		if (!e.MoveNext())
+		/// <summary>
+		/// 垂直添加节点 - 第一个元素添加到指定位置，后续元素递归添加为子节点
+		/// </summary>
+		public TNode? AddVertically(Index index, params IEnumerable<TValue> nodes)
 		{
-			return default;
+			using var e = nodes.GetEnumerator();
+			if (!e.MoveNext())
+			{
+				return default;
+			}
+			var currentNode = instance.AddAt(index, e.Current);
+			while (e.MoveNext())
+			{
+				currentNode = currentNode.Add(value: e.Current);
+			}
+			return currentNode;
 		}
-		var currentNode = tree.AddAt(index, e.Current);
-		while (e.MoveNext())
-		{
-			currentNode = currentNode.Add(e.Current);
-		}
-		return currentNode;
+		 
+		/// <inheritdoc cref="IOrderedTree{TValue, TNode}.MoveChild(int, int)"/>
+		public void MoveChild(Index fromIndex, Index toIndex) => instance.MoveChild(
+			fromIndex.GetOffset(instance.Count),
+			toIndex.GetOffset(instance.Count));
+		 
+		/// <inheritdoc cref="IOrderedTree{TValue, TNode}.Contains(TValue)"/>
+		public bool Contains(TValue value, Range? range = null) => range is not Range ran
+			? instance.Contains(value)
+			: instance[ran].Contains(value);
+
+		/// <inheritdoc cref="IOrderedTree{TValue, TNode}.IndexOf(TValue)"/>
+		public int IndexOf(TValue value, Range? range = null) => range is not Range ran
+			? instance.IndexOf(value)
+			: instance[ran].IndexOf(value);
+
+		/// <inheritdoc cref="IOrderedTree{TValue, TNode}.LastIndexOf(TValue)"/>
+		public int LastIndexOf(TValue value, Range? range = null) => range is not Range ran
+			? instance.LastIndexOf(value)
+			: instance[ran].LastIndexOf(value);
+
+		/// <inheritdoc cref="IOrderedTree{TValue, TNode}.ISlice.UpdateIndex"/>
+		public void UpdateIndex(Range range) => instance[range].UpdateIndex();
 	}
-
-	/// <inheritdoc cref="IOrderedTree{TValue, TNode}.Replace(TNode, TNode)"/>
-	public static bool Replace<TValue, TNode>(this IOrderedTree<TValue, TNode> tree, TNode oldValue, TNode newValue)
-		where TNode : IOrderedTree<TValue, TNode>
-		=> tree.Replace(oldValue, newValue);
-
-	/// <inheritdoc cref="IOrderedTree{TValue, TNode}.MoveChild(int, int)"/>
-	public static void MoveChild<TValue, TNode>(this IOrderedTree<TValue, TNode> tree, Index fromIndex, Index toIndex)
-	  where TNode : IOrderedTree<TValue, TNode>
-	  => tree.MoveChild(fromIndex.GetOffset(tree.Count), toIndex.GetOffset(tree.Count));
-
-	/// <inheritdoc cref="IOrderedTree{TValue, TNode}.Slice(int, int)"/>
-	public static IOrderedTree<TValue, TNode>.ISlice Slice<TValue, TNode>(this IOrderedTree<TValue, TNode> tree, int start, int length)
-		where TNode : IOrderedTree<TValue, TNode>
-		=> tree.Slice(start, length);
-
-	/// <inheritdoc cref="IOrderedTree{TValue, TNode}.Contains(TValue)"/>
-	/// <remarks>如果具有范围则转由<see cref="IOrderedTree{TValue, TNode}.ISlice"/>执行</remarks>
-	public static bool Contains<TValue, TNode>(this IOrderedTree<TValue, TNode> tree, TValue value, Range? range = null)
-		where TNode : IOrderedTree<TValue, TNode>
-		=> range is not Range ran ? tree.Contains(value) : tree[ran].Contains(value);
-
-	/// <inheritdoc cref="IOrderedTree{TValue, TNode}.IndexOf(TValue)"/>
-	/// <remarks>如果具有范围则转由<see cref="IOrderedTree{TValue, TNode}.ISlice"/>执行</remarks>
-	public static int IndexOf<TValue, TNode>(this IOrderedTree<TValue, TNode> tree, TValue value, Range? range = null)
-		where TNode : IOrderedTree<TValue, TNode>
-		=> range is not Range ran ? tree.IndexOf(value) : tree[ran].IndexOf(value);
-
-	/// <inheritdoc cref="IOrderedTree{TValue, TNode}.LastIndexOf(TValue)"/>
-	/// <remarks>如果具有范围则转由<see cref="IOrderedTree{TValue, TNode}.ISlice"/>执行</remarks>
-	public static int LastIndexOf<TValue, TNode>(this IOrderedTree<TValue, TNode> tree, TValue value, Range? range = null)
-		where TNode : IOrderedTree<TValue, TNode>
-		=> range is not Range ran ? tree.LastIndexOf(value) : tree[ran].LastIndexOf(value);
-
-	/// <inheritdoc cref="IOrderedTree{TValue, TNode}.ISlice.UpdateIndex"/>
-	/// <remarks>由<see cref="IOrderedTree{TValue, TNode}.ISlice"/>执行</remarks>
-	public static void UpdateIndex<TValue, TNode>(this IOrderedTree<TValue, TNode> tree, Range range)
-		where TNode : IOrderedTree<TValue, TNode>
-		=> tree[range].UpdateIndex();
 }

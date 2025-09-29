@@ -1,4 +1,4 @@
-namespace zms9110750.InterfaceImplAsExtensionGenerator.Config;
+﻿namespace zms9110750.InterfaceImplAsExtensionGenerator.Config;
 
 
 /// <summary>

@@ -1,4 +1,4 @@
-namespace zms9110750.InterfaceImplAsExtensionGenerator.Config;
+﻿namespace zms9110750.InterfaceImplAsExtensionGenerator.Config;
 /// <summary>
 /// 程序集级别的扩展生成规则，设置全局默认行为
 /// </summary>

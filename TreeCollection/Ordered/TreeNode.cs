@@ -265,7 +265,7 @@ public class TreeNode<T>(T value) : RootNode<T, TreeNode<T>>(value), IList<TreeN
 		}
 		foreach (var node in this)
 		{
-			stack.Push(node.GetNextSibling() != null ? V1 : V0);
+			stack.Push(node.NextSibling!= null ? V1 : V0);
 			node.Append(sb, stack);
 		}
 		stack.Pop();
@@ -300,7 +300,7 @@ public class TreeNode<T>(T value) : RootNode<T, TreeNode<T>>(value), IList<TreeN
 		var parent = Parent;
 		var index = Index;
 		yield return this;
-		foreach (var item in this.GetFirstChild()?.EnumTree() ?? [])
+		foreach (var item in this.FirstChild?.EnumTree() ?? [])
 		{
 			if (parent != Parent)
 			{

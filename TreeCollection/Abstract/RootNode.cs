@@ -14,18 +14,18 @@ public abstract class RootNode<TValue, TNode>(TValue value) : INode<TNode>, IVal
 	/// </summary>
 	public TValue Value { get; set; } = value;
 
-	/// <inheritdoc/>
-	[field: AllowNull]
+	/// <inheritdoc/> 
 	[property: AllowNull]
 	public TNode Root { get => field ??= Parent?.Root ?? (TNode)this; protected set; }
 	/// <inheritdoc/>
-	public int Depth { get => field < 0 ? field = Parent?.Depth + 1 ?? 0 : field; protected set; }
+	public int Depth { get => field < 0 ? field = Parent?.Depth + 1 ?? 0 : field; private set; }
 
 	/// <summary>
 	/// 子结点集合
 	/// </summary>
 	/// <remarks><see cref="Parent"/>的set会自动递归子节点。需要引用这个属性进行遍历</remarks>
 	protected abstract IEnumerable<TNode> ChildrenNode { get; }
+
 	/// <summary>
 	/// 父结点
 	/// </summary>

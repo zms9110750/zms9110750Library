@@ -1,4 +1,4 @@
-namespace zms9110750.InterfaceImplAsExtensionGenerator.SyntaxProcessors;
+﻿namespace zms9110750.InterfaceImplAsExtensionGenerator.SyntaxProcessors;
 
 static class SourceGeneratorExtensions
 {
@@ -140,5 +140,10 @@ static class SourceGeneratorExtensions
 			sb.AppendJoin(", ", constraintStrings);
 		}
 		return sb;
+	}
+
+	public static TValue? GetOrDefault<TKey, TValue>(this IReadOnlyDictionary<TKey, TValue>? dictionary, TKey key, TValue? defaultValue = default)
+	{
+		return dictionary != null && dictionary.TryGetValue(key, out TValue? value) ? value : defaultValue;
 	}
 }

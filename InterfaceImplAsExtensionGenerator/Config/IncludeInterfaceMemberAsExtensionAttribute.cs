@@ -1,4 +1,4 @@
-namespace zms9110750.InterfaceImplAsExtensionGenerator.Config;
+﻿namespace zms9110750.InterfaceImplAsExtensionGenerator.Config;
 /// <summary>
 /// 接口成员级别的扩展生成规则，控制单个成员是否生成扩展
 /// </summary>

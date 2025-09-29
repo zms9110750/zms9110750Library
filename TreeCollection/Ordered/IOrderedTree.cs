@@ -7,7 +7,8 @@ namespace zms9110750.TreeCollection.Ordered;
 /// <typeparam name="TValue">值类型</typeparam>
 /// <typeparam name="TNode">自我约束</typeparam>
 /// <remarks>节点提供<see cref="Index"/>属性，并允许<see cref="MoveChild(int, int)"/>改变索引</remarks>
-public interface IOrderedTree<TValue, TNode> : IValue<TValue>, INode<TNode>, IList<TNode> where TNode : IOrderedTree<TValue, TNode>
+[InterfaceImplAsExtensionGenerator.Config.InterfaceImplAsExtension]
+public interface IOrderedTree<TValue, TNode> : IValue<TValue>, INode<TNode>, IList<TNode> where TNode : IOrderedTree<TValue, TNode>, INode<TNode>
 {
 	/// <summary>
 	/// 默认相等比较器s
@@ -62,6 +63,7 @@ public interface IOrderedTree<TValue, TNode> : IValue<TValue>, INode<TNode>, ILi
 
 	/// <inheritdoc cref="AddAt(int, TValue)" />
 	void AddAt(int index, params IEnumerable<TValue> node);
+
 	/// <summary>
 	/// 替换节点
 	/// </summary>
@@ -69,7 +71,6 @@ public interface IOrderedTree<TValue, TNode> : IValue<TValue>, INode<TNode>, ILi
 	/// <param name="newNode">新节点</param>
 	/// <returns>旧节点是子节点。</returns>
 	/// <remarks>等效于移除旧节点，再添加新节点。</remarks>
-
 	bool Replace(TNode oldNode, TNode newNode);
 
 	/// <summary>
@@ -101,6 +102,7 @@ public interface IOrderedTree<TValue, TNode> : IValue<TValue>, INode<TNode>, ILi
 	{
 		return Remove(item)?.Equals(item) == true;
 	}
+
 	/// <summary>
 	/// 移除指定索引处的节点
 	/// </summary>
@@ -110,18 +112,22 @@ public interface IOrderedTree<TValue, TNode> : IValue<TValue>, INode<TNode>, ILi
 	{
 		return Remove(this[index])!;
 	}
+
 	void IList<TNode>.Insert(int index, TNode item)
 	{
 		AddAt(index, item);
 	}
+
 	void IList<TNode>.RemoveAt(int index)
 	{
 		RemoveAt(index);
 	}
+
 	void ICollection<TNode>.Add(TNode item)
 	{
 		AddAt(Count, item);
 	}
+
 	/// <summary>
 	/// 获取子节点的切片
 	/// </summary>
@@ -149,6 +155,7 @@ public interface IOrderedTree<TValue, TNode> : IValue<TValue>, INode<TNode>, ILi
 	{
 		return Equals(item.Parent);
 	}
+
 	/// <summary>
 	/// 查询是否具有包含指定值的子节点
 	/// </summary>
@@ -156,14 +163,7 @@ public interface IOrderedTree<TValue, TNode> : IValue<TValue>, INode<TNode>, ILi
 	/// <returns>若存在则返回true，否则返回false</returns>
 	bool Contains(TValue value)
 	{
-		foreach (var node in this)
-		{
-			if (Comparer.Equals(node.Value, value))
-			{
-				return true;
-			}
-		}
-		return false;
+		return IndexOf(value) != -1;
 	}
 
 	/// <summary>
@@ -206,10 +206,12 @@ public interface IOrderedTree<TValue, TNode> : IValue<TValue>, INode<TNode>, ILi
 	/// <remarks>切片改变集合时应当调用此方法。<br/>版本改变后切片应当失效。</remarks>
 	void IncrementVersion();
 
+
 	/// <summary>
 	/// 切片接口
 	/// </summary>
 	/// <remarks>对于一些遍历节点查找值的方法，此接口提供相同功能并仅在范围内遍历。</remarks>
+	[InterfaceImplAsExtensionGenerator.Config.InterfaceImplAsExtension]
 	public interface ISlice : IReadOnlyList<TNode>
 	{
 		/// <summary>
@@ -247,5 +249,6 @@ public interface IOrderedTree<TValue, TNode> : IValue<TValue>, INode<TNode>, ILi
 		/// 更新索引
 		/// </summary>
 		void UpdateIndex();
+
 	}
 }

@@ -45,6 +45,6 @@ public abstract class GraphNode<TValue, TWeight>
 	/// <inheritdoc/>
 	public override string ToString()
 	{
-		return $"Node( {Value} )[{string.Join(", ", OutEdges.Select(s => $"{s.Key}({s.Value})"))} ]";
+		return $"TNode( {Value} )[{string.Join(", ", OutEdges.Select(s => $"{s.Key}({s.Value})"))} ]";
 	}
 }

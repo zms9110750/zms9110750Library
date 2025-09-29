@@ -345,12 +345,12 @@ class MemberAnalyzer : BaseAnalyzer
 		{
 			if (extensionMethod)
 			{
-				types = ClassAnalyzer.InterfaceType!.TypeArguments.OfType<ITypeParameterSymbol>().Concat(types).ToImmutableArray();
+				types = ClassAnalyzer.GenericsWithContaining.Concat(types).ToImmutableArray();
 			}
 			if (types.Any())
 			{
 				sb.Append("<");
-				sb.AppendJoin(", ", types.Select(tp => tp.Name));
+				sb.AppendJoin(", ", types.Select(p => p.Name));
 				sb.Append(">");
 			}
 		}

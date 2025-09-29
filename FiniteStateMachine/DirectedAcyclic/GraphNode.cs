@@ -39,6 +39,6 @@ public abstract class GraphNode<TValue>
 	/// <inheritdoc/>
 	public override string ToString()
 	{
-		return $"Node( {Value} )[{string.Join(", ", OutEdges.Select(s => s.Value))} ]";
+		return $"TNode( {Value} )[{string.Join(", ", OutEdges.Select(s => s.Value))} ]";
 	}
 }
