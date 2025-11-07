@@ -16,6 +16,7 @@
 		<PackageReadmeFile>Readme.md</PackageReadmeFile>
 		<PackageReleaseNotes>迁移命名空间。增加通用性。略微增加性能。公开源生成器配置</PackageReleaseNotes>
 		<Description></Description>
+		<PackageTags>Deepseek</PackageTags>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

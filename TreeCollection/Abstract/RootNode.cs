@@ -49,4 +49,10 @@ public abstract class RootNode<TValue, TNode>(TValue value) : INode<TNode>, IVal
 			}
 		}
 	}
+
+	/// <inheritdoc/>
+	public IEnumerator<TNode> GetEnumerator()
+	{
+		return ChildrenNode.GetEnumerator();
+	}
 }

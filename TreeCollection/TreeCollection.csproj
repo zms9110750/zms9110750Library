@@ -1,21 +1,25 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net9.0</TargetFramework>
+		<TargetFramework>net8.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<LangVersion>preview</LangVersion>
 		<RootNamespace>zms9110750.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
 		<AssemblyName>zms9110750.$(MSBuildProjectName)</AssemblyName>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
-		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<GeneratePackageOnBuild>False</GeneratePackageOnBuild>
 		<Authors>zms9110750</Authors>
 		<PackageProjectUrl>https://github.com/zms9110750/zms9110750Library</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/zms9110750/zms9110750Library</RepositoryUrl>
-		<PackageReadmeFile>Readme.md</PackageReadmeFile>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<IncludeSymbols>False</IncludeSymbols>
-		<Version>1.1.0</Version>
+		<Version>1.1.1</Version>
+		<Title>多叉树集合</Title>
+		<Description>一个泛型集合类型。</Description>
+		<PackageReleaseNotes>扩展方法改为了使用新语法的extension块。</PackageReleaseNotes>
+		<PackageReadmeFile>Readme.md</PackageReadmeFile>
+		<PackageTags>Tree Collection</PackageTags>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -36,6 +40,6 @@
 		<None Update="Readme.md">
 			<Pack>True</Pack>
 			<PackagePath>\</PackagePath>
-		</None>
+		</None> 
 	</ItemGroup> 
 </Project>

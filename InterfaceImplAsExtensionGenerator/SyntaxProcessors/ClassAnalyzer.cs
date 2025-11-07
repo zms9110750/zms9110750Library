@@ -31,6 +31,10 @@ abstract class ClassAnalyzer(GlobalConfigAnalyzer globalConfig) : BaseAnalyzer
 	/// 特性定义的扩展类所在的命名空间
 	/// </summary>
 	protected abstract string? AttributeExtensionClassNamespace { get; }
+	/// <summary>
+	/// 特性定义的扩展类使用public
+	/// </summary>
+	protected abstract bool? AttributeExtensionClassUsePublic { get; }
 
 	/// <summary>
 	/// 实例参数的名称
@@ -70,6 +74,8 @@ abstract class ClassAnalyzer(GlobalConfigAnalyzer globalConfig) : BaseAnalyzer
 			return space;
 		}
 	}
+	public bool ExtensionClassUsePublic => AttributeExtensionClassUsePublic ?? GlobalConfig.UsePublic;
+
 	public ImmutableArray<ITypeParameterSymbol> GenericsWithContaining
 	{
 		get
@@ -110,6 +116,10 @@ abstract class ClassAnalyzer(GlobalConfigAnalyzer globalConfig) : BaseAnalyzer
 				code.AppendLine(";");
 				code.AppendLine();
 			}
+		}
+		if (ExtensionClassUsePublic)
+		{
+			code.Append("public ");
 		}
 		code.Append("static partial class ");
 		code.AppendLine(ExtensionClassName);
@@ -158,7 +168,6 @@ abstract class ClassAnalyzer(GlobalConfigAnalyzer globalConfig) : BaseAnalyzer
 		}
 		return code;
 	}
-
 }
 
 class InterfaceImplAnalyzer : ClassAnalyzer
@@ -177,6 +186,7 @@ class InterfaceImplAnalyzer : ClassAnalyzer
 		AttributeDefaultGenerateMembers = classAttribute.GetOrDefault<GenerateMembers>(nameof(InterfaceImplAsExtensionAttribute.DefaultGenerateMembers));
 		AttributeExtensionClassName = classAttribute.GetOrDefault<string>(nameof(InterfaceImplAsExtensionAttribute.ExtensionClassName));
 		AttributeExtensionClassNamespace = classAttribute.GetOrDefault<string>(nameof(InterfaceImplAsExtensionAttribute.ExtensionClassNamespace));
+		AttributeExtensionClassUsePublic = classAttribute.GetOrDefault<bool>(nameof(InterfaceImplAsExtensionAttribute.UsePublic));
 	}
 	public override INamedTypeSymbol? InterfaceType { get; }
 	public override bool IsValid { get; }
@@ -184,6 +194,7 @@ class InterfaceImplAnalyzer : ClassAnalyzer
 	protected override GenerateMembers AttributeDefaultGenerateMembers { get; }
 	protected override string? AttributeExtensionClassName { get; }
 	protected override string? AttributeExtensionClassNamespace { get; }
+	protected override bool? AttributeExtensionClassUsePublic { get; }
 }
 class ExtendWithInterfaceImplAnalyzer : ClassAnalyzer
 {
@@ -212,6 +223,5 @@ class ExtendWithInterfaceImplAnalyzer : ClassAnalyzer
 	protected override GenerateMembers AttributeDefaultGenerateMembers { get; }
 	protected override string? AttributeExtensionClassName { get; }
 	protected override string? AttributeExtensionClassNamespace { get; }
-
-
+	protected override bool? AttributeExtensionClassUsePublic { get; } = default;
 }

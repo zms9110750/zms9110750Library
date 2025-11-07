@@ -16,7 +16,7 @@ class InterfaceExtensionGenerator : IIncrementalGenerator
 				predicate: static (node, _) =>
 					node is InterfaceDeclarationSyntax { AttributeLists.Count: > 0 } ||
 					(node is ClassDeclarationSyntax { AttributeLists.Count: > 0, Modifiers.Count: > 0, Parent: CompilationUnitSyntax or BaseNamespaceDeclarationSyntax } classDecl &&
-					 classDecl.Modifiers.Any(m => m.Text == "static")),
+					 classDecl.Modifiers.Any(SyntaxKind.StaticKeyword)),
 				transform: static (ctx, _) =>
 				{
 					try

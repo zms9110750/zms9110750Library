@@ -9,8 +9,4 @@
 	  <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\TreeCollection\TreeCollection.csproj" />
-  </ItemGroup>
-
 </Project>

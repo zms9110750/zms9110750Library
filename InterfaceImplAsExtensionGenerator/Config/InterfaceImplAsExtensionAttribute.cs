@@ -43,4 +43,13 @@ public class InterfaceImplAsExtensionAttribute : Attribute
 	/// 为当前接口生成的成员类型组合。未设置时继承程序集级 DefaultGenerateMembers。
 	/// </remarks>
 	public GenerateMembers DefaultGenerateMembers { get; set; }
+
+	/// <summary>
+	/// 生成扩展类使用 public 访问权限
+	/// </summary> 
+	/// <remarks>
+	/// 为 null 时继承程序集级或接口级的UsePublic。<br/>
+	/// 为 false 时不生成访问权限修饰符。可以自行创建partial声明来指定访问权限。
+	/// </remarks>
+	public bool? UsePublic { get; set; }
 }

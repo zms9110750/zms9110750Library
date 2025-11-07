@@ -30,7 +30,7 @@ static class SourceGeneratorExtensions
 		if (attributeData == null)
 		{
 			return false;
-		}
+		} 
 
 		foreach (var namedArg in attributeData.NamedArguments)
 		{

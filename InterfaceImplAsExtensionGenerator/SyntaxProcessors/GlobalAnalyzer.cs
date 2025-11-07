@@ -52,6 +52,7 @@ class GlobalConfigAnalyzer
 	/// 未设置时默认为 false（优先使用新语法）。
 	/// </remarks>
 	public bool UseLegacySyntax { get; }
+	public bool UsePublic { get; }
 
 	/// <summary>
 	/// 初始化全局配置分析器
@@ -73,6 +74,7 @@ class GlobalConfigAnalyzer
 			InstanceParameterName = attribute.GetOrDefault(nameof(InterfaceImplAsExtensionGlobalAttribute.InstanceParameterName), InterfaceImplAsExtensionGlobalAttribute.DefaultInstanceParameterName) ?? InterfaceImplAsExtensionGlobalAttribute.DefaultInstanceParameterName;
 			DefaultGenerateMembers = (GenerateMembers)attribute.GetOrDefault(nameof(InterfaceImplAsExtensionGlobalAttribute.DefaultGenerateMembers), (int)InterfaceImplAsExtensionGlobalAttribute.DefaultGenerateMembersValue);
 			UseLegacySyntax = attribute.GetOrDefault(nameof(InterfaceImplAsExtensionGlobalAttribute.UseLegacySyntax), false);
+			UsePublic = attribute.GetOrDefault(nameof(InterfaceImplAsExtensionGlobalAttribute.UsePublic), false);
 		}
 		else
 		{

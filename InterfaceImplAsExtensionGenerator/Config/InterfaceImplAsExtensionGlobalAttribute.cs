@@ -54,6 +54,11 @@ public class InterfaceImplAsExtensionGlobalAttribute : Attribute
 	/// </remarks>
 	public bool UseLegacySyntax { get; set; }
 
+	/// <summary>
+	/// 生成扩展类默认使用 public 访问权限
+	/// </summary> 
+	public bool UsePublic { get; set; }
+
 	internal const string DefaultTypeNameSuffix = "Extension";
 	internal const string DefaultInstanceParameterName = "instance";
 	internal const GenerateMembers DefaultGenerateMembersValue = GenerateMembers.Property | GenerateMembers.Method;

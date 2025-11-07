@@ -1,8 +1,8 @@
 ﻿using zms9110750.TreeCollection.Abstract;
-using zms9110750.TreeCollection.Trie;
 
 namespace zms9110750.TreeCollection.Ordered;
 #pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
+
 
 /// <summary>
 /// 为<see cref="IOrderedTree{TValue, TNode}"/>提供扩展方法。并为实现类提供对接口默认实现的调用。
@@ -100,7 +100,7 @@ public static partial class IOrderedTreeExtension
 
 		/// <inheritdoc cref="AddAfter{TValue, TNode}(IOrderedTree{TValue, TNode}, TNode)"/>
 		public TNode AddAfter(TValue value) => instance.RequiredParent.AddAt(instance.Index + 1, value);
-		 
+
 		/// <inheritdoc cref="IOrderedTree{TValue, TNode}.Remove(TValue)"/>
 		public TNode? Remove(TValue value, Range? range = null) => range is not Range ran
 			? instance.Remove(value)
@@ -140,12 +140,12 @@ public static partial class IOrderedTreeExtension
 			}
 			return currentNode;
 		}
-		 
+
 		/// <inheritdoc cref="IOrderedTree{TValue, TNode}.MoveChild(int, int)"/>
 		public void MoveChild(Index fromIndex, Index toIndex) => instance.MoveChild(
 			fromIndex.GetOffset(instance.Count),
 			toIndex.GetOffset(instance.Count));
-		 
+
 		/// <inheritdoc cref="IOrderedTree{TValue, TNode}.Contains(TValue)"/>
 		public bool Contains(TValue value, Range? range = null) => range is not Range ran
 			? instance.Contains(value)

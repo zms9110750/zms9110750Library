@@ -34,4 +34,5 @@ public class ExtendWithInterfaceImplAttribute(Type appendInterfaceType) : Attrib
 	/// 未设置时继承程序集级或接口级的DefaultGenerateMembers。
 	/// </remarks>
 	public GenerateMembers DefaultGenerateMembers { get; set; }
+
 }

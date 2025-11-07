@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿
+using System.Runtime.InteropServices;
 using zms9110750.TreeCollection.Abstract;
 
 namespace zms9110750.TreeCollection.Trie;
@@ -8,40 +9,34 @@ namespace zms9110750.TreeCollection.Trie;
 /// </summary>
 public abstract class TrieBase : INode<TrieBase>
 {
+	/// <inheritdoc/>
+	public TrieBase? Parent { get; }
+	/// <inheritdoc cref="INode{TrieBase}.Root"/>
+	public Trie Root { get; }
+	/// <inheritdoc/>
+	public int Depth { get; }
+	TrieBase INode<TrieBase>.Root => Root;
+
 	/// <summary>
 	/// 获取指定字符对应的子节点，如果不存在则创建
 	/// </summary>
-	/// <param name="c"></param>
-	/// <returns></returns>
 	protected TrieNode this[char c]
 	{
 		get
 		{
-			ref var childNode = ref CollectionsMarshal.GetValueRefOrAddDefault(Children, c, out _);
+			ref var childNode = ref CollectionsMarshal.GetValueRefOrAddDefault(Children, c, out var b);
 			return childNode ??= new TrieNode(this);
 		}
 	}
-
-	/// <inheritdoc/>
-	public int Depth { get; }
-
-	/// <inheritdoc/>
-	public TrieBase? Parent { get; }
-
-	/// <inheritdoc/>
-	public Trie Root { get; }
-
 	/// <summary>
 	/// 子节点集合
 	/// </summary>
-	protected Dictionary<char, TrieNode> Children { get; } = new();
+	protected Dictionary<char, TrieNode> Children { get; } = [];
 
 	/// <summary>
 	/// 分隔符集合
 	/// </summary>
-	internal abstract IReadOnlySet<char> Separator { get; }
-
-	TrieBase INode<TrieBase>.Root => Root;
+	public abstract IReadOnlySet<char> Separator { get; }
 
 	/// <summary>
 	/// 传入一个父节点。初始化自身的深度、父节点、根节点
@@ -57,10 +52,8 @@ public abstract class TrieBase : INode<TrieBase>
 	/// <summary>
 	/// 构造一个根节点。只允许<see cref="Trie"/>的派生调用
 	/// </summary>
-	protected TrieBase()
+	private protected TrieBase()
 	{
-		Depth = 0;
-		Parent = null;
 		Root = (Trie)this;
 	}
 
@@ -68,17 +61,9 @@ public abstract class TrieBase : INode<TrieBase>
 	/// 添加单词到字典树中
 	/// </summary>
 	/// <param name="word">单词</param>
-	public abstract void Add(string word);
+	public abstract bool Add(string word);
 
-	/// <summary>
-	/// 释放指定索引的Token
-	/// </summary>
-	/// <param name="tokenIndex"></param>
-	internal virtual void ReleaseToken(int tokenIndex)
-	{
-		foreach (var child in Children.Values)
-		{
-			child.ReleaseToken(tokenIndex);
-		}
-	}
 }
+
+
+

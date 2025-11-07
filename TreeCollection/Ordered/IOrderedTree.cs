@@ -11,9 +11,9 @@ namespace zms9110750.TreeCollection.Ordered;
 public interface IOrderedTree<TValue, TNode> : IValue<TValue>, INode<TNode>, IList<TNode> where TNode : IOrderedTree<TValue, TNode>, INode<TNode>
 {
 	/// <summary>
-	/// 默认相等比较器s
+	/// 默认相等比较器
 	/// </summary>
-	static EqualityComparer<TValue> Comparer => EqualityComparer<TValue>.Default;
+	private static EqualityComparer<TValue> Comparer => EqualityComparer<TValue>.Default;
 
 	/// <summary>
 	/// 节点在父节点中的索引
@@ -28,10 +28,32 @@ public interface IOrderedTree<TValue, TNode> : IValue<TValue>, INode<TNode>, ILi
 	/// <param name="toIndex">要放到的位置的索引</param>
 	void MoveChild(int fromIndex, int toIndex)
 	{
-		ArgumentOutOfRangeException.ThrowIfNegative(fromIndex);
-		ArgumentOutOfRangeException.ThrowIfNegative(toIndex);
-		ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(fromIndex, Count);
-		ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(toIndex, Count);
+#if NET8_0_OR_GREATER
+    ArgumentOutOfRangeException.ThrowIfNegative(fromIndex);
+    ArgumentOutOfRangeException.ThrowIfNegative(toIndex);
+    ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(fromIndex, Count);
+    ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(toIndex, Count);
+#else
+		if (fromIndex < 0)
+		{
+			throw new ArgumentOutOfRangeException(nameof(fromIndex), "Value must not be negative.");
+		}
+
+		if (toIndex < 0)
+		{
+			throw new ArgumentOutOfRangeException(nameof(toIndex), "Value must not be negative.");
+		}
+
+		if (fromIndex >= Count)
+		{
+			throw new ArgumentOutOfRangeException(nameof(fromIndex), $"Value must be less than {Count}.");
+		}
+
+		if (toIndex >= Count)
+		{
+			throw new ArgumentOutOfRangeException(nameof(toIndex), $"Value must be less than {Count}.");
+		}
+#endif
 		if (fromIndex < toIndex)
 		{
 			this[fromIndex..toIndex].RotateForward();
@@ -204,7 +226,7 @@ public interface IOrderedTree<TValue, TNode> : IValue<TValue>, INode<TNode>, ILi
 	/// 改变版本
 	/// </summary>
 	/// <remarks>切片改变集合时应当调用此方法。<br/>版本改变后切片应当失效。</remarks>
-	void IncrementVersion();
+	internal void IncrementVersion();
 
 
 	/// <summary>

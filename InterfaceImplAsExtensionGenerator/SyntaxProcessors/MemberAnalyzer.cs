@@ -172,7 +172,18 @@ class MemberAnalyzer : BaseAnalyzer
 		sb.AppendLine("        {");
 		if (IsAccessible(symbol.GetMethod))
 		{
-			sb.Append("            get => ");
+			sb.Append("            ");
+			if (symbol.GetMethod!.DeclaredAccessibility != symbol.DeclaredAccessibility)
+			{
+				switch (symbol.GetMethod!.DeclaredAccessibility)
+				{
+					case Accessibility.ProtectedAndInternal:
+					case Accessibility.Internal:
+						sb.Append("internal ");
+						break;
+				}
+			}
+			sb.Append("get => ");
 			sb.Append(InstanceParameterName);
 			sb.Append(".");
 			sb.Append(symbol.Name);
@@ -181,7 +192,18 @@ class MemberAnalyzer : BaseAnalyzer
 		}
 		if (IsAccessible(symbol.SetMethod) && symbol.SetMethod?.IsInitOnly == false)
 		{
-			sb.Append("            set => ");
+			sb.Append("            ");
+			if (symbol.SetMethod!.DeclaredAccessibility != symbol.DeclaredAccessibility)
+			{
+				switch (symbol.SetMethod!.DeclaredAccessibility)
+				{
+					case Accessibility.ProtectedAndInternal:
+					case Accessibility.Internal:
+						sb.Append("internal ");
+						break;
+				}
+			}
+			sb.Append("set => ");
 			sb.Append(InstanceParameterName);
 			sb.Append(".");
 			sb.Append(symbol.Name);
@@ -211,7 +233,17 @@ class MemberAnalyzer : BaseAnalyzer
 		sb.AppendLine("        {");
 		if (IsAccessible(symbol.GetMethod))
 		{
-			sb.Append("            get => ");
+			if (symbol.GetMethod!.DeclaredAccessibility != symbol.DeclaredAccessibility)
+			{
+				switch (symbol.GetMethod!.DeclaredAccessibility)
+				{
+					case Accessibility.ProtectedAndInternal:
+					case Accessibility.Internal:
+						sb.Append("internal ");
+						break;
+				}
+			}
+			sb.Append("get => ");
 			sb.Append(InstanceParameterName);
 			sb.Append("[");
 			sb.AppendJoin(",", symbol.Parameters.Select(p => p.Name));
@@ -220,7 +252,18 @@ class MemberAnalyzer : BaseAnalyzer
 		}
 		if (IsAccessible(symbol.SetMethod) && symbol.SetMethod?.IsInitOnly == false)
 		{
-			sb.Append("            set => ");
+			sb.Append("            ");
+			if (symbol.SetMethod!.DeclaredAccessibility != symbol.DeclaredAccessibility)
+			{
+				switch (symbol.SetMethod!.DeclaredAccessibility)
+				{
+					case Accessibility.ProtectedAndInternal:
+					case Accessibility.Internal:
+						sb.Append("internal ");
+						break;
+				}
+			}
+			sb.Append("set => ");
 			sb.Append(InstanceParameterName);
 			sb.Append("[");
 			sb.AppendJoin(",", symbol.Parameters.Select(p => p.Name));
