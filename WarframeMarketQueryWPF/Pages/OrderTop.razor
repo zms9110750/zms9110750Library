@@ -31,7 +31,8 @@
                 string? hasSubtype = context.Item.Subtype != null ? " of " + context.Item.Subtype : null;
                 string? rank = context.Item.Rank != null ? " rank " + context.Item.Rank : null;
                 string? cnzh = context.Item.User.Locale == Language.ZhHans ? Item.I18n[Language.ZhHans].Name : null;
-                <PCopyableText Text="@($"""/w {context.Item.User?.IngameName} Hi! I want to buy: "{Item.I18n[Language.En].Name}"{cnzh}{hasSubtype}{rank} , for {context.Item.Platinum} platinum.""")" />
+                string type = context.Item.Type switch { OrderType.Buy => "sell", _ => "buy" };
+                <PCopyableText Text="@($"""/w {context.Item.User?.IngameName} Hi! I want to {type}: "{Item.I18n[Language.En].Name}"{cnzh}{hasSubtype}{rank} , for {context.Item.Platinum} platinum.""")" />
             }
             else
             {

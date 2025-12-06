@@ -1,6 +1,6 @@
 ﻿@page "/counter"
 @using WarframeMarketQuery.Model.Orders
-@attribute [NavItem("用户订单查询", Icon = "mdi-plus")]
+@attribute [NavItem("用户订单查询", Icon = "mdi-account")]
 @inherits CarryList
 
 <MTextField @bind-Value="Search"
@@ -57,16 +57,6 @@
 }
 @foreach (var item in resert ?? [])
 {
-    List<string> sortBy = new List<string>
-        {
-            nameof(Model.Type),
-            nameof(Model.En)
-        };
-    List<bool> sortDesc = new List<bool>
-        {
-            true,
-            false,
-        };
     <MDivider />
     @if (item.Item2 == null)
     {
@@ -85,8 +75,6 @@
                             HideDefaultFooter
                             Class="elevation-1"
                             ItemsPerPage="-1"
-                            SortBy="sortBy"
-                            SortDesc="sortDesc"
                             ItemKey="r => r.Order.Id" 
                             GroupDesc="[true]"
                             GroupBy="nameof(Order.Type)"

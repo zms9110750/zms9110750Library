@@ -1,6 +1,6 @@
 ﻿@page "/"
 @using Microsoft.Extensions.Caching.Memory
-@attribute [NavItem("物品价格查询", Icon = "mdi-home")]
+@attribute [NavItem("物品价格查询", Icon = "mdi-list-box")]
 @inherits CarryList
 
 <MCardTitle>
@@ -55,6 +55,31 @@
             p = "";
         }
     }
+}
+@if (string.IsNullOrWhiteSpace(Search))
+{
+    <br />
+    <br />
+    <text>在上方的输入框进行搜索</text>
+    <br/>
+    <text>第一次启动程序时请等待缓存加载完成。在右上角查看状态</text>
+    <br />
+    <br />
+    <text>区分大小写。小写可以搜到是因为物品的短id (wm搜索的时候，上方网址id) 是小写的。<br />但是"NeZha Prime 蓝图"这种如果要指定确定物品则需要对着名字写大写。</text>
+    <br />
+    <br />
+    <text>用"/"或"\"符号分隔搜索关键词。例如"盲怒/瞬时"</text>
+    <br />
+    <br />
+    <text>单词以节进行拆分（分隔符包括空格和赋能名字上的"·"）</text>
+    <br/>
+    <text>输入"充沛"，会搜索从第一节以充沛开头的单词，例如"充沛射击"</text>
+    <br/>
+    <text>分隔符表示跳过这一节的剩余内容。例如"w 一套"可以匹配"wukong prime 一套"和"wisp prime 一套"</text>
+    <br/>
+    <text>并且分隔符可以表示数量大于一的任节。例如" 一套"，只需要一个空格，就可以匹配"wisp prime 一套"</text>
+    <br/>
+    <text>例如" 充沛"可以匹配"赋能·充沛"</text>
 }
 @foreach (var item in resert ?? [])
 {

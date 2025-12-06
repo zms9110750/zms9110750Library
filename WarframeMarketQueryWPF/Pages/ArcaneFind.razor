@@ -1,12 +1,12 @@
 ﻿@page "/fetchdata"
 @using Microsoft.Extensions.Caching.Memory
-@attribute [NavItem("赋能包查询", Icon = "mdi-list-box")]
+@attribute [NavItem("赋能包查询", Icon = "mdi-package-variant")]
 @inject ArcanePack[] Pack
 @inject IMemoryCache MemoryCache
 @implements IDisposable
 <MDataTable Headers="_headers"
             Items="Pack"
-            Dense 
+            Dense
             MultiSort
             ShowExpand
             ItemKey="r => r.Name"
@@ -31,7 +31,7 @@
         <td colspan="@_headers.Count" @key="@context.Item.Name">
             <MDataTable Headers="_headersItem"
                         Items="@context.Item.SelectMany(s => s, (a, b) => (context.Item, b))"
-                        Dense 
+                        Dense
                         HideDefaultFooter
                         Class="elevation-1"
                         ItemsPerPage="-1">
@@ -65,9 +65,6 @@
                     ValueExpression= t=> t.Item2
 }
    ];
-
-
-
     CompositeDisposable _disposables = new();
     Dictionary<(ArcanePack, int), Task<double>> ReferencePrice { get; } = new Dictionary<(ArcanePack, int), Task<double>>();
 
@@ -113,9 +110,9 @@
             Align = DataTableHeaderAlign.End,
             ValueExpression = name => MemoryCache.GetOrCreateAsync("arcane:" + name.Item2
                 , p => wmClient.GetStatisticByIndexAsync(name.Item2).AsTask()
-            , option) is { IsCompleted: true } task ? task.Result.GetMaterialBasedReferencePrice() : null 
+            , option) is { IsCompleted: true } task ? task.Result.GetMaterialBasedReferencePrice() : null
         });
-         
+
         _headersItem.Add(new("日均交易量", "日均交易量")
         {
             Align = DataTableHeaderAlign.End,

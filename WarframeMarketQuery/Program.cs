@@ -10,6 +10,7 @@ using WarframeMarketQuery.Model;
 using WarframeMarketQuery.Model.Items;
 using zms9110750.TreeCollection.Trie;
 
+#if false
 Console.OutputEncoding = Encoding.Unicode;
 Console.InputEncoding = Encoding.Unicode;
 ServiceCollection? services = new ServiceCollection();
@@ -35,15 +36,11 @@ services
     .AddSingleton<Preset>();
 ServiceProvider? buidler = services.BuildServiceProvider();
 await using Preset? preset = buidler.GetRequiredService<Preset>();
-//await preset.CheckUpdata();
+await preset.CheckUpdata();
 
-//await preset.Run(args);
+await preset.Run(args);
 
-
-var wm = buidler.GetRequiredService<WarframeMarketClient>();
-var mod = await wm.GetItemByIndexAsync("同伴武器裂罅 Mod (尚未揭开)");
-Console.WriteLine(string.Join(',',mod.ItemType));
-
+#endif
 
 
 
