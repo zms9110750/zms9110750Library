@@ -7,7 +7,7 @@ using WarframeMarketQuery.Model.Items;
 using WarframeMarketQuery.Model.Statistics;
 
 namespace WarframeMarketQuery;
-static class Extension
+public static class Extension
 {
 	extension(HybridCache cache)
 	{

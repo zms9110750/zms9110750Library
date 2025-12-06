@@ -17,7 +17,7 @@ namespace WarframeMarketQuery.Model;
 public record Response<T>(
 	string ApiVersion,
 	T Data,
-	string? Error) : Response(ApiVersion, Error);
+	string? Error);
 
 
 /// <summary>
@@ -29,11 +29,6 @@ public abstract record Response(
 	string ApiVersion,
 	string? Error)
 {
-	/// <summary>
-	/// 生成条目时的时间
-	/// </summary>
-	public DateTime Time { get; init; } = DateTime.Now;
-
 	public static JsonSerializerOptions V2options { get; } =
 		new JsonSerializerOptions
 		{
@@ -47,8 +42,8 @@ public abstract record Response(
 			Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
 			Converters = { new JsonStringEnumConverter(JsonNamingPolicy.KebabCaseLower) },
 			WriteIndented = true,
-
-		};
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        };
 	public static JsonSerializerOptions V1options { get; } = new JsonSerializerOptions(V2options)
 	{
 		PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower

@@ -41,7 +41,7 @@ public record ItemShort(
 			if (field == default)
 			{
 				field = Tags is not { Count: > 0 } ? ItemType.Item
-					: Tags.Contains("riven_mod") ? ItemType.RivenMOD
+					: Tags.Contains("riven") ? ItemType.RivenMOD
 					: Tags.Contains("mod") ? ItemType.MOD
 					: Tags.Contains("fish") ? ItemType.Fish
 					: Tags.Contains("relic") ? ItemType.Relic

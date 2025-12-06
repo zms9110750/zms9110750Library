@@ -1,0 +1,145 @@
+﻿@page "/counter"
+@using WarframeMarketQuery.Model.Orders
+@attribute [NavItem("用户订单查询", Icon = "mdi-plus")]
+@inherits CarryList
+
+<MTextField @bind-Value="Search"
+            AppendIcon="mdi-magnify"
+            Label="Search"
+            SingleLine
+            HideDetails="true"></MTextField>
+@code {
+    void Add(string s)
+    {
+        if (string.IsNullOrEmpty(Search))
+        {
+            Search = s;
+        }
+        else
+        {
+            if (!(resert ?? []).Any(i => i.Item1 == s))
+            {
+                Search += "/" + s;
+            }
+        }
+    }
+}
+@foreach (var item in Strings.Index())
+{
+    @if (CanWrite)
+    {
+        <MTextField @bind-Value="Strings[item.Index]" Readonly="!CanWrite" Dense>
+            <PrependContent>
+                <MButton IconName="mdi-minus" OnClick="() => Strings.RemoveAt(item.Index)" />
+            </PrependContent>
+        </MTextField>
+    }
+    else
+    {
+        <MChip OnClick="@(() => Add(item.Item))" Close="CanWrite" OnCloseClick="@(() => Strings.RemoveAt(item.Index))">@item.Item</MChip>
+    }
+}
+@if (CanWrite)
+{
+    <MTextField @bind-Value="p" Dense @onblur="@(AddNewStrings)" />
+}
+@code {
+    string p = "";
+    void AddNewStrings()
+    {
+        if (!string.IsNullOrEmpty(p))
+        {
+            Strings.Add(p);
+            p = "";
+        }
+    }
+
+}
+@foreach (var item in resert ?? [])
+{
+    List<string> sortBy = new List<string>
+        {
+            nameof(Model.Type),
+            nameof(Model.En)
+        };
+    List<bool> sortDesc = new List<bool>
+        {
+            true,
+            false,
+        };
+    <MDivider />
+    @if (item.Item2 == null)
+    {
+        <MChip>未找到该用户：@(item.Item1)</MChip>
+    }
+    else
+    {
+        <ExpandTransition>
+            <MButton OnClick="() => ChangeNoShow(item.Item1)">@item.Item1</MButton>
+            <ShowTransitionElement Value="@(!NoShow.Contains(item.Item1))">
+                <MDataTable Headers="_headers"
+                            Items="item.Item2"
+                            Dense
+                            ResizeMode="DataTableResizeMode.Independent"
+                            MultiSort
+                            HideDefaultFooter
+                            Class="elevation-1"
+                            ItemsPerPage="-1"
+                            SortBy="sortBy"
+                            SortDesc="sortDesc"
+                            ItemKey="r => r.Order.Id" 
+                            GroupDesc="[true]"
+                            GroupBy="nameof(Order.Type)"
+                            ShowExpand
+                            >
+                    <GroupHeaderContent>
+                        <td colspan="@_headers.Count">
+                            @switch (@context.Group)
+                            {
+                                case "Buy":
+                                    @("购")
+                                    break;
+                                case "Sell":
+                                    @("售")
+                                    break;
+                                default:
+                                    @context.Group
+                                    break;
+                            }
+                        </td>
+                    </GroupHeaderContent>
+                    <ItemColContent>
+                        @switch (context.Value)
+                        {
+                            case string s:
+                                <PCopyableText Text="@s" />
+                                @s
+                                break;
+                            case null:
+                                @("loading")
+                                break;
+                            case double d:
+                                @($"{d,-6:f1}")
+                                break;
+                            case OrderType.Buy:
+                                @("购")
+                                break;
+                            case OrderType.Sell:
+                                @("售")
+                                break;
+                            default:
+                                @context.Value
+                                break;
+                        }
+                    </ItemColContent>
+                    <ExpandedItemContent>
+                        <td colspan="@_headers.Count" @key="@context.Item.Order.Id">
+                            <OrderTop Item="context.Item.Item" />
+                        </td>
+                    </ExpandedItemContent>
+                </MDataTable>
+            </ShowTransitionElement>
+        </ExpandTransition>
+    }
+}
+
