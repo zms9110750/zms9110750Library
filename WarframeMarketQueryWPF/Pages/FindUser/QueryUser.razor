@@ -1,0 +1,82 @@
+﻿
+<MDivider />
+@if (NotFound)
+{
+    <MChip>未找到该用户：@(UserName)</MChip>
+}
+else
+{
+    <ExpandTransition>
+        <MButton OnClick="() => HideChanged.InvokeAsync(UserName)">@UserName</MButton>
+        <ShowTransitionElement Value="@(!IsHide)">
+            <MDataTable Headers="_headers"
+                        Loading="isLoading"
+                        Items="models"
+                        Dense
+                        MustSort
+                        ResizeMode="DataTableResizeMode.Independent"
+                        HideDefaultFooter
+                        Class="elevation-1"
+                        ItemsPerPage="-1"
+                        ItemKey="r => r.Order.Id"
+                        GroupDesc="[true]"
+                        GroupBy="nameof(Order.Type)"
+                        ShowExpand>
+                <GroupHeaderContent>
+                    <td colspan="@_headers.Count">
+                        @switch (@context.Group)
+                        {
+                            case "Buy":
+                                @("购")
+                                break;
+                            case "Sell":
+                                @("售")
+                                break;
+                            default:
+                                @context.Group
+                                break;
+                        }
+                    </td>
+                </GroupHeaderContent>
+                <ItemColContent>
+                    @switch (context.Value)
+                    {
+                        case string s:
+                            <PCopyableText Text="@(new string(s.TrimEnd(" Set").TrimEnd(" 一套")))" />
+                            @s
+                            break;
+                        case null:
+                            @("isLoading")
+                            break;
+                        case double d:
+                            @($"{d,-6:f1}")
+                            break;
+                        case OrderType.Buy:
+                            @("购")
+                            break;
+                        case OrderType.Sell:
+                            @("售")
+                            break;
+                        default:
+                            @context.Value
+                            break;
+                    }
+                </ItemColContent>
+                <ExpandedItemContent>
+                    <td colspan="@_headers.Count" @key="@context.Item.Order.Id">
+                        <OrderTop Item="context.Item.Item" />
+                    </td>
+                </ExpandedItemContent>
+            </MDataTable>
+        </ShowTransitionElement>
+    </ExpandTransition>
+}
+@code {
+
+    [Parameter]
+    public string UserName { get; set; } = "";
+    [Parameter]
+    public bool IsHide { get; set; }
+    [Parameter]
+    public EventCallback<string> HideChanged { get; set; }
+}

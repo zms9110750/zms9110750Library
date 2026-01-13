@@ -1,13 +1,15 @@
 ﻿using Microsoft.Extensions.Caching.Hybrid;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using WarframeMarketQuery.API;
 using WarframeMarketQuery.Arcane;
+using WarframeMarketQuery.Extension;
 using WarframeMarketQuery.Model;
 using WarframeMarketQuery.Model.Items;
 using WarframeMarketQuery.Model.Statistics;
 
-namespace WarframeMarketQuery;
-public static class Extension
+namespace WarframeMarketQuery.Extension;
+public static class ModelExtension
 {
 	extension(HybridCache cache)
 	{
@@ -37,10 +39,10 @@ public static class Extension
 	/// </summary>
 	/// <param name="statistic">统计数据</param> 
 	/// <param name="filter">过滤器</param>
-	public static double GetReferencePrice(this Response<Statistic> statistic, Func<Entry, bool>? filter = null)
+	public static double GetReferencePrice(this Statistic statistic, Func<Entry, bool>? filter = null)
 	{
 		// 获取过去 90 天的统计数据，并根据 filter 过滤，按时间降序排序
-		var filteredEntries = statistic.Data.Payload.StatisticsClosed.Day90
+		var filteredEntries = statistic.Payload.StatisticsClosed.Day90
 			.Where(filter ?? (static s => s is
 			{
 				ModRank: not > 0,
@@ -73,7 +75,7 @@ public static class Extension
 	/// <param name="statistic">统计数据</param>
 	/// <param name="subtype">筛选为指定的子类型</param>
 	/// <returns></returns>
-	public static double GetReferencePrice(this Response<Statistic> statistic, ItemSubtypes subtype)
+	public static double GetReferencePrice(this Statistic statistic, ItemSubtypes subtype)
 	{
 		return GetReferencePrice(statistic, e => e.Subtype == subtype);
 	}
@@ -83,7 +85,7 @@ public static class Extension
 	/// </summary>
 	/// <param name="statistic">统计数据</param>
 	/// <returns></returns>
-	public static double GetMaxReferencePrice(this Response<Statistic> statistic)
+	public static double GetMaxReferencePrice(this Statistic statistic)
 	{
 		return GetReferencePrice(statistic, entry => entry is
 		{
@@ -98,9 +100,9 @@ public static class Extension
 	/// </summary>
 	/// <param name="statistic">统计数据</param>
 	/// <returns></returns>
-	public static double GetMaterialBasedReferencePrice(this Response<Statistic> statistic)
+	public static double GetMaterialBasedReferencePrice(this Statistic statistic)
 	{
-		return GetMaxReferencePrice(statistic) / (statistic.Data.Payload.StatisticsClosed.Day90.FirstOrDefault(s => s.ModRank != 0)?.ModRank switch
+		return GetMaxReferencePrice(statistic) / (statistic.Payload.StatisticsClosed.Day90.FirstOrDefault(s => s.ModRank != 0)?.ModRank switch
 		{
 			> 0 and <= 5 and int rank => SyntheticConsumption[rank],
 			_ => 1
@@ -124,7 +126,7 @@ public static class Extension
 			.SelectMany(s => s)
 			.Select(async item =>
 			{
-				var statistics = await client.GetStatisticByIndexAsync(item);
+				var statistics = (await client.GetStatisticByIndexAsync(item)).Data;
 				//GetProbability 获取这个道具在这个包里开出来的概率。
 				//PackGainRate 一组小小黑可以买的赋能包能开出来的赋能数量
 				double effectiveVolume = package.GetProbability(item) * PackGainRate;
@@ -132,14 +134,41 @@ public static class Extension
 				{
 					//statistics.Payload.StatisticsClosed.Day90 90天内结算的订单数据。
 					//entry => entry.Volume * SyntheticConsumption[s.ModRank ?? 0]) 这个等级对应的合成消耗数量（把满级的转为一级，一级的不变）
-					effectiveVolume = Math.Min(effectiveVolume, statistics.Data.Payload.StatisticsClosed.Day90.Sum(entry => entry.Volume * SyntheticConsumption[entry.ModRank ?? 0]) / 90 / purchase);
+					effectiveVolume = Math.Min(effectiveVolume, statistics.Payload.StatisticsClosed.Day90.Sum(entry => entry.Volume * SyntheticConsumption[entry.ModRank ?? 0]) / 90 / purchase);
 				}
 				return statistics.GetMaterialBasedReferencePrice() * effectiveVolume;
 			});
 		return (await Task.WhenAll(result)).Sum();
 	}
+    /// <summary>
+    /// 获取一组小小黑赋能全部分解为荧尘，然后用全部的荧尘买这个赋能包后的，开出的赋能的期望价格
+    /// </summary>
+    /// <param name="package">赋能包</param> 
+    /// <param name="client">wm访问器</param>
+    /// <param name="purchase">每天购入的小小黑组数。如果开出的赋能比市场流通的还多，按照市场流通数量算期望</param>
+    /// <returns></returns>
+    public static async Task<double> GetReferencePriceAsync(this ArcanePack package, WarframeMarketApi client, int purchase = 0)
+    {
+        var result = package
+            .SelectMany(s => s)
+            .Select(async item =>
+            {
+                var statistics = (await client.GetStatisticByIndexAsync(item));
+                //GetProbability 获取这个道具在这个包里开出来的概率。
+                //PackGainRate 一组小小黑可以买的赋能包能开出来的赋能数量
+                double effectiveVolume = package.GetProbability(item) * PackGainRate;
+                if (purchase != 0)
+                {
+                    //statistics.Payload.StatisticsClosed.Day90 90天内结算的订单数据。
+                    //entry => entry.Volume * SyntheticConsumption[s.ModRank ?? 0]) 这个等级对应的合成消耗数量（把满级的转为一级，一级的不变）
+                    effectiveVolume = Math.Min(effectiveVolume, statistics.Payload.StatisticsClosed.Day90.Sum(entry => entry.Volume * SyntheticConsumption[entry.ModRank ?? 0]) / 90 / purchase);
+                }
+                return statistics.GetMaterialBasedReferencePrice() * effectiveVolume;
+            });
+        return (await Task.WhenAll(result)).Sum();
+    }
 
-	public static async IAsyncEnumerable<IList<T>> Buffer<T>(this IAsyncEnumerable<T> source, TimeSpan timeSpan, [EnumeratorCancellation] CancellationToken cancellationToken=default)
+    public static async IAsyncEnumerable<IList<T>> Buffer<T>(this IAsyncEnumerable<T> source, TimeSpan timeSpan, [EnumeratorCancellation] CancellationToken cancellationToken=default)
 	{
 		await using var enumerator = source.GetAsyncEnumerator();
 		List<T> buffer = new();

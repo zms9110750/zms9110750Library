@@ -39,7 +39,7 @@
                 @(
                         context.Value switch
                         {
-                            null => "loading",
+                            null => "isLoading",
                             ItemSubtypes.Blueprint => "蓝图",
                             ItemSubtypes.Crafted => "成品",
                             ItemSubtypes.Intact => "完整",
@@ -88,45 +88,45 @@ else
         switch (Item.ItemType)
         {
             default:
-                var a = await wmClient.GetOrdersItemTopAsync(Item);
-                orders = orders.Concat(a.Data.Buy.Concat(a.Data.Sell));
+                var a = await WfmApi.GetOrdersItemTopAsync(Item);
+                orders = orders.Concat(a.Buy.Concat(a.Sell));
                 break;
             case ItemType.ArcaneEnhancement:
             case ItemType.MOD:
-                a = await wmClient.GetOrdersItemTopAsync(Item, new OrderTopQueryParameter { RankLt = Item.MaxRank - 1 });
-                orders = orders.Concat(a.Data.Buy.Concat(a.Data.Sell));
-                a = await wmClient.GetOrdersItemTopAsync(Item, new OrderTopQueryParameter { Rank = Item.MaxRank });
-                orders = orders.Concat(a.Data.Buy.Concat(a.Data.Sell));
+                a = await WfmApi.GetOrdersItemTopAsync(Item, new OrderTopQueryParameter { RankLt = Item.MaxRank - 1 });
+                orders = orders.Concat(a.Buy.Concat(a.Sell));
+                a = await WfmApi.GetOrdersItemTopAsync(Item, new OrderTopQueryParameter { Rank = Item.MaxRank });
+                orders = orders.Concat(a.Buy.Concat(a.Sell));
                 _headers.Add(new("等级", nameof(Order.Rank)));
                 break;
             case ItemType.AyatanSculpture:
-                a = await wmClient.GetOrdersItemTopAsync(Item, new OrderTopQueryParameter { AmberStarsLt = Item.MaxAmberStars - 1, CyanStarsLt = Item.MaxCyanStars - 1 });
-                orders = orders.Concat(a.Data.Buy.Concat(a.Data.Sell));
-                a = await wmClient.GetOrdersItemTopAsync(Item, new OrderTopQueryParameter { AmberStars = Item.MaxAmberStars, CyanStars = Item.MaxCyanStars });
-                orders = orders.Concat(a.Data.Buy.Concat(a.Data.Sell));
+                a = await WfmApi.GetOrdersItemTopAsync(Item, new OrderTopQueryParameter { AmberStarsLt = Item.MaxAmberStars - 1, CyanStarsLt = Item.MaxCyanStars - 1 });
+                orders = orders.Concat(a.Buy.Concat(a.Sell));
+                a = await WfmApi.GetOrdersItemTopAsync(Item, new OrderTopQueryParameter { AmberStars = Item.MaxAmberStars, CyanStars = Item.MaxCyanStars });
+                orders = orders.Concat(a.Buy.Concat(a.Sell));
                 _headers.Add(new("琥珀星", nameof(Order.AmberStars)));
                 _headers.Add(new("青蓝星", nameof(Order.CyanStars)));
                 break;
             case ItemType.CraftedComponent:
-                a = await wmClient.GetOrdersItemTopAsync(Item, new OrderTopQueryParameter { Subtype = ItemSubtypes.Blueprint });
-                orders = orders.Concat(a.Data.Buy.Concat(a.Data.Sell));
-                a = await wmClient.GetOrdersItemTopAsync(Item, new OrderTopQueryParameter { Subtype = ItemSubtypes.Crafted });
-                orders = orders.Concat(a.Data.Buy.Concat(a.Data.Sell));
+                a = await WfmApi.GetOrdersItemTopAsync(Item, new OrderTopQueryParameter { Subtype = ItemSubtypes.Blueprint });
+                orders = orders.Concat(a.Buy.Concat(a.Sell));
+                a = await WfmApi.GetOrdersItemTopAsync(Item, new OrderTopQueryParameter { Subtype = ItemSubtypes.Crafted });
+                orders = orders.Concat(a.Buy.Concat(a.Sell));
                 _headers.Add(new("类型", nameof(Order.Subtype)));
                 break;
             case ItemType.Relic:
-                a = await wmClient.GetOrdersItemTopAsync(Item, new OrderTopQueryParameter { Subtype = ItemSubtypes.Intact });
-                orders = orders.Concat(a.Data.Buy.Concat(a.Data.Sell));
-                a = await wmClient.GetOrdersItemTopAsync(Item, new OrderTopQueryParameter { Subtype = ItemSubtypes.Radiant });
-                orders = orders.Concat(a.Data.Buy.Concat(a.Data.Sell));
+                a = await WfmApi.GetOrdersItemTopAsync(Item, new OrderTopQueryParameter { Subtype = ItemSubtypes.Intact });
+                orders = orders.Concat(a.Buy.Concat(a.Sell));
+                a = await WfmApi.GetOrdersItemTopAsync(Item, new OrderTopQueryParameter { Subtype = ItemSubtypes.Radiant });
+                orders = orders.Concat(a.Buy.Concat(a.Sell));
                 _headers.Add(new("类型", nameof(Order.Subtype)));
 
                 break;
             case ItemType.RivenMOD:
-                a = await wmClient.GetOrdersItemTopAsync(Item, new OrderTopQueryParameter { Subtype = ItemSubtypes.Revealed });
-                orders = orders.Concat(a.Data.Buy.Concat(a.Data.Sell));
-                a = await wmClient.GetOrdersItemTopAsync(Item, new OrderTopQueryParameter { Subtype = ItemSubtypes.Unrevealed });
-                orders = orders.Concat(a.Data.Buy.Concat(a.Data.Sell));
+                a = await WfmApi.GetOrdersItemTopAsync(Item, new OrderTopQueryParameter { Subtype = ItemSubtypes.Revealed });
+                orders = orders.Concat(a.Buy.Concat(a.Sell));
+                a = await WfmApi.GetOrdersItemTopAsync(Item, new OrderTopQueryParameter { Subtype = ItemSubtypes.Unrevealed });
+                orders = orders.Concat(a.Buy.Concat(a.Sell));
                 _headers.Add(new("类型", nameof(Order.Subtype)));
 
                 break;

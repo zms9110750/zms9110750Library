@@ -2,12 +2,10 @@
 using Microsoft.Extensions.Caching.Hybrid;
 using System.Net;
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using WarframeMarketQuery;
+using WarframeMarketQuery.API;
 using WarframeMarketQuery.Arcane;
-using WarframeMarketQuery.Model;
+using WarframeMarketQuery.Extension;
 using WarframeMarketQuery.Model.Items;
 using WarframeMarketQuery.Model.Orders;
 using WarframeMarketQuery.Model.Statistics;
@@ -17,7 +15,7 @@ namespace WarframeMarketQuery;
 /// <summary>
 /// 预设功能
 /// </summary> 
-internal class Preset(WarframeMarketClient wmClient, ArcanePack[] pack, Trie trie, HybridCache HybridCache) : IAsyncDisposable
+internal class Preset(WarframeMarketApi wmClient, ArcanePack[] pack, Trie trie, HybridCache HybridCache) : IAsyncDisposable
 {
     readonly string Buffer = new string(' ', 20);
     readonly string BufferLine = new string(' ', 80);
@@ -102,7 +100,7 @@ internal class Preset(WarframeMarketClient wmClient, ArcanePack[] pack, Trie tri
             Console.WriteLine("本地数据版本" + local + " , 查询服务器数据版本");
             Unfinished = Task.Run(async () =>
                 {
-                    var server = (await wmClient.GetVersionAsync(cancellation)).ApiVersion;
+                    var server = (await wmClient.GetVersionAsync(cancellation)).Id;
                     if (local == server)
                     {
                         Console.WriteLine("本地数据已是最新");
@@ -157,7 +155,7 @@ internal class Preset(WarframeMarketClient wmClient, ArcanePack[] pack, Trie tri
 
     public async Task GetUserOrders(string user)
     {
-        Response<Order[]> orders;
+        Order[] orders;
         try
         {
             orders = await wmClient.GetOrdersFromUserAsync(user);
@@ -167,8 +165,8 @@ internal class Preset(WarframeMarketClient wmClient, ArcanePack[] pack, Trie tri
             Console.WriteLine("此用户不存在。");
             return;
         }
-        var list = orders.Data.ToAsyncEnumerable()
-            .Scan(new List<(Order, ItemShort, Response<Statistic>)>(), async (list, s) =>
+        var list = orders.ToAsyncEnumerable()
+            .Scan(new List<(Order, ItemShort, Statistic)>(), async (list, s) =>
             {
                 list.Add((s, await wmClient.GetItemByIndexAsync(s), await wmClient.GetStatisticByIndexAsync(s)));
                 return list;

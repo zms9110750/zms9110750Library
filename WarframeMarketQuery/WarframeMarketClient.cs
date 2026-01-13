@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Concurrent;
 using System.Net.Http.Json;
 using System.Text.Json;
+using WarframeMarketQuery.API;
 using WarframeMarketQuery.Model;
 using WarframeMarketQuery.Model.Items;
 using WarframeMarketQuery.Model.Orders;
@@ -22,7 +23,7 @@ namespace WarframeMarketQuery;
 
 public class WarframeMarketClient([FromKeyedServices(nameof(WarframeMarketClient))] HttpClient http, IFusionCache fusion) : IAsyncDisposable
 {
-    static JsonSerializerOptions JsonOptions => Response.V2options;
+    static JsonSerializerOptions JsonOptions => IWarframeMarketApi.V2options;
     HttpClient Http { get; } = http;
     IFusionCache Fusion { get; } = fusion;
     HashSet<Task> Unfinished { get; } = [];
@@ -30,6 +31,8 @@ public class WarframeMarketClient([FromKeyedServices(nameof(WarframeMarketClient
 
     ValueTask<T> GetSkippingDistributedCacheAsync<T>(string url, CancellationToken cancellation = default)
     {
+
+
         return Fusion.GetOrSetAsync(url
                 , async c => await Http.GetFromJsonAsync<T>(url, JsonOptions, cancellationToken: c)
                 , option => option.SetSkipDistributedCache(true, null)
@@ -201,7 +204,7 @@ public class WarframeMarketClient([FromKeyedServices(nameof(WarframeMarketClient
          factory: async (cancellationToken) =>
          {
              var version = await VersionTask;
-             var statistic = await Http.GetFromJsonAsync<Statistic>(url, Response.V1options, cancellationToken);
+             var statistic = await Http.GetFromJsonAsync<Statistic>(url, IWarframeMarketApiV1.V1options, cancellationToken);
              return new Response<Statistic>(version.ApiVersion, statistic!, null);
          }, options => options
              .SetDuration(softExpiration)  // 软过期时间

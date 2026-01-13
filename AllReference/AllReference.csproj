@@ -11,10 +11,14 @@
 		<PublishAot>False</PublishAot>
 		<IsTestProject>true</IsTestProject>
 		<UserSecretsId>992b82a8-b20a-466c-b522-8bd8393e5f02</UserSecretsId>
+		<PublishTrimmed>True</PublishTrimmed>
+		<FileVersion></FileVersion>
+		<AssemblyVersion>123.0</AssemblyVersion>
 	</PropertyGroup>
 	<ItemGroup>
 	  <None Remove="FileName.cs~RF100897d1.TMP" />
 	</ItemGroup>
+ 
 	<ItemGroup>
 		<PackageReference Include="Autofac" Version="9.0.0" />
 		<PackageReference Include="Blake3" Version="2.0.0" />
@@ -24,8 +28,7 @@
 		<PackageReference Include="NuGet.Common" Version="7.0.1" />
 		<PackageReference Include="NuGet.Frameworks" Version="7.0.1" />
 		<PackageReference Include="Autofac.Pooling" Version="*" />
-		<PackageReference Include="BenchmarkDotNet" Version="*" />
-		<PackageReference Include="FusionCacheReference" Version="1.0.3" />
+		<PackageReference Include="BenchmarkDotNet" Version="*" /> 
 		<PackageReference Include="HtmlAgilityPack" Version="*" />
 		<PackageReference Include="Jint" Version="4.4.2" />
 		<PackageReference Include="Markdig" Version="*" />
@@ -43,8 +46,13 @@
 		<PackageReference Include="ZLinq.Json" Version="1.5.4" />
 		<PackageReference Include="OpenAI" Version="2.7.0" />  
 		<PackageReference Include="zms9110750.InterfaceImplAsExtensionGenerator" Version="0.1.1.3" />
+		<PackageReference Include="Refit.HttpClientFactory" Version="9.0.2" />
 	</ItemGroup> 
-	<ItemGroup> 
-	  <ProjectReference Include="..\OpenAiReference\OpenAiReference.csproj" />
+	<ItemGroup>  
+	  <ProjectReference Include="..\OpenAiReference\OpenAiReference.csproj" /> 
+	  <ProjectReference Include="..\WarframeMarketQuery\WarframeMarketQuery.csproj" />
+	</ItemGroup> 
+	<ItemGroup>
+	  <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
 	</ItemGroup>
 </Project>

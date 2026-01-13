@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using ZiggyCreatures.Caching.Fusion;
 
@@ -12,6 +13,10 @@ public class CarryList : ComponentBase
     [Inject]
     IFusionCache Fusion { get; set; } = default!;
     public List<string> Strings { get; set; } = [];
+    [Parameter]
+    [AllowNull]
+    public string CacheKey { get => field ?? GetType().FullName!; set; }
+
     [CascadingParameter(Name = "CanWrite")]
     public bool CanWrite
     {
@@ -20,14 +25,14 @@ public class CarryList : ComponentBase
             field = value;
             if (!CanWrite && init)
             {
-                Fusion.Set(GetType().FullName!, Strings);
+                Fusion.Set(CacheKey, Strings);
             }
         }
     }
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        Strings.AddRange(await Fusion.GetOrDefaultAsync<List<string>>(GetType().FullName!) ?? []);
+        Strings.AddRange(await Fusion.GetOrDefaultAsync<List<string>>(CacheKey) ?? []);
         init = true;
     }
 }

@@ -6,7 +6,7 @@
 		<Nullable>enable</Nullable>
 		<Title>用于Fusion缓存的nuget传递</Title>
 		<PackageOutputPath>C:\Users\16229\source\NugetPack</PackageOutputPath>
-		<Version>1.0.3</Version>
+		<Version>1.0.4</Version>
 	</PropertyGroup>
 	<ItemGroup>  
 		<PackageReference Include="NeoSmart.Caching.Sqlite.AspNetCore" Version="9.0.1" />

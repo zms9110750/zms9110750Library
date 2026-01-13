@@ -1,0 +1,21 @@
+﻿@attribute [NavItem("更新客户端", Icon = "mdi-arrow-up-bold-box-outline", Order = 5)]
+@page "/update"
+@using WarframeMarketQueryWPF.Api
+@inject IGitee gitee
+@foreach (var item in Releases)
+{
+    <ShowRelease Release="item"></ShowRelease>
+}
+
+
+@code {
+    GiteeRelease[] Releases = [];
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        Releases = await Fusion.GetOrSetAsync(GetType().Name, async factory =>
+          {
+              return await gitee.Releases("zms9110750", "Warframe.Market");
+          }, options => options.SetSkipDistributedCache(true, null));
+    }
+}

@@ -1,0 +1,37 @@
+﻿@using WarframeMarketQueryWPF.Api
+
+@if (Release == null)
+{
+    <MCard Loading="true">@("loading")</MCard>
+
+}
+else
+{
+    <MCard>
+        <MCardTitle>@Release.Name</MCardTitle>
+        <MCardSubtitle>@Release.Body</MCardSubtitle>
+        <MCardActions>
+            @foreach (var item in Release.Assets)
+            {
+                if (item.BrowserDownloadUrl.Contains("archive/refs/tags"))
+                {
+                    continue;
+                }
+                <a href="@item.BrowserDownloadUrl">@item.Name</a>
+            }
+
+        </MCardActions>
+    </MCard>
+
+}
+
+
+
+GiteeRelease { Id = 567159, TagName = v0.1.0, Name = 测试, Body = 创建一个gitee, CreatedAt = 2026/1/12 12:23:06, Assets = ReleaseAsset[] }
+ReleaseAsset { BrowserDownloadUrl = https://gitee.com/zms9110750/Warframe.Market/releases/download/v0.1.0/WM%E8%AE%A2%E5%8D%95%E4%B8%AD%E8%8B%B1%E7%BF%BB%E8%AF%91%E5%99%A8(windos-64%E4%BD%8D%EF%BC%89.zip, Name = WM订单中英翻译器(windos-64位）.zip }
+ReleaseAsset { BrowserDownloadUrl = https://gitee.com/zms9110750/Warframe.Market/archive/refs/tags/v0.1.0.zip, Name = v0.1.0.zip }
+ReleaseAsset { BrowserDownloadUrl = https://gitee.com/zms9110750/Warframe.Market/archive/refs/tags/v0.1.0.tar.gz, Name = v0.1.0.tar.gz }
+@code {
+    [Parameter]
+    public GiteeRelease Release { get; set; }
+}

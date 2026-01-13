@@ -1,11 +1,13 @@
 ﻿@using System.Reflection
 @inherits LayoutComponentBase
-
+@using Version = WarframeMarketQuery.Model.Versions.Version;
 <MApp>
     <MAppBar App>
         <MToolbarTitle> @currentTitle </MToolbarTitle>
         <MSpacer></MSpacer>
         <MSwitch @bind-Value="CanWrite" Inset><LabelContent>可编辑</LabelContent></MSwitch>
+        <MSpacer></MSpacer>
+        <MSwitch @bind-Value="ClickLink" Inset><LabelContent>打开链接</LabelContent></MSwitch>
         <MSpacer></MSpacer>
         @msg
     </MAppBar>
@@ -24,12 +26,13 @@
             }
         </MList>
     </MNavigationDrawer>
-
     <MMain>
         <MContainer Fluid>
             <MErrorHandler>
-                <CascadingValue Value="CanWrite" Name="CanWrite">
-                    @Body
+                <CascadingValue Value="ClickLink" Name="ClickLink">
+                    <CascadingValue Value="CanWrite" Name="CanWrite">
+                        @* @Body *@
+                    </CascadingValue>
                 </CascadingValue>
             </MErrorHandler>
         </MContainer>
@@ -37,45 +40,46 @@
 </MApp>
 @inject NavigationManager Navigation
 @code {
-
+    bool ClickLink;
     bool CanWrite;
     string msg;
 
     protected override async Task OnInitializedAsync()
     {
-        var local = await Fusion.GetOrDefaultAsync<string>(nameof(Version).ToLower(), null);
-        if (local == null)
+        try
         {
-            msg = "初始化缓存，请等待";
-            await wmClient.GetAndSetIndexByItemAsync();
-            msg = "缓存更新完成。请重启程序";
-        }
-        else
-        {
-            msg = "本地数据版本" + local + " , 查询服务器数据版本";
-            var server = (await wmClient.GetVersionAsync()).ApiVersion;
-            if (local == server)
+            await base.OnInitializedAsync();
+            navItems = GetNavItemsFromAssembly();
+            currentTitle = navItems.FirstOrDefault(s => s.Route == "/")?.Title ?? "";
+            var local = await Fusion.GetOrDefaultAsync<Version>(nameof(Version).ToLower());
+            if (local == default)
             {
-                msg = "本地数据已是最新";
+                msg = "初始化缓存，请等待";
+                await WfmApi.GetAndSetIndexByItemAsync();
+                local = (await WfmApi.GetVersionAsync());
             }
             else
             {
-                msg = "后台更新缓存" + local + "/" + server;
-                await wmClient.GetAndSetIndexByItemAsync();
-                msg = "缓存更新完成";
+                msg = "本地数据版本" + local.UpdatedAt + " , 查询服务器数据版本";
+                var server = await WfmApi.GetVersionAsync();
+                if (local != server)
+                {
+                    msg = "后台更新缓存" + local.UpdatedAt + "/" + server.UpdatedAt;
+                    await WfmApi.GetAndSetIndexByItemAsync();
+                }
+                local = server;
             }
+            msg = "数据日期：" + local.UpdatedAt; 
         }
-        await base.OnInitializedAsync();
+        catch (Exception ex)
+        {
+            msg = ex.Message;
+        }
+
     }
 
     string currentTitle = "";
-    private List<NavItemInfo> navItems = new();
-
-    protected override void OnInitialized()
-    {
-        navItems = GetNavItemsFromAssembly();
-        currentTitle = navItems.FirstOrDefault(s => s.Route == "/")?.Title ?? "";
-    }
+    private List<NavItemInfo> navItems = new(); 
 
     private List<NavItemInfo> GetNavItemsFromAssembly()
     {

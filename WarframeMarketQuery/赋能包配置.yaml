@@ -1,6 +1,4 @@
 ﻿赋能包配置:
-
-
   - Name : 科维兽
     Items:
       - Subtypes: Uncommon
@@ -17,7 +15,7 @@
           - 近战·憎恶
           - 近战·暴露
           - 近战·侵染
-          - 近战·旋涡
+          - 近战·漩涡
           - 次要·筑垒
           - 次要·激涌
       - Subtypes: Legendary

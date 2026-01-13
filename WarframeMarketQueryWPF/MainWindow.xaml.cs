@@ -1,13 +1,18 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using FusionCacheReference;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Refit;
 using System.Windows;
+using WarframeMarketQuery.API;
 using WarframeMarketQuery.Arcane;
+using WarframeMarketQuery.Extension;
+using WarframeMarketQueryWPF.Api;
 using ZiggyCreatures.Caching.Fusion;
 using zms9110750.TreeCollection.Trie;
 
 namespace WarframeMarketQueryWPF;
 
- 
+
 public partial class MainWindow : Window
 {
     public MainWindow()
@@ -21,26 +26,17 @@ public partial class MainWindow : Window
 
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddWpfBlazorWebView();
-        serviceCollection.AddMasaBlazor();
-        serviceCollection.AddMemoryCache();
+        serviceCollection.AddMasaBlazor(); 
 
 #if DEBUG
         serviceCollection.AddBlazorWebViewDeveloperTools();
 #endif
-        serviceCollection.AddFusionCacheAndSqliteCache()
-    .AddWarframeMarketClient()
-    .AddSingleton<IConfiguration>(new ConfigurationBuilder().AddYamlFile("赋能包配置.yaml").Build())
-    .AddSingleton(sp => sp.GetRequiredService<IConfiguration>().GetSection("赋能包配置").Get<ArcanePack[]>()!)
-    .AddSingleton(sp =>
-    {
-        Trie? trie = new Trie(['_', ' ', '·']);
-        var index = sp.GetService<IFusionCache>()?.GetOrDefaultAsync<string[]>(nameof(Trie).ToLower()).AsTask().Result;
-        foreach (var item in index ?? [])
-        {
-            trie.Add(item);
-        }
-        return trie;
-    });
+      /*  serviceCollection.AddFusionCacheAndSqliteCache();
+        serviceCollection
+            .AddWarframeMarketClient()
+            .AddWarframeMarketProgramServices();
+        serviceCollection.AddRefitClient<IGitee>(new RefitSettings { ContentSerializer = new SystemTextJsonContentSerializer(IWarframeMarketApiV1.V1options) }).ConfigureHttpClient(http => http.BaseAddress = new Uri("https://gitee.com/api/v5"));
+*/
         Resources.Add("services", serviceCollection.BuildServiceProvider());
     }
 }

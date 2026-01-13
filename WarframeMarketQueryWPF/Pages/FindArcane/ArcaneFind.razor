@@ -1,13 +1,28 @@
 ﻿@page "/fetchdata"
 @using Microsoft.Extensions.Caching.Memory
-@attribute [NavItem("赋能包查询", Icon = "mdi-package-variant")]
-@inject ArcanePack[] Pack
+@using WarframeMarketQuery.Extension
+@attribute [NavItem("赋能包查询", Icon = "mdi-package-variant", Order = 3)]
+@inject Task<ArcanePack[]> PackTask
 @inject IMemoryCache MemoryCache
 @implements IDisposable
+
+<text>这里列出的数字是指，购买一组小小黑赋能（2520荧尘）开箱子的期望价值</text>
+<br />
+<text>例如，如果一个包的期望价值是90p，交易频道有人喊80p出一组小小黑赋能，那么这个利润空间就很低</text>
+<br />
+<text>表头的数字是指每天购买多少组小小黑赋能。例如35是指一天买35组小小黑赋能去开箱。</text>
+<br />
+<text>那么就会开到很多赋能，包括卖不出去的。开到的数量比市场交易量还高。</text>
+<br />
+<text>那么，这时候就一市场交易量代替依据概率开出来的数量计算价格。</text>
+<br />
+<text>一个包因为数量跌的越多，就说明这个包里大部分赋能是卖不出去的。</text>
+
+
 <MDataTable Headers="_headers"
             Items="Pack"
             Dense
-            MultiSort
+            MustSort
             ShowExpand
             ItemKey="r => r.Name"
             HideDefaultFooter
@@ -17,7 +32,7 @@
         @switch (context.Value)
         {
             case null:
-                @("loading")
+                @("isLoading")
                 break;
             case double d:
                 @($"{d,-6:f1}")
@@ -28,7 +43,7 @@
         }
     </ItemColContent>
     <ExpandedItemContent>
-        <td colspan="@_headers.Count" @key="@context.Item.Name">
+        <td colspan="@_headersItem.Count" @key="@context.Item.Name">
             <MDataTable Headers="_headersItem"
                         Items="@context.Item.SelectMany(s => s, (a, b) => (context.Item, b))"
                         Dense
@@ -39,7 +54,7 @@
                     @switch (another_name.Value)
                     {
                         case null:
-                            @("loading")
+                            @("isLoading")
                             break;
                         case double d:
                             @($"{d,-6:f1}")
@@ -67,10 +82,11 @@
    ];
     CompositeDisposable _disposables = new();
     Dictionary<(ArcanePack, int), Task<double>> ReferencePrice { get; } = new Dictionary<(ArcanePack, int), Task<double>>();
-
+    ArcanePack[] Pack=[];
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
+        Pack = await PackTask;
         var subject = new Subject<Unit>();
         _disposables.Add(
            subject
@@ -85,7 +101,7 @@
         {
             foreach (var count in (int[])[0, 2, 6, 15, 35])
             {
-                ReferencePrice[(item, count)] = item.GetReferencePriceAsync(wmClient, count);
+                ReferencePrice[(item, count)] = item.GetReferencePriceAsync(WfmApi, count);
             }
         }
         foreach (var count in (int[])[0, 2, 6, 15, 35])
@@ -109,16 +125,22 @@
         {
             Align = DataTableHeaderAlign.End,
             ValueExpression = name => MemoryCache.GetOrCreateAsync("arcane:" + name.Item2
-                , p => wmClient.GetStatisticByIndexAsync(name.Item2).AsTask()
+                , p => WfmApi.GetStatisticByIndexAsync(name.Item2).AsTask()
             , option) is { IsCompleted: true } task ? task.Result.GetMaterialBasedReferencePrice() : null
         });
-
+        _headersItem.Add(new("出货率x价格", "出货率x价格")
+        {
+            Align = DataTableHeaderAlign.End,
+            ValueExpression = name => MemoryCache.GetOrCreateAsync("arcane:" + name.Item2
+                , p => WfmApi.GetStatisticByIndexAsync(name.Item2).AsTask()
+            , option) is { IsCompleted: true } task ? task.Result.GetMaterialBasedReferencePrice() * name.Item1.GetProbability(name.Item2) : null
+        });
         _headersItem.Add(new("日均交易量", "日均交易量")
         {
             Align = DataTableHeaderAlign.End,
             ValueExpression = name => MemoryCache.GetOrCreateAsync("arcane:" + name.Item2
-                , p => wmClient.GetStatisticByIndexAsync(name.Item2).AsTask()
-            , option) is { IsCompleted: true } task ? task.Result.Data.Payload.StatisticsClosed.Day90.Sum(entry => entry.Volume * SyntheticConsumption[entry.ModRank ?? 0]) / 90.0 / SyntheticConsumption[task.Result.Data.Payload.StatisticsClosed.Day90.Max(s => s.ModRank) ?? 0] : null
+                , p => WfmApi.GetStatisticByIndexAsync(name.Item2).AsTask()
+            , option) is { IsCompleted: true } task ? task.Result.Payload.StatisticsClosed.Day90.Sum(entry => entry.Volume * SyntheticConsumption[entry.ModRank ?? 0]) / 90.0 / SyntheticConsumption[task.Result.Payload.StatisticsClosed.Day90.Max(s => s.ModRank) ?? 0] : null
         });
 
         foreach (var item in ReferencePrice.Values.Where(s => !s.IsCompleted))

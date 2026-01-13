@@ -8,7 +8,8 @@
       <RootNamespace>WarframeMarketQueryWPF</RootNamespace>
       <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
 		<InterceptorsPreviewNamespaces>$(InterceptorsPreviewNamespaces);Microsoft.Extensions.Configuration.Binder.SourceGeneration</InterceptorsPreviewNamespaces>
-    </PropertyGroup>
+		<Version>0.1.0.0</Version>
+	</PropertyGroup> 
 
      <ItemGroup>
        <PackageReference Include="Masa.Blazor" Version="1.11.3" />
@@ -18,6 +19,12 @@
        <Content Update="wwwroot\**">
          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
        </Content>
+     </ItemGroup>
+
+     <ItemGroup>
+       <None Update="Readme.md">
+         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+       </None>
      </ItemGroup>
 
 </Project>
