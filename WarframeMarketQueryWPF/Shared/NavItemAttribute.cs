@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace WarframeMarketQueryWPF.Shared;
+﻿namespace WarframeMarketQueryWPF.Shared;
 
 [AttributeUsage(AttributeTargets.Class)]
 public class NavItemAttribute : Attribute
@@ -15,7 +11,7 @@ public class NavItemAttribute : Attribute
     {
         Title = title;
     }
-    public NavItemAttribute(string title,string icon)
+    public NavItemAttribute(string title, string icon)
     {
         Title = title;
         Icon = icon;

@@ -10,7 +10,6 @@
     <QueryUser IsHide="@(NoShow.Contains(item))" UserName="@item" HideChanged="@(key => ChangeNoShow(key))" @key="item"></QueryUser>
 }
 
-
 @code {
     HashSet<string> NoShow = [];
     void ChangeNoShow(string key)

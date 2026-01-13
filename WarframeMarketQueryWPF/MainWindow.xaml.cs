@@ -1,14 +1,10 @@
 ﻿using FusionCacheReference;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Refit;
 using System.Windows;
 using WarframeMarketQuery.API;
-using WarframeMarketQuery.Arcane;
 using WarframeMarketQuery.Extension;
 using WarframeMarketQueryWPF.Api;
-using ZiggyCreatures.Caching.Fusion;
-using zms9110750.TreeCollection.Trie;
 
 namespace WarframeMarketQueryWPF;
 
@@ -26,17 +22,17 @@ public partial class MainWindow : Window
 
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddWpfBlazorWebView();
-        serviceCollection.AddMasaBlazor(); 
+        serviceCollection.AddMasaBlazor();
 
 #if DEBUG
         serviceCollection.AddBlazorWebViewDeveloperTools();
 #endif
-      /*  serviceCollection.AddFusionCacheAndSqliteCache();
+        serviceCollection.AddFusionCacheAndSqliteCache();
         serviceCollection
             .AddWarframeMarketClient()
             .AddWarframeMarketProgramServices();
         serviceCollection.AddRefitClient<IGitee>(new RefitSettings { ContentSerializer = new SystemTextJsonContentSerializer(IWarframeMarketApiV1.V1options) }).ConfigureHttpClient(http => http.BaseAddress = new Uri("https://gitee.com/api/v5"));
-*/
+
         Resources.Add("services", serviceCollection.BuildServiceProvider());
     }
 }

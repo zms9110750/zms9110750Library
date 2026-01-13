@@ -1,8 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Text;
 using ZiggyCreatures.Caching.Fusion;
 
 namespace WarframeMarketQueryWPF.Shared;
@@ -12,7 +9,7 @@ public class CarryList : ComponentBase
     bool init;
     [Inject]
     IFusionCache Fusion { get; set; } = default!;
-    public List<string> Strings { get; set; } = [];
+    public List<string> Tags { get; set; } = [];
     [Parameter]
     [AllowNull]
     public string CacheKey { get => field ?? GetType().FullName!; set; }
@@ -25,14 +22,14 @@ public class CarryList : ComponentBase
             field = value;
             if (!CanWrite && init)
             {
-                Fusion.Set(CacheKey, Strings);
+                Fusion.Set(CacheKey, Tags);
             }
         }
     }
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        Strings.AddRange(await Fusion.GetOrDefaultAsync<List<string>>(CacheKey) ?? []);
+        Tags.AddRange(await Fusion.GetOrDefaultAsync<List<string>>(CacheKey) ?? []);
         init = true;
     }
 }

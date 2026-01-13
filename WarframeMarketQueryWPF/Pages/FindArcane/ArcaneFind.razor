@@ -1,10 +1,6 @@
-﻿@page "/fetchdata"
-@using Microsoft.Extensions.Caching.Memory
-@using WarframeMarketQuery.Extension
+﻿@page "/fetchdata" 
 @attribute [NavItem("赋能包查询", Icon = "mdi-package-variant", Order = 3)]
-@inject Task<ArcanePack[]> PackTask
-@inject IMemoryCache MemoryCache
-@implements IDisposable
+
 
 <text>这里列出的数字是指，购买一组小小黑赋能（2520荧尘）开箱子的期望价值</text>
 <br />
@@ -18,9 +14,9 @@
 <br />
 <text>一个包因为数量跌的越多，就说明这个包里大部分赋能是卖不出去的。</text>
 
-
 <MDataTable Headers="_headers"
             Items="Pack"
+            Loading="Pack.Length == 0"
             Dense
             MustSort
             ShowExpand
@@ -43,114 +39,8 @@
         }
     </ItemColContent>
     <ExpandedItemContent>
-        <td colspan="@_headersItem.Count" @key="@context.Item.Name">
-            <MDataTable Headers="_headersItem"
-                        Items="@context.Item.SelectMany(s => s, (a, b) => (context.Item, b))"
-                        Dense
-                        HideDefaultFooter
-                        Class="elevation-1"
-                        ItemsPerPage="-1">
-                <ItemColContent Context="another_name">
-                    @switch (another_name.Value)
-                    {
-                        case null:
-                            @("isLoading")
-                            break;
-                        case double d:
-                            @($"{d,-6:f1}")
-                            break;
-                        default:
-                            @another_name.Value
-                            break;
-                    }
-                </ItemColContent>
-            </MDataTable>
+        <td colspan="@_headers.Count" @key="@context.Item.Name">
+            <ArcaneTable Pack="context.Item" />
         </td>
     </ExpandedItemContent>
-</MDataTable>
-@code {
-    private List<DataTableHeader<ArcanePack>> _headers =
-      [
-             new ("赋能包",nameof(ArcanePack.Name))
-      ];
-
-    private List<DataTableHeader<(ArcanePack, string)>> _headersItem =
-   [
-          new ("名称","名称"){
-                    ValueExpression= t=> t.Item2
-}
-   ];
-    CompositeDisposable _disposables = new();
-    Dictionary<(ArcanePack, int), Task<double>> ReferencePrice { get; } = new Dictionary<(ArcanePack, int), Task<double>>();
-    ArcanePack[] Pack=[];
-    protected override async Task OnInitializedAsync()
-    {
-        await base.OnInitializedAsync();
-        Pack = await PackTask;
-        var subject = new Subject<Unit>();
-        _disposables.Add(
-           subject
-               .Buffer(TimeSpan.FromMilliseconds(200)) // 时间窗口100ms或最大10个
-               .Where(buffer => buffer.Count > 0) // 过滤空缓冲
-               .Subscribe(buffer =>
-               {
-                   InvokeAsync(StateHasChanged);
-               })
-       );
-        foreach (var item in Pack)
-        {
-            foreach (var count in (int[])[0, 2, 6, 15, 35])
-            {
-                ReferencePrice[(item, count)] = item.GetReferencePriceAsync(WfmApi, count);
-            }
-        }
-        foreach (var count in (int[])[0, 2, 6, 15, 35])
-        {
-            _headers.Add(new(count.ToString(), count.ToString())
-            {
-                Align = DataTableHeaderAlign.End,
-                ValueExpression = pack =>
-                ReferencePrice.TryGetValue((pack, count), out var task) && task.IsCompleted
-                ? task.Result
-                : null
-            });
-        }
-        _headersItem.Add(new("出货率%", "出货率")
-        {
-            Align = DataTableHeaderAlign.End,
-            ValueExpression = name => name.Item1.GetProbability(name.Item2) * 100
-        });
-        var option = new MemoryCacheEntryOptions { SlidingExpiration = TimeSpan.FromMinutes(1) };
-        _headersItem.Add(new("参考价格", "参考价格")
-        {
-            Align = DataTableHeaderAlign.End,
-            ValueExpression = name => MemoryCache.GetOrCreateAsync("arcane:" + name.Item2
-                , p => WfmApi.GetStatisticByIndexAsync(name.Item2).AsTask()
-            , option) is { IsCompleted: true } task ? task.Result.GetMaterialBasedReferencePrice() : null
-        });
-        _headersItem.Add(new("出货率x价格", "出货率x价格")
-        {
-            Align = DataTableHeaderAlign.End,
-            ValueExpression = name => MemoryCache.GetOrCreateAsync("arcane:" + name.Item2
-                , p => WfmApi.GetStatisticByIndexAsync(name.Item2).AsTask()
-            , option) is { IsCompleted: true } task ? task.Result.GetMaterialBasedReferencePrice() * name.Item1.GetProbability(name.Item2) : null
-        });
-        _headersItem.Add(new("日均交易量", "日均交易量")
-        {
-            Align = DataTableHeaderAlign.End,
-            ValueExpression = name => MemoryCache.GetOrCreateAsync("arcane:" + name.Item2
-                , p => WfmApi.GetStatisticByIndexAsync(name.Item2).AsTask()
-            , option) is { IsCompleted: true } task ? task.Result.Payload.StatisticsClosed.Day90.Sum(entry => entry.Volume * SyntheticConsumption[entry.ModRank ?? 0]) / 90.0 / SyntheticConsumption[task.Result.Payload.StatisticsClosed.Day90.Max(s => s.ModRank) ?? 0] : null
-        });
-
-        foreach (var item in ReferencePrice.Values.Where(s => !s.IsCompleted))
-        {
-            _ = item.ContinueWith(s => subject.OnNext(Unit.Default));
-        }
-    }
-    static IReadOnlyList<int> SyntheticConsumption { get; } = [1, 3, 6, 10, 15, 21];
-    public void Dispose()
-    {
-        _disposables.Dispose();
-    }
-}
+</MDataTable> 

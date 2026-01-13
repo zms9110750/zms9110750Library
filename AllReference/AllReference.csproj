@@ -22,7 +22,8 @@
 	<ItemGroup>
 		<PackageReference Include="Autofac" Version="9.0.0" />
 		<PackageReference Include="Blake3" Version="2.0.0" />
-		<PackageReference Include="GodotSharp" Version="4.5.1" />
+		<PackageReference Include="GodotSharp" Version="4.5.1" /> 
+		<PackageReference Include="Humanizer.Core.zh-Hans" Version="3.0.1" />
 		<PackageReference Include="Microsoft.Bcl.TimeProvider" Version="10.0.0" />
 		<PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" Version="10.0.0" />
 		<PackageReference Include="NuGet.Common" Version="7.0.1" />

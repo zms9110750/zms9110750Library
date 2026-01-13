@@ -10,6 +10,7 @@
         <MSwitch @bind-Value="ClickLink" Inset><LabelContent>打开链接</LabelContent></MSwitch>
         <MSpacer></MSpacer>
         @msg
+        <MButton OnClick="OnClick" Loading="loading">强制更新</MButton>
     </MAppBar>
     <MNavigationDrawer App Permanent MiniVariant>
         <MList Nav Routable>
@@ -31,7 +32,7 @@
             <MErrorHandler>
                 <CascadingValue Value="ClickLink" Name="ClickLink">
                     <CascadingValue Value="CanWrite" Name="CanWrite">
-                        @* @Body *@
+                        @Body
                     </CascadingValue>
                 </CascadingValue>
             </MErrorHandler>
@@ -40,9 +41,13 @@
 </MApp>
 @inject NavigationManager Navigation
 @code {
+
+
+
     bool ClickLink;
     bool CanWrite;
     string msg;
+    bool loading = true;
 
     protected override async Task OnInitializedAsync()
     {
@@ -69,17 +74,26 @@
                 }
                 local = server;
             }
-            msg = "数据日期：" + local.UpdatedAt; 
+            msg = "数据日期：" + local.UpdatedAt;
         }
         catch (Exception ex)
         {
             msg = ex.Message;
         }
-
+        loading = false;
     }
 
+    async Task OnClick()
+    {
+        loading = true;
+        msg = "强制更新中";
+        await WfmApi.GetAndSetIndexByItemAsync();
+        var local = await WfmApi.GetVersionAsync();
+        msg = "数据日期：" + local.UpdatedAt;
+        loading = false;
+    }
     string currentTitle = "";
-    private List<NavItemInfo> navItems = new(); 
+    private List<NavItemInfo> navItems = new();
 
     private List<NavItemInfo> GetNavItemsFromAssembly()
     {

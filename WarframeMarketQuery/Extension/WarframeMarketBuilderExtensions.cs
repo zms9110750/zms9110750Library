@@ -37,7 +37,7 @@ public static class WarframeMarketBuilderExtensions
     public static IServiceCollection AddWarframeMarketClient(this IServiceCollection services, Language language = Language.ZhHans, int queueSec = 6, double permitLimit = 4)
     {
         var assembly = Assembly.GetExecutingAssembly().GetName();
-        services.AddHttpClient<WarframeMarketClient>(client =>
+        services.AddHttpClient<WarframeMarketApi>(client =>
         {
             client.BaseAddress = new Uri("https://api.warframe.market");
             client.DefaultRequestHeaders.Add("Language", JsonNamingPolicy.KebabCaseLower.ConvertName(language.ToString()));
@@ -89,8 +89,8 @@ public static class WarframeMarketBuilderExtensions
     public static IServiceCollection AddWarframeMarketProgramServices(this IServiceCollection services, string yamlConfigPath = "赋能包配置.yaml")
     {
         // 加载 YAML 配置（与原 Program.cs 行为一致）
-        services.AddSingleton(  sp => new ConfigurationBuilder().AddYamlFile(yamlConfigPath).Build());
-
+        services.AddSingleton<IConfiguration>(  sp => new ConfigurationBuilder().AddYamlFile(yamlConfigPath).Build());
+        
         // 从配置节读取 ArcanePack[]
         services.AddSingleton(sp => sp.GetRequiredService<IConfiguration>().GetSection("赋能包配置").Get<ArcanePack[]>()!);
 

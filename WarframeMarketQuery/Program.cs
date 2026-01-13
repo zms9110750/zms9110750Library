@@ -20,7 +20,7 @@ using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 using zms9110750.TreeCollection.Trie;
 
-#if true
+#if false
 Console.OutputEncoding = Encoding.Unicode;
 Console.InputEncoding = Encoding.Unicode;
 ServiceCollection? services = new ServiceCollection();
@@ -45,10 +45,8 @@ await preset.CheckUpdata();
 await preset.Run(args);
 
 
-var http = buidler.GetKeyedService<HttpClient>(nameof(WarframeMarketClient));
-var response = await http.GetStringAsync("https://httpbin.org/user-agent");
-Console.WriteLine(response);
-Console.WriteLine("结束");
+
+
 #endif
 
 

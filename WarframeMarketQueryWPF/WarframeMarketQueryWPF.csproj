@@ -15,6 +15,7 @@
        <PackageReference Include="Masa.Blazor" Version="1.11.3" />
        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="10.0.11" />
        <ProjectReference Include="..\WarframeMarketQuery\WarframeMarketQuery.csproj" />
+		<PackageReference Include="Humanizer.Core.zh-Hans" Version="3.0.1" />
     
        <Content Update="wwwroot\**">
          <CopyToOutputDirectory>Always</CopyToOutputDirectory>

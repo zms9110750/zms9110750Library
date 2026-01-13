@@ -6,6 +6,7 @@ namespace WarframeMarketQuery.Model;
 
 [JsonSerializable(typeof(string[]))]
 [JsonSerializable(typeof(Response<ItemSet>))]
+[JsonSerializable(typeof(Version))]
 [JsonSerializable(typeof(Response<User>))]
 [JsonSerializable(typeof(Response<Orders.OrderTop>))]
 [JsonSerializable(typeof(Response<Statistics.Statistic>))]

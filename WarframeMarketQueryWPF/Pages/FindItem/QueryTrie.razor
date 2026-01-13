@@ -2,7 +2,7 @@
 @using WarframeMarketQuery.API
 <MDivider />
 <ExpandTransition>
-    <MButton OnClick="() => HideChanged.InvokeAsync(Title)">@Title</MButton> 
+    <MButton OnClick="() => HideChanged.InvokeAsync(Title)">@Title</MButton>
     <ShowTransitionElement Value="@(!IsHide)">
         <MDataTable Headers="_headers"
                     Items="Items"
@@ -18,12 +18,22 @@
             <ItemColContent>
                 @switch (context.Value)
                 {
+                    case string s when ClickLink:
+                        var lang = context.Header.Text == "中文名称" ? "/zh-hans" : null;
+                        <a href="@("https://warframe.market" + lang + "/items/" + context.Item.Slug)">@s</a>
+                        break;
                     case string s:
                         <PCopyableText Text="@(new string(s.TrimEnd(" Set").TrimEnd(" 一套")))" />
                         @s
                         break;
+                    case null when ClickLink:
+                        <a href="@($"https://warframe.market/zh-hans/items/{context.Item.Slug}/statistics")"> @("isLoading")</a>
+                        break;
                     case null:
                         @("isLoading")
+                        break;
+                    case double d when ClickLink:
+                        <a href="@($"https://warframe.market/zh-hans/items/{context.Item.Slug}/statistics")">@($"{d,-6:f1}")</a>
                         break;
                     case double d:
                         @($"{d,-6:f1}")
@@ -32,6 +42,8 @@
                         @context.Value
                         break;
                 }
+
+
             </ItemColContent>
             <ExpandedItemContent>
                 <td colspan="@_headers.Count" @key="@context.Item.Id">
@@ -41,6 +53,7 @@
         </MDataTable>
     </ShowTransitionElement>
 </ExpandTransition>
+
 @code {
 
     [Parameter]
@@ -49,4 +62,6 @@
     public EventCallback<string> HideChanged { get; set; }
     [Parameter]
     public string Title { get; set; } = "";
+    [CascadingParameter(Name = "ClickLink")]
+    public bool ClickLink { get; set; }
 }

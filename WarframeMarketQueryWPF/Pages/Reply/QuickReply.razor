@@ -2,9 +2,9 @@
 @inherits CarryList
 @attribute [NavItem("快捷回复", Icon = "mdi-chat-processing-outline", Order = 4)]
 
-@foreach (var item in Strings.Index())
+@foreach (var item in Tags.Index())
 {
-    <MTextField @bind-Value="Strings[item.Index]" Readonly="!CanWrite" Dense>
+    <MTextField @bind-Value="Tags[item.Index]" Readonly="!CanWrite" Dense>
         <PrependContent>
             @if (!CanWrite)
             {
@@ -12,7 +12,7 @@
             }
             else
             {
-                <MButton IconName="mdi-minus" OnClick="() => Strings.RemoveAt(item.Index)" />
+                <MButton IconName="mdi-minus" OnClick="() => Tags.RemoveAt(item.Index)" />
             }
         </PrependContent>
     </MTextField>
@@ -21,7 +21,7 @@
 {
     <MTextField @bind-Value="p" Dense @onblur="@(AddNewStrings)" />
 }
-else if (Strings.Count == 0)
+else if (Tags.Count == 0)
 {
     @("打开顶部导航栏的可编辑按钮，来添加条目")
 }
@@ -32,7 +32,7 @@ else if (Strings.Count == 0)
     {
         if (!string.IsNullOrEmpty(p))
         {
-            Strings.Add(p);
+            Tags.Add(p);
             p = "";
         }
     }

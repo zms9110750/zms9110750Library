@@ -41,7 +41,8 @@ public partial class QueryTrie : IDisposable
     {
         await base.OnInitializedAsync();
         HashSet<Task> geting = [];
-        foreach (var item in trie.Search(Title))
+        var results = await Task.Run(() => trie.Search(Title));
+        foreach (var item in results)
         {
             var itemshort = await WfmApi.GetItemByIndexAsync(item);
             Items.Add(itemshort);

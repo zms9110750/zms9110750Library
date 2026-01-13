@@ -7,13 +7,13 @@
                 SingleLine
                 HideDetails="true"></MTextField>
 </MCardTitle>
-@foreach (var item in Strings)
+@foreach (var item in Tags)
 {
-    <MChip Close="CanWrite" OnCloseClick="@(() => Strings.Remove(item))" OnClick="@(() => Add(item))">@item</MChip>
+    <MChip Close="CanWrite" OnCloseClick="@(() => Tags.Remove(item))" OnClick="@(() => Add(item))">@item</MChip>
 }
 @if (CanWrite)
 {
-    <MTextField @bind-Value="p" Dense @onblur="@(AddNewStrings)" />
+    <MTextField @bind-Value="tagTemp" Dense @onblur="@(AddNewStrings)" />
 }
 @code {
     [Parameter]
@@ -40,7 +40,7 @@
         get; set
         {
             field = value;
-            SearchItemChanged.InvokeAsync(value);
+            InvokeAsync(() => SearchItemChanged.InvokeAsync(value));
         }
     } = [];
 
@@ -64,28 +64,27 @@
                    .Select(input => input.Split('/', '\\'))
            )
            .DistinctUntilChanged(EqualityComparer<IEnumerable<string>>.Create((a, b) => a.SequenceEqual(b)))
-           .ObserveOn(SynchronizationContext.Current)
            .Subscribe(segments =>
            {
+               Fusion.Set(CacheKey + ":runing", Search, op => op.SetSkipDistributedCache(true, null));
                SearchItem = segments.Where(s => !string.IsNullOrWhiteSpace(s));
            });
         disposables.Add(searchSubject);
         disposables.Add(mergedStream);
     }
-    bool init;
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        Strings.AddRange(await Fusion.GetOrDefaultAsync<List<string>>(GetType().FullName!) ?? []);
-        init = true;
+        Search = Fusion.GetOrDefault<string>(CacheKey + ":runing", "", op => op.SetSkipDistributedCache(true, null))!;
+        Tags.AddRange(await Fusion.GetOrDefaultAsync<List<string>>(GetType().FullName!) ?? []);
     }
-    string p = "";
+    string tagTemp = "";
     void AddNewStrings()
     {
-        if (!string.IsNullOrEmpty(p))
+        if (!string.IsNullOrEmpty(tagTemp))
         {
-            Strings.Add(p);
-            p = "";
+            Tags.Add(tagTemp);
+            tagTemp = "";
         }
     }
 }

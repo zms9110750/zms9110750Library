@@ -2,7 +2,7 @@
 <MDivider />
 @if (NotFound)
 {
-    <MChip>未找到该用户：@(UserName)</MChip>
+    <MAlert Type="AlertTypes.Error">未找到该用户：@(UserName)</MAlert>
 }
 else
 {
@@ -41,12 +41,23 @@ else
                 <ItemColContent>
                     @switch (context.Value)
                     {
+                        case string s when ClickLink:
+                            var lang = context.Header.Text == "中文名称" ? "/zh-hans" : null;
+                            <a href="@("https://warframe.market" + lang + "/items/" + context.Item.Item.Slug)">@s</a>
+                            break;
                         case string s:
                             <PCopyableText Text="@(new string(s.TrimEnd(" Set").TrimEnd(" 一套")))" />
                             @s
                             break;
+                        case null when ClickLink:
+                            <a href="@($"https://warframe.market/zh-hans/items/{context.Item.Item.Slug}/statistics")"> @("isLoading")</a>
+                            break;
+
                         case null:
                             @("isLoading")
+                            break;
+                        case double d when ClickLink:
+                            <a href="@($"https://warframe.market/zh-hans/items/{context.Item.Item.Slug}/statistics")">@($"{d,-6:f1}")</a>
                             break;
                         case double d:
                             @($"{d,-6:f1}")
@@ -79,4 +90,6 @@ else
     public bool IsHide { get; set; }
     [Parameter]
     public EventCallback<string> HideChanged { get; set; }
+    [CascadingParameter(Name = "ClickLink")]
+    public bool ClickLink { get; set; }
 }
