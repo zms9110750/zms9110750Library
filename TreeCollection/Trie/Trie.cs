@@ -7,7 +7,7 @@ namespace zms9110750.TreeCollection.Trie;
 /// 字典树根节点
 /// </summary>
 /// <param name="separator">分隔符集合</param>
-public class Trie(HashSet<char>? separator = null) : TrieBase()
+public class Trie(HashSet<char>? separator = null) : TrieBase() 
 {
 	static IReadOnlySet<char> DefaultSeparator { get; } = new HashSet<char>();
 	/// <inheritdoc/>
@@ -42,7 +42,7 @@ public class Trie(HashSet<char>? separator = null) : TrieBase()
 	/// </remarks>
 	public IEnumerable<string> Search(string prefix)
 	{
-		if (string.IsNullOrEmpty(prefix))
+        if (string.IsNullOrEmpty(prefix))
 		{
 			yield break;
 		}
@@ -65,4 +65,4 @@ public class Trie(HashSet<char>? separator = null) : TrieBase()
 }
 
 
-
+ 

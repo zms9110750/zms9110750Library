@@ -1,0 +1,46 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Update="Extensions\Apply.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Apply.tt.cs</LastGenOutput>
+    </None>
+    <None Update="Extensions\Out.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Out.tt.cs</LastGenOutput>
+    </None>
+    <None Update="Extensions\When.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>When.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Extensions\Apply.tt.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Apply.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Extensions\Out.tt.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Out.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Extensions\When.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>When.tt</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+</Project>
