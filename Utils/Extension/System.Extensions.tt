@@ -1,0 +1,118 @@
+﻿<#@ template debug="true" hostspecific="false" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Reflection" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ output extension=".cs" #>
+<#
+    var assembly = typeof(string).Assembly;
+    var types = assembly.GetTypes()
+        .Where(t => t.IsPublic && !t.IsGenericTypeDefinition && !t.IsInterface && !t.IsEnum)
+        .Where(t => t.Namespace == "System")
+        .Where(t => t.Name != "Object")
+        .OrderBy(t => t.Name)
+        .ToList();
+#>
+// 自动生成的扩展方法
+// 程序集：<#= assembly.FullName #>
+// System 命名空间下的类型共 <#= types.Count #> 个
+
+using System;
+using System.Collections;
+using System.Globalization;
+
+namespace System.Extensions
+{
+<#
+    foreach (var targetType in types)
+    {
+        var methods = targetType.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
+            .Where(m => !m.IsSpecialName)
+            .Where(m => !m.IsDefined(typeof(ObsoleteAttribute)))
+            .Where(m => m.GetParameters().Length > 0)
+            .Where(m => m.GetParameters()[0].ParameterType == targetType)
+            .OrderBy(m => m.Name)
+            .ToList();
+        
+        if (methods.Count == 0) continue;
+#>
+    /// <summary>
+    /// <#= targetType.Name #> 类型的扩展方法
+    /// </summary>
+    public static class <#= targetType.Name #>Extensions
+    {
+<#
+        foreach (var m in methods)
+        {
+            var parameters = m.GetParameters();
+            var firstParam = parameters[0];
+            var otherParams = parameters.Skip(1).ToList();
+            
+            var typeParams = m.IsGenericMethod ? $"<{string.Join(", ", m.GetGenericArguments().Select(a => a.Name))}>" : "";
+            var constraints = GetGenericConstraints(m);
+            
+            var paramList = string.Join(", ", parameters.Select(p => $"{GetTypeName(p.ParameterType)} {p.Name}"));
+            var callArgs = string.Join(", ", parameters.Select(p => $"{p.Name}: {p.Name}"));
+            var crefName = $"{targetType.Name}.{m.Name}({string.Join(", ", parameters.Select(p => GetCrefTypeName(p.ParameterType)))})";
+#>
+        /// <inheritdoc cref="<#= crefName #>"/>
+        public static <#= GetTypeName(m.ReturnType) #> <#= m.Name #><#= typeParams #>(
+            this <#= GetTypeName(firstParam.ParameterType) #> <#= firstParam.Name #><#= otherParams.Count > 0 ? ", " + string.Join(", ", otherParams.Select(p => $"{GetTypeName(p.ParameterType)} {p.Name}")) : "" #>)<#= constraints #>
+            => <#= targetType.Name #>.<#= m.Name #>(<#= callArgs #>);
+
+<#
+        }
+#>
+    }
+
+<#
+    }
+#>
+}
+<#+
+    static string GetTypeName(Type type)
+    {
+        if (type == typeof(void)) return "void";
+        if (!type.IsGenericType) return type.Name.Replace('+', '.');
+        if (type.IsGenericParameter) return type.Name;
+        
+        var genericArgs = string.Join(", ", type.GetGenericArguments().Select(GetTypeName));
+        return $"{type.Name.Split('`')[0]}<{genericArgs}>".Replace('+', '.');
+    }
+    
+    static string GetCrefTypeName(Type type)
+    {
+        if (type == typeof(void)) return "void";
+        if (!type.IsGenericType) return type.Name.Replace('+', '.');
+        if (type.IsGenericParameter) return type.Name;
+        
+        if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
+        {
+            var underlying = type.GetGenericArguments()[0];
+            return $"{underlying.Name}?";
+        }
+        
+        var genericArgs = string.Join(",", type.GetGenericArguments().Select(GetCrefTypeName));
+        return $"{type.Name.Split('`')[0]}<{genericArgs}>".Replace('+', '.');
+    }
+    
+    static string GetGenericConstraints(MethodInfo method)
+    {
+        if (!method.IsGenericMethod) return "";
+        
+        var genericArgs = method.GetGenericArguments();
+        var constraints = new List<string>();
+        
+        foreach (var arg in genericArgs)
+        {
+            var genericConstraints = arg.GetGenericParameterConstraints();
+            if (genericConstraints.Length > 0)
+            {
+                var constraintList = string.Join(", ", genericConstraints.Select(GetTypeName));
+                constraints.Add($"where {arg.Name} : {constraintList}");
+            }
+        }
+        
+        return constraints.Count > 0 ? " " + string.Join(" ", constraints) : "";
+    }
+#>

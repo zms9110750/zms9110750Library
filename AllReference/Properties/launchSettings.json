@@ -1,0 +1,28 @@
+{
+  "profiles": {
+    "AllReference": {
+      "commandName": "Project"
+    },
+    "FileName.cs": {
+      "commandName": "Project"
+    },
+    "扒pivix.cs": {
+      "commandName": "Project"
+    },
+    "传输FTP.cs": {
+      "commandName": "Project"
+    },
+    "翻译xml文档.cs": {
+      "commandName": "Project"
+    },
+    "tar.cs": {
+      "commandName": "Project"
+    },
+    "ai.cs": {
+      "commandName": "Project"
+    },
+    "nuget.cs": {
+      "commandName": "Project"
+    }
+  }
+}

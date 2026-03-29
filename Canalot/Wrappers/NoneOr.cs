@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace Canalot.Wrappers;
+namespace zms9110750.Canalot.Wrappers;
 
 /// <summary>
 /// 表示一个可能为空的值，要么有值，要么没有

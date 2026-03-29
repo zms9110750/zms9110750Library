@@ -12,64 +12,73 @@
 		<IsTestProject>true</IsTestProject>
 		<UserSecretsId>992b82a8-b20a-466c-b522-8bd8393e5f02</UserSecretsId>
 		<PublishTrimmed>False</PublishTrimmed>
-		<FileVersion></FileVersion>
-		<AssemblyVersion>123.0</AssemblyVersion>
+		<TargetFramework Condition="$(TargetFramework) == ''">net10.0</TargetFramework>
+		<ImportProjectExtensionProps>true</ImportProjectExtensionProps>
+		<ImportProjectExtensionTargets>true</ImportProjectExtensionTargets>
 	</PropertyGroup>
 	<ItemGroup>
-	  <None Remove="FileName.cs~RF100897d1.TMP" />
+		<None Remove="FileName.cs~RF100897d1.TMP" />
 	</ItemGroup>
- 
+
 	<ItemGroup>
 		<PackageReference Include="Autofac" Version="*" />
 		<PackageReference Include="Autofac.Pooling" Version="*" />
 		<PackageReference Include="Blake3" Version="*" />
 		<PackageReference Include="FFMpegCore" Version="5.4.0" />
-		<PackageReference Include="FFMpegCore.Extensions.Downloader" Version="5.0.0" />
 		<PackageReference Include="FluentFTP" Version="53.0.2" />
-		<PackageReference Include="GodotSharp" Version="*" /> 
+		<PackageReference Include="GodotSharp" Version="*" />
 		<PackageReference Include="Humanizer.Core.zh-Hans" Version="*" />
-		<PackageReference Include="Microsoft.Bcl.TimeProvider" Version="*" />
+		<PackageReference Include="Microsoft.Agents.AI.OpenAI" Version="1.0.0-rc4" />
+		<PackageReference Include="Microsoft.Bcl.TimeProvider" Version="*" /> 
 		<PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" Version="*" />
-		<PackageReference Include="NuGet.Common" Version="*" />
-		<PackageReference Include="NuGet.Frameworks" Version="*" />
-		<PackageReference Include="Microsoft.Extensions.ObjectPool" Version="*" /> 
-		<PackageReference Include="BenchmarkDotNet" Version="*" /> 
+		<PackageReference Include="NuGet.Common" Version="*" /> 
+		<PackageReference Include="MediaDevices" Version="1.10.0" />
+		<PackageReference Include="Microsoft.Extensions.ObjectPool" Version="*" />
+		<PackageReference Include="BenchmarkDotNet" Version="*" />
 		<PackageReference Include="HtmlAgilityPack" Version="*" />
 		<PackageReference Include="Jint" Version="*" />
-		<PackageReference Include="Markdig" Version="*" /> 
+		<PackageReference Include="Markdig" Version="*" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="*" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="*" />
 		<PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="*" />
-		<PackageReference Include="Microsoft.Extensions.Localization" Version="*" />
-		<PackageReference Include="Masuit.Tools.Core" Version="*" />
-		<PackageReference Include="NetEscapades.Configuration.Yaml" Version="*" /> 
-		<PackageReference Include="NuGet.Versioning" Version="*" /> 
-		<PackageReference Include="Scighost.PixivApi" Version="*" />  
+		<PackageReference Include="Microsoft.Extensions.Localization" Version="*" /> 
+		<PackageReference Include="NetEscapades.Configuration.Yaml" Version="*" />
+		<PackageReference Include="NuGet.Packaging" Version="7.3.0" />
+		<PackageReference Include="Scighost.PixivApi" Version="*" />
 		<PackageReference Include="SharpCompress" Version="*" />
+		<PackageReference Include="SmallSharp" Version="2.3.0">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
 		<PackageReference Include="System.Interactive" Version="*" />
 		<PackageReference Include="System.Reactive" Version="*" />
 		<PackageReference Include="Scriban" Version="*" />
 		<PackageReference Include="ZLinq.FileSystem" Version="*" />
 		<PackageReference Include="Serilog" Version="*" />
 		<PackageReference Include="ZLinq.Godot" Version="*" />
-		<PackageReference Include="ZLinq.Json" Version="*" />
-		<PackageReference Include="OpenAI" Version="*" />
-		<PackageReference Include="Validot" Version="*" />
+		<PackageReference Include="ZLinq.Json" Version="*" /> 
 		<PackageReference Include="MathNet.Numerics" Version="*" />
 		<PackageReference Include="zms9110750.InterfaceImplAsExtensionGenerator" Version="*" />
 		<PackageReference Include="Refit.HttpClientFactory" Version="*" />
-	</ItemGroup> 
-	<ItemGroup>     
-	  <ProjectReference Include="..\Canalot\Canalot.csproj" />     
-	  <ProjectReference Include="..\FusionCacheReference\FusionCacheReference.csproj" />  
-	  <ProjectReference Include="..\OpenAiReference\OpenAiReference.csproj" />
-	</ItemGroup> 
+		<PackageReference Include="Azure.AI.OpenAI" Version="2.8.0-beta.1" />
+		<PackageReference Include="Azure.Identity" Version="1.18.0" />
+	</ItemGroup>
+	<ItemGroup> 
+		<ProjectReference Include="..\Canalot\Canalot.csproj" />
+		<ProjectReference Include="..\FusionCacheReference\FusionCacheReference.csproj" />
+		<ProjectReference Include="..\OpenAiReference\OpenAiReference.csproj" />
+		<ProjectReference Include="..\ReedSolomon\ReedSolomon.NET\ReedSolomon.csproj" />
+		<ProjectReference Include="..\Utils\Utils.csproj" />
+	</ItemGroup>
 	<ItemGroup>
-	  <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
-	</ItemGroup> 
+		<Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+	</ItemGroup>
 	<ItemGroup>
-	  <None Update="cookie.txt">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </None>
+		<None Update="cookie.txt">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+	<ItemGroup>
+	  <None Remove="tar.cs" />
 	</ItemGroup>
 </Project>

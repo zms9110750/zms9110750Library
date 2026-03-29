@@ -8,15 +8,21 @@ namespace Canalot.Wrappers;
 /// <typeparam name="T">值的类型</typeparam>
 public readonly partial record struct IfElse<T>
 {
-    private static readonly InvalidOperationException _uninitializedException = new("Instance not initialized");
-    private static readonly InvalidOperationException _topLevelException = new("Already at top level, cannot exit");
-    private static readonly InvalidOperationException _maxLevelException = new("Maximum level (31) reached, cannot enter next level");
+    private static  InvalidOperationException UninitializedException => new("Instance not initialized");
+    private static  InvalidOperationException TopLevelException => new("Already at top level, cannot exit");
+    private static  InvalidOperationException MaxLevelException => new("Maximum level (31) reached, cannot enter next level");
 
     /// <summary>
     /// 当前持有的值
     /// </summary>
     public T Value { get; }
 
+    /// <summary>
+    /// 嵌套层级
+    /// </summary>
+    /// <remarks>
+    /// 从1开始。第0位留给<see cref="Handled"/>
+    /// </remarks>
     private int Level { get; }
     private BitVector32 Condition { get; }
 
@@ -30,6 +36,7 @@ public readonly partial record struct IfElse<T>
     /// 指示当前路径是否应该执行
     /// 条件：未处理 且 所有已进入的层条件都成立（位=0）
     /// </summary>
+    /// <remarks>条件成立为0，则可以直接判断<code><see cref="BitVector32.Data"/> == 0</code>来检查是否可以执行</remarks>
     internal bool ShouldExecute => Condition.Data == 0;
 
     /// <summary>
@@ -57,21 +64,21 @@ public readonly partial record struct IfElse<T>
     {
         if (!IsInitialized)
         {
-            throw _uninitializedException;
+            throw UninitializedException;
         }
     }
 
     /// <summary>
     /// 进入下一层并设置条件结果
     /// </summary>
-    /// <param name="condition">true=条件成立(0)，false=条件不成立(1)</param>
+    /// <param name="condition">true=条件成立(0)，false=条件不成立(1)</param> 
     internal IfElse<T> EnterLevel(bool condition)
     {
         ThrowIfNotInitialized();
 
         if (Level >= 31)
         {
-            throw _maxLevelException;
+            throw MaxLevelException;
         }
 
         var nextLevel = Level + 1;
@@ -102,7 +109,7 @@ public readonly partial record struct IfElse<T>
 
         if (Level <= 1)
         {
-            throw _topLevelException;
+            throw TopLevelException;
         }
 
         var temp = Condition;
@@ -138,6 +145,7 @@ public readonly partial record struct IfElse<T>
     /// <summary>
     /// 在当前层级进入 if 嵌套
     /// </summary>
+    /// <remarks>最后通过<see cref="EndIf()"/>离开嵌套</remarks>
     public IfElse<T> AndIf(bool condition)
     {
         return EnterLevel(condition);
@@ -208,6 +216,10 @@ public readonly partial record struct IfElse<T>
     /// <summary>
     /// 否则进入 else if 分支
     /// </summary>
+    /// <remarks>
+    /// else要么是进入下一层，要么执行并返回上一层。
+    /// <br/>请使用<see cref="AndIf(bool)"/>或<see cref="EndIf(T)"/>代替
+    /// </remarks>
     public IfElse<T> ElseIf(bool condition)
     {
         return ResetCurrentLevel(condition);

@@ -13,9 +13,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AllReference", "AllReferenc
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PixivApi", "..\PixivApi\PixivApi\PixivApi.csproj", "{11A868EC-7554-6D0F-51E2-B695A250B02B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CacheBackedObjectPool", "CacheBackedObjectPool\CacheBackedObjectPool.csproj", "{510B595F-A67C-4A5D-954B-E5CCD8027324}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Canalot", "Canalot\Canalot.csproj", "{9D7869D4-69B8-46D6-A7F1-410C1520DE8D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ReedSolomon", "ReedSolomon", "{E85FB8CA-DCF6-40F3-9B99-EF404ED311B6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReedSolomon", "ReedSolomon\ReedSolomon.NET\ReedSolomon.csproj", "{3FDF87AE-4CFE-54E2-A7D2-B6776F757F05}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReedSolomon.NET.Tests", "ReedSolomon\ReedSolomon.NET.Tests\ReedSolomon.NET.Tests.csproj", "{EE0AD73B-2461-E007-61A0-40AFE1EB61E1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utils", "Utils\Utils.csproj", "{602DADE2-EA13-4DB9-AC9C-8FBA9A53B99C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -43,17 +49,29 @@ Global
 		{11A868EC-7554-6D0F-51E2-B695A250B02B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{11A868EC-7554-6D0F-51E2-B695A250B02B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{11A868EC-7554-6D0F-51E2-B695A250B02B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{510B595F-A67C-4A5D-954B-E5CCD8027324}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{510B595F-A67C-4A5D-954B-E5CCD8027324}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{510B595F-A67C-4A5D-954B-E5CCD8027324}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{510B595F-A67C-4A5D-954B-E5CCD8027324}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9D7869D4-69B8-46D6-A7F1-410C1520DE8D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9D7869D4-69B8-46D6-A7F1-410C1520DE8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9D7869D4-69B8-46D6-A7F1-410C1520DE8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9D7869D4-69B8-46D6-A7F1-410C1520DE8D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3FDF87AE-4CFE-54E2-A7D2-B6776F757F05}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3FDF87AE-4CFE-54E2-A7D2-B6776F757F05}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3FDF87AE-4CFE-54E2-A7D2-B6776F757F05}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3FDF87AE-4CFE-54E2-A7D2-B6776F757F05}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EE0AD73B-2461-E007-61A0-40AFE1EB61E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE0AD73B-2461-E007-61A0-40AFE1EB61E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EE0AD73B-2461-E007-61A0-40AFE1EB61E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE0AD73B-2461-E007-61A0-40AFE1EB61E1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{602DADE2-EA13-4DB9-AC9C-8FBA9A53B99C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{602DADE2-EA13-4DB9-AC9C-8FBA9A53B99C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{602DADE2-EA13-4DB9-AC9C-8FBA9A53B99C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{602DADE2-EA13-4DB9-AC9C-8FBA9A53B99C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{3FDF87AE-4CFE-54E2-A7D2-B6776F757F05} = {E85FB8CA-DCF6-40F3-9B99-EF404ED311B6}
+		{EE0AD73B-2461-E007-61A0-40AFE1EB61E1} = {E85FB8CA-DCF6-40F3-9B99-EF404ED311B6}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {21CEA1E2-860D-4C43-8A69-DF21545107E4}

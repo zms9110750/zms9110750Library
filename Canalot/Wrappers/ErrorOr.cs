@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace Canalot.Wrappers;
+namespace zms9110750.Canalot.Wrappers;
 
 /// <summary>
 /// 表示一个操作的结果，可能成功（包含值）或失败（包含错误信息）
