@@ -1,4 +1,6 @@
-﻿using System.Formats.Tar;
+﻿ 
+
+using System.Formats.Tar;
 using zms9110750.ReedSolomon.ReedSolomons;
 
 byte[] data = File.ReadAllBytes("小鹿.yaml");

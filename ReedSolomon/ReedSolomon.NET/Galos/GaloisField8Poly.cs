@@ -5,6 +5,7 @@
     /// </summary> 
     public enum GaloisField8Poly : byte
     {
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
         P29 = 29,
         P43 = 43,
         P45 = 45,
@@ -21,5 +22,6 @@
         P207 = 207,
         P231 = 231,
         P245 = 245
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
     }
 }

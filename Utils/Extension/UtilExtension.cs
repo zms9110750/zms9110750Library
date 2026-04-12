@@ -27,14 +27,14 @@ public static class UtilExtension
     }
 
     public static string ToString<T>(this IEnumerable<T> values, string separator = ", ")
-    { 
+    {
         return separator switch
         {
             "" or null => string.Concat(values),
             { Length: 1 } => string.Join(separator[0], values),
             _ => string.Join(separator, values),
         };
-    } 
+    }
     extension(ArgumentOutOfRangeException)
     {
         /// <summary>

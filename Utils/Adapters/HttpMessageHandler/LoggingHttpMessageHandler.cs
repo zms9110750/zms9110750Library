@@ -1,9 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace zms9110750.Utils.Adapters;
+namespace zms9110750.Utils.Adapters.HttpMessageHandler;
 /// <summary>
 /// 日志记录 HTTP 请求和响应的 DelegatingHandler
 /// </summary>

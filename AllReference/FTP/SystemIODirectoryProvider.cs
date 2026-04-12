@@ -21,7 +21,10 @@
         return Task.CompletedTask;
     }
 
-    public Task<bool> Exists() => Task.FromResult(_directoryInfo.Exists);
+    public Task<bool> Exists()
+    {
+        return Task.FromResult(_directoryInfo.Exists);
+    }
 
     public async IAsyncEnumerable<IDirectoryProvide> EnumChindDirectoryProvide()
     {

@@ -8,17 +8,13 @@
 		<Nullable>enable</Nullable>
 		<LangVersion>preview</LangVersion>
 		<OutputType>Exe</OutputType>
-		<PublishAot>False</PublishAot>
-		<IsTestProject>true</IsTestProject>
+		<PublishAot>False</PublishAot> 
 		<UserSecretsId>992b82a8-b20a-466c-b522-8bd8393e5f02</UserSecretsId>
 		<PublishTrimmed>False</PublishTrimmed>
 		<TargetFramework Condition="$(TargetFramework) == ''">net10.0</TargetFramework>
 		<ImportProjectExtensionProps>true</ImportProjectExtensionProps>
 		<ImportProjectExtensionTargets>true</ImportProjectExtensionTargets>
-	</PropertyGroup>
-	<ItemGroup>
-		<None Remove="FileName.cs~RF100897d1.TMP" />
-	</ItemGroup>
+	</PropertyGroup> 
 
 	<ItemGroup>
 		<PackageReference Include="Autofac" Version="*" />
@@ -45,6 +41,8 @@
 		<PackageReference Include="NetEscapades.Configuration.Yaml" Version="*" />
 		<PackageReference Include="NuGet.Packaging" Version="7.3.0" />
 		<PackageReference Include="Scighost.PixivApi" Version="*" />
+		<PackageReference Include="Serilog.Extensions.Logging" Version="10.0.0" />
+		<PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
 		<PackageReference Include="SharpCompress" Version="*" />
 		<PackageReference Include="SmallSharp" Version="2.3.0">
 			<PrivateAssets>all</PrivateAssets>
@@ -54,7 +52,7 @@
 		<PackageReference Include="System.Reactive" Version="*" />
 		<PackageReference Include="Scriban" Version="*" />
 		<PackageReference Include="ZLinq.FileSystem" Version="*" />
-		<PackageReference Include="Serilog" Version="*" />
+		<PackageReference Include="Serilog" Version="4.3.1" />
 		<PackageReference Include="ZLinq.Godot" Version="*" />
 		<PackageReference Include="ZLinq.Json" Version="*" /> 
 		<PackageReference Include="MathNet.Numerics" Version="*" />

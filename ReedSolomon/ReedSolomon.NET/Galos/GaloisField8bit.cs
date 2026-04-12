@@ -8,6 +8,11 @@ namespace zms9110750.ReedSolomon.Galos
     public class GaloisField8bit : IGaloisField<byte>
     {
         /// <summary>
+        /// 共享的单例实例。使用标准本原多项式29( 0x11d)
+        /// </summary>
+        public static GaloisField8bit Shared { get; } = new GaloisField8bit();
+
+        /// <summary>
         /// 指数表。大小为 512，前 255 个是 2^0 到 2^254，后 255 个是重复，用于避免乘法时取模。
         /// </summary>
         private readonly byte[] _exp;
@@ -32,10 +37,9 @@ namespace zms9110750.ReedSolomon.Galos
         /// 构造函数
         /// </summary>
         /// <param name="primitivePolynomial">本原多项式，默认为 29 (x⁸ + x⁴ + x³ + x² + 1)</param>
-        public GaloisField8bit(GaloisField8Poly gF8 = GaloisField8Poly.P29)
+        public GaloisField8bit(GaloisField8Poly primitivePolynomial = GaloisField8Poly.P29)
         {
-
-            switch (gF8)
+            switch (primitivePolynomial)
             {
                 case GaloisField8Poly.P29:
                 case GaloisField8Poly.P43:
@@ -53,10 +57,10 @@ namespace zms9110750.ReedSolomon.Galos
                 case GaloisField8Poly.P207:
                 case GaloisField8Poly.P231:
                 case GaloisField8Poly.P245:
-                    PrimitivePolynomial = (byte)gF8;
+                    PrimitivePolynomial = (byte)primitivePolynomial;
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(gF8));
+                    throw new ArgumentOutOfRangeException(nameof(primitivePolynomial));
             }
 
             _exp = new byte[512];
@@ -99,37 +103,10 @@ namespace zms9110750.ReedSolomon.Galos
         {
             return (byte)(a ^ b);
         }
-
-        /// <inheritdoc/>
-        public byte Subtract(byte a, byte b)
-        {
-            return (byte)(a ^ b);
-        }
-
         /// <inheritdoc/>
         public byte Multiply(byte a, byte b)
         {
             return _mul[a, b];
-        }
-
-        /// <inheritdoc/>
-        public byte Divide(byte a, byte b)
-        {
-            if (b == 0)
-            {
-                throw new DivideByZeroException("除数不能为 0");
-            }
-            if (a == 0)
-            {
-                return 0;
-            }
-
-            int logResult = _log[a] - _log[b];
-            if (logResult < 0)
-            {
-                logResult += 255;
-            }
-            return _exp[logResult];
         }
 
         /// <inheritdoc/>
@@ -158,16 +135,5 @@ namespace zms9110750.ReedSolomon.Galos
             return _exp[255 - _log[a]];
         }
 
-        /// <inheritdoc/>
-        public bool IsZero(byte value)
-        {
-            return value == 0;
-        }
-
-        /// <inheritdoc/>
-        public bool IsOne(byte value)
-        {
-            return value == 1;
-        }
     }
 }

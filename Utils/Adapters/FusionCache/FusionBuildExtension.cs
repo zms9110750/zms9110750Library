@@ -3,7 +3,7 @@ using NeoSmart.Caching.Sqlite;
 using System.Text.Json;
 using ZiggyCreatures.Caching.Fusion;
 
-namespace FusionCacheReference;
+namespace zms9110750.Utils.Adapters.FusionCache;
 
 public static class FusionBuildExtension
 {
@@ -14,6 +14,7 @@ public static class FusionBuildExtension
     /// <param name="cachePath">缓存路径</param>
     public static IFusionCacheBuilder AddFusionCacheAndSqliteCache(this IServiceCollection services, string cachePath = "cache.sqlite.db", JsonSerializerOptions? jsonOptions = null)
     {
+
         return services
             .AddMemoryCache()
             .AddSqliteCache(cachePath)
@@ -21,9 +22,11 @@ public static class FusionBuildExtension
             .AddFusionCache()
             .WithDefaultEntryOptions(options =>
             {
-                options.DistributedCacheDuration = TimeSpan.FromDays(365 * 1000);  
+                options.DistributedCacheDuration = TimeSpan.FromDays(365 * 1000);
             })
             .TryWithAutoSetup()
             .AsHybridCache();
     }
 }
+
+

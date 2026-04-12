@@ -22,7 +22,10 @@ public class FtpDirectoryProvider : IDirectoryProvide
     }
 
     public string FullPath => _directoryPath;
-    internal AsyncFtpClient GetFtpClient() => _ftpClient;
+    internal AsyncFtpClient GetFtpClient()
+    {
+        return _ftpClient;
+    }
 
     public async Task CreateAsync(CancellationToken cancellationToken = default)
     {

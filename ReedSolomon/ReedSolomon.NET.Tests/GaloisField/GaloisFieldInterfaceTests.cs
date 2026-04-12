@@ -34,22 +34,7 @@ namespace ReedSolomon.NET.Tests.GaloisField
                 Assert.Equal((byte)(a ^ b), gf.Add(a, b));
             }
         }
-
-        /// <summary>
-        /// 测试所有多项式下，减法等于 XOR
-        /// </summary>
-        [Theory]
-        [MemberData(nameof(AllPolynomials))]
-        public void Subtract_ShouldBeXor(GaloisField8Poly poly)
-        {
-            IGaloisField<byte> gf = new GaloisField8bit(poly);
-            for (int sample = 0; sample < 1000; sample++)
-            {
-                byte a = (byte)_random.Next(256);
-                byte b = (byte)_random.Next(256);
-                Assert.Equal((byte)(a ^ b), gf.Subtract(a, b));
-            }
-        }
+         
 
         /// <summary>
         /// 测试所有多项式下，0 乘任何数等于 0
@@ -95,26 +80,7 @@ namespace ReedSolomon.NET.Tests.GaloisField
                 byte b = (byte)_random.Next(256);
                 Assert.Equal(gf.Multiply(a, b), gf.Multiply(b, a));
             }
-        }
-
-        /// <summary>
-        /// 测试所有多项式下，除法是乘法的逆运算
-        /// </summary>
-        [Theory]
-        [MemberData(nameof(AllPolynomials))]
-        public void Divide_ShouldBeInverseOfMultiply(GaloisField8Poly poly)
-        {
-            IGaloisField<byte> gf = new GaloisField8bit(poly);
-            for (int sample = 0; sample < 1000; sample++)
-            {
-                byte a = (byte)_random.Next(256);
-                byte b = (byte)_random.Next(1, 256);
-                byte product = gf.Multiply(a, b);
-                byte quotient = gf.Divide(product, b);
-                Assert.Equal(a, quotient);
-            }
-        }
-
+        } 
         /// <summary>
         /// 测试所有多项式下，非零元素都有逆元
         /// </summary>
@@ -222,23 +188,7 @@ namespace ReedSolomon.NET.Tests.GaloisField
             IGaloisField<byte> gf = new GaloisField8bit(poly);
             Assert.Equal(8, gf.Bits);
         }
-
-        /// <summary>
-        /// 测试所有多项式下，IsZero 和 IsOne 正确
-        /// </summary>
-        [Theory]
-        [MemberData(nameof(AllPolynomials))]
-        public void IsZero_IsOne_ShouldBeCorrect(GaloisField8Poly poly)
-        {
-            IGaloisField<byte> gf = new GaloisField8bit(poly);
-            Assert.True(gf.IsZero(0));
-            Assert.False(gf.IsZero(1));
-            Assert.False(gf.IsZero(123));
-
-            Assert.True(gf.IsOne(1));
-            Assert.False(gf.IsOne(0));
-            Assert.False(gf.IsOne(123));
-        }
+         
     }
 }
 

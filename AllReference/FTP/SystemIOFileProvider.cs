@@ -18,7 +18,10 @@ public class SystemIOFileProvider : IFileProvide
     public string Name => _fileInfo.Name;
     public string FullPath => _fileInfo.FullName;
 
-    public Task<bool> Exists() => Task.FromResult(_fileInfo.Exists);
+    public Task<bool> Exists()
+    {
+        return Task.FromResult(_fileInfo.Exists);
+    }
 
     public async Task CopyToAsync(IFileProvide destination, CancellationToken cancellationToken = default)
     {

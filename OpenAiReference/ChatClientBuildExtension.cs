@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using OpenAI;
 using OpenAI.Chat;
@@ -33,8 +34,9 @@ public static class ChatClientBuildExtension
 		var configuration = new ConfigurationBuilder()
 					.AddUserSecrets(Assembly.GetCallingAssembly())
 					.AddUserSecrets(Assembly.GetEntryAssembly())
-					.Build();
-		foreach (var item in configuration.GetSection("OpenAI").GetChildren())
+					.Build(); 
+
+        foreach (var item in configuration.GetSection("OpenAI").GetChildren())
 		{
 			string? serverName = item.Key;
 			string? url = item.GetValue<string>("url");

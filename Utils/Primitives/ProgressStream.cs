@@ -168,11 +168,30 @@ public class ProgressStream : Stream
     #endregion
 
     #region 其他Stream方法
-    public override void Flush() => innerStream.Flush();
-    public override Task FlushAsync(CancellationToken cancellationToken) => innerStream.FlushAsync(cancellationToken);
-    public override long Seek(long offset, SeekOrigin origin) => innerStream.Seek(offset, origin);
-    public override void SetLength(long value) => innerStream.SetLength(value);
-    public override void Close() => innerStream.Close();
+    public override void Flush()
+    {
+        innerStream.Flush();
+    }
+
+    public override Task FlushAsync(CancellationToken cancellationToken)
+    {
+        return innerStream.FlushAsync(cancellationToken);
+    }
+
+    public override long Seek(long offset, SeekOrigin origin)
+    {
+        return innerStream.Seek(offset, origin);
+    }
+
+    public override void SetLength(long value)
+    {
+        innerStream.SetLength(value);
+    }
+
+    public override void Close()
+    {
+        innerStream.Close();
+    }
 
     protected override void Dispose(bool disposing)
     {
@@ -241,6 +260,6 @@ public class ProgressStream : Stream
                 lockSlim.ExitWriteLock();
             }
         }
-    } 
+    }
     #endregion
 }

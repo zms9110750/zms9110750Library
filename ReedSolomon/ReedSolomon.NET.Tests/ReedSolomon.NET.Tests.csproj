@@ -27,4 +27,8 @@
     <ProjectReference Include="..\ReedSolomon.NET\ReedSolomon.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="ReedSolomons\" />
+  </ItemGroup>
+
 </Project>

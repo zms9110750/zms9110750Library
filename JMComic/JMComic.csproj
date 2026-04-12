@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+	  <RootNamespace>zms9110750.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
+    <Version>0.1.0</Version>
+    <Authors>zms9110750</Authors>
+    <Description>C# API For JMComic (禁漫天堂)</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>csharp, jmcomic, 18comic, 禁漫天堂, NSFW</PackageTags>
+    <LangVersion>latest</LangVersion> 
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.*" />
+    <PackageReference Include="Refit" Version="7.*" />
+  </ItemGroup>
+ 
+</Project>

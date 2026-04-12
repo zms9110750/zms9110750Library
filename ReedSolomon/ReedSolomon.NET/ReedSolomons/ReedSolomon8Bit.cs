@@ -1,4 +1,4 @@
-﻿
+﻿/*
 namespace zms9110750.ReedSolomon.ReedSolomons
 {
 
@@ -73,7 +73,7 @@ namespace zms9110750.ReedSolomon.ReedSolomons
                 byteCount);
         }
         /// <inheritdoc/>
-        public void DecodeMissing(IEnumerable<byte[]> shards, ReadOnlySpan<bool> shardPresent, int offset, int byteCount)
+        public void RecoverDataShards(IEnumerable<byte[]> shards, ReadOnlySpan<bool> shardPresent, int offset, int byteCount)
         {
             IList<byte[]> shardList = shards as IList<byte[]> ?? shards.ToArray();
 
@@ -167,3 +167,4 @@ namespace zms9110750.ReedSolomon.ReedSolomons
         }
     }
 }
+*/

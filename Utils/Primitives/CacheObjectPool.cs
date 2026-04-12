@@ -10,7 +10,7 @@ namespace zms9110750.Utils.Primitives;
 /// 基于内存缓存的智能对象池，支持自动清理长时间未使用的对象
 /// </summary>
 /// <typeparam name="T">池化对象的类型</typeparam>
-public sealed class CacheObjectPool<T> : ObjectPool<T>, IDisposable where T : class
+public sealed class CacheObjectPool<T> : ObjectPool<T>, IPooledRegistrationPolicy<T>, IDisposable where T : class
 {
     private readonly IMemoryCache _cache;
     private readonly IPooledObjectPolicy<T> _policy;
@@ -133,6 +133,8 @@ public sealed class CacheObjectPool<T> : ObjectPool<T>, IDisposable where T : cl
         }
     }
 
+    int IPooledRegistrationPolicy<T>.MaximumRetained { get; }
+
     private static MemoryCacheEntryOptions CreateDefaultOptions()
     {
         return new MemoryCacheEntryOptions
@@ -159,6 +161,17 @@ public sealed class CacheObjectPool<T> : ObjectPool<T>, IDisposable where T : cl
             Clear();
             _disposed = true;
         }
+    }
+
+    T IPooledRegistrationPolicy<T>.Get(IComponentContext context, IEnumerable<Parameter> parameters, Func<T> getFromPool)
+    {
+        return Get();
+    }
+
+    bool IPooledRegistrationPolicy<T>.Return(T pooledObject)
+    {
+        Return(pooledObject);
+        return true;
     }
 
     /// <summary>

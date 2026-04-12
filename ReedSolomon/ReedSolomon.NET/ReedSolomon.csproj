@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>netstandard2.0</TargetFramework>
+		<TargetFrameworks>netstandard2.0;netstandard2.1;net8.0</TargetFrameworks>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<LangVersion>preview</LangVersion>
@@ -19,6 +19,7 @@
 		<PackageReleaseNotes>rs冗余算法。可以使用流处理。</PackageReleaseNotes>
 		<PackageReadmeFile>Readme.md</PackageReadmeFile>
 		<PackageTags>reedsolomon erasure coding shard parity storage streaming</PackageTags>
+		<PackageOutputPath>C:\Users\16229\source\NugetPack</PackageOutputPath>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -28,7 +29,8 @@
 	  </None>
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="System.Memory" Version="4.6.0" />
+		<PackageReference Include="System.Collections.Immutable" Version="6.0.0" Condition="$(TargetFramework.StartsWith('netstandard'))" />
+		<PackageReference Include="System.IO.Pipelines" Version="6.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>

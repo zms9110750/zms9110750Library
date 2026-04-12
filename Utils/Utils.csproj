@@ -16,12 +16,12 @@
 		<PackageReference Include="Autofac.Pooling" Version="*" PrivateAssets="all" />
 	</ItemGroup>
 	<ItemGroup> 
-		<PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="10.*" /> 
-		<PackageReference Include="NuGet.Configuration" Version="7.3.0" />
-		<PackageReference Include="OpenAI" Version="2.*" />
-		<PackageReference Include="NeoSmart.Caching.Sqlite.AspNetCore" Version="9.*" />
-		<PackageReference Include="Polly.Extensions" Version="8.6.6" />
-		<PackageReference Include="ZiggyCreatures.FusionCache.Serialization.SystemTextJson" Version="2.4.0" />
+		<PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="10.*" PrivateAssets="all" /> 
+		<PackageReference Include="NuGet.Configuration" Version="7.3.0" PrivateAssets="all" />
+		<PackageReference Include="OpenAI" Version="2.8.0" PrivateAssets="all" />
+		<PackageReference Include="NeoSmart.Caching.Sqlite.AspNetCore" Version="9.*" PrivateAssets="all" />
+		<PackageReference Include="Polly.Extensions" Version="8.6.6" PrivateAssets="all" />
+		<PackageReference Include="ZiggyCreatures.FusionCache.Serialization.SystemTextJson" Version="2.4.0" PrivateAssets="all" />
 	</ItemGroup>
 	<ItemGroup>
 		<None Update="Extension\System.Extensions.tt">

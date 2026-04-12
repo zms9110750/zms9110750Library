@@ -7,7 +7,7 @@ namespace zms9110750.ReedSolomon.ReedSolomons
     /// <summary>
     /// Reed-Solomon 编解码器扩展方法
     /// </summary>
-    public static class ReedSolomonExtensions
+    public static class IReedSolomonExtensions
     {
         /// <summary>
         /// 编码：为数据分片生成冗余分片（全量版本）

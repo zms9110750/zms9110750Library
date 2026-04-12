@@ -1,9 +1,4 @@
-﻿using FluentFTP;
-using FluentFTP.Helpers;
-using System;
-using System.IO;
-using System.Threading.Tasks;
-#if true2
+﻿#if true2
 //ftp://192.168.0.107:3721/Alarms/
 CopyFromFtp("192.168.0.107", 3721, "Alarms/", "F:\\Alarms");
 /*

@@ -20,7 +20,7 @@ using ZiggyCreatures.Caching.Fusion.Serialization.SystemTextJson;
 namespace zms9110750.Utils.Operations;
 
 /// <summary>
-/// NuGet 文档翻译器
+/// NuGet 文档翻译器。需要一个OpenAI兼容API的大语言模型（如 DeepSeek）来进行翻译。使用 sqlite 进行结果缓存。
 /// </summary>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1873:避免进行可能成本高昂的日志记录", Justification = "<挂起>")]
 public class NuGetDocumentTranslator
@@ -36,7 +36,7 @@ public class NuGetDocumentTranslator
     /// <param name="apiKey">DeepSeek API Key</param>
     /// <param name="endpoint">API 端点</param>
     /// <param name="model">模型名称</param>
-    /// <param name="cachePath">缓存文件路径（为 null 时使用内存缓存）</param>
+    /// <param name="cachePath">缓存文件路径（为 null 时没有持久化缓存）</param>
     /// <param name="logger">日志记录器（可选，不传则使用 NullLogger）</param>
     public NuGetDocumentTranslator(string apiKey, string endpoint, string model, string? cachePath = "cache.sqlite.db", ILogger? logger = null)
     {
@@ -86,6 +86,7 @@ public class NuGetDocumentTranslator
         _fusionCache = cache;
         _pipeline = BuildPipeline();
     }
+
 
     /// <summary>
     /// 构建 Polly 弹性管道
@@ -195,7 +196,6 @@ public class NuGetDocumentTranslator
                 var current = Interlocked.Increment(ref processed);
                 // 进度用 Information 级别
                 _logger.LogInformation("翻译进度: {Current}/{Total}", current, total);
-                Console.WriteLine($"{current,-4}/{total}");
             }
         });
 

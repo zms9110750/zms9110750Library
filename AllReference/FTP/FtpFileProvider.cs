@@ -24,7 +24,10 @@ public class FtpFileProvider : IFileProvide
     public string Name => Path.GetFileName(_filePath);
     public string FullPath => _filePath;
 
-    internal AsyncFtpClient GetFtpClient() => _ftpClient;
+    internal AsyncFtpClient GetFtpClient()
+    {
+        return _ftpClient;
+    }
 
     public async Task<bool> Exists()
     {

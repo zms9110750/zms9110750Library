@@ -23,6 +23,18 @@
     },
     "nuget.cs": {
       "commandName": "Project"
+    },
+    "autofac.cs": {
+      "commandName": "Project"
+    },
+    "polly.cs": {
+      "commandName": "Project"
+    },
+    "混水.cs": {
+      "commandName": "Project"
+    },
+    "test.cs": {
+      "commandName": "Project"
     }
   }
 }

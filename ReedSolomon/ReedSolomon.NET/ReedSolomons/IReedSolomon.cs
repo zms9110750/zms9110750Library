@@ -6,17 +6,17 @@
     public interface IReedSolomon
     {
         /// <summary>
-        /// 数据分片数量 k
+        /// 数据分片数量
         /// </summary>
         int DataShardCount { get; }
 
         /// <summary>
-        /// 冗余分片数量 m
+        /// 冗余分片数量
         /// </summary>
         int ParityShardCount { get; }
 
         /// <summary>
-        /// 总分片数量 n = k + m
+        /// 总分片数量
         /// </summary>
         int TotalShardCount { get; }
 
@@ -28,7 +28,7 @@
         /// <param name="offset">每个分片的起始字节索引</param>
         /// <param name="byteCount">要处理的字节数</param>
         void EncodeParity(IEnumerable<byte[]> dataShards, IEnumerable<byte[]> parityShards, int offset, int byteCount);
-
+        
         /// <summary>
         /// 解码：恢复缺失的分片（分片处理版本）
         /// </summary>
