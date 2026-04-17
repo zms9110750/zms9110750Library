@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Collections.Immutable;
+using System.Runtime.CompilerServices;
 
 namespace zms9110750.ReedSolomon.Matrixs
 {
@@ -14,10 +15,10 @@ namespace zms9110750.ReedSolomon.Matrixs
         public int Rows { get; }
 
         /// <inheritdoc/>
-        public int Columns { get; } 
+        public int Columns { get; }
 
         /// <inheritdoc/> 
-        public bool IsSquare =>Rows == Columns;
+        public bool IsSquare => Rows == Columns;
 
         /// <inheritdoc/>
         public byte PrimitivePolynomial => _gf.PrimitivePolynomial;
@@ -183,11 +184,13 @@ namespace zms9110750.ReedSolomon.Matrixs
         }
 
         /// <inheritdoc/>
-        public IMatrix InverseRows(ReadOnlySpan<int> rowIndices, int size)
+        public IMatrix InverseRows(ReadOnlySpan<int> rowIndices)
         {
-            if (rowIndices.Length != size)
+            int size= rowIndices.Length; 
+            // 如果是方阵，不允许使用此方法
+            if (IsSquare)
             {
-                throw new ArgumentException($"rowIndices 长度 {rowIndices.Length} 必须等于 size {size}");
+                throw new InvalidOperationException("当前矩阵已是解码矩阵，不允许使用 InverseRows 方法。");
             }
 
             // 提取子矩阵
@@ -225,22 +228,22 @@ namespace zms9110750.ReedSolomon.Matrixs
 
             // 根据是否为方阵决定输出长度和起始行
             int startRow;
-            int rowCount; 
+            int rowCount;
 
             if (IsSquare)
             {
                 // 方阵（逆矩阵）：输出全部 Rows 行数据分片
                 startRow = 0;
-                rowCount = Rows; 
+                rowCount = Rows;
             }
             else
             {
                 // 非方阵（编码矩阵）：只输出后 M 行冗余分片
                 startRow = Columns;
                 rowCount = Rows - Columns;
-                
+
             }
-            int  expectedOutputLength = rowCount * blockSize;
+            int expectedOutputLength = rowCount * blockSize;
             if (outputs.Length != expectedOutputLength)
             {
                 throw new ArgumentException($"outputs 长度应为 {expectedOutputLength}，实际 {outputs.Length}", nameof(outputs));
@@ -267,56 +270,69 @@ namespace zms9110750.ReedSolomon.Matrixs
         }
 
         /// <inheritdoc/> 
-        public void CodeShards(IEnumerable<ReadOnlyMemory<byte>> inputs, IEnumerable<Memory<byte>> outputs)
-        { 
-            var inputList = inputs as IList<ReadOnlyMemory<byte>> ?? inputs?.ToList()??throw new ArgumentNullException(nameof(inputs));
-            var outputList = outputs as IList<Memory<byte>> ?? outputs?.ToList()??throw new ArgumentNullException(nameof(outputs));
+        public void CodeShards(ReadOnlyMemory<ReadOnlyMemory<byte>> inputs, ReadOnlyMemory<Memory<byte>> outputs)
+        {
+            // 验证输入
+            if (inputs.IsEmpty)
+            {
+                throw new ArgumentNullException(nameof(inputs));
+            }
+            if (outputs.IsEmpty)
+            {
+                throw new ArgumentNullException(nameof(outputs));
+            }
 
             // 验证输入分片数量
-            if (inputList.Count != Columns)
+            if (inputs.Length != Columns)
             {
-                throw new ArgumentException($"输入分片数量应为 {Columns}，实际 {inputList.Count}", nameof(inputs));
+                throw new ArgumentException($"输入分片数量应为 {Columns}，实际 {inputs.Length}", nameof(inputs));
             }
 
             // 根据是否为方阵决定输出数量
             int expectedOutputCount = IsSquare ? Rows : (Rows - Columns);
-            if (outputList.Count != expectedOutputCount)
+            if (outputs.Length != expectedOutputCount)
             {
-                throw new ArgumentException($"输出分片数量应为 {expectedOutputCount}，实际 {outputList.Count}", nameof(outputs));
+                throw new ArgumentException($"输出分片数量应为 {expectedOutputCount}，实际 {outputs.Length}", nameof(outputs));
             }
 
-            // 验证分片长度
-            int length = inputList[0].Length;
+            // 获取第一个输入分片的长度作为基准
+            int length = inputs.Span[0].Length;
+
+            // 验证所有输入分片长度一致
             for (int i = 1; i < Columns; i++)
             {
-                if (inputList[i].Length != length)
+                if (inputs.Span[i].Length != length)
                 {
-                    throw new ArgumentException($"输入分片长度不一致：分片0长度为 {length}，分片{i}长度为 {inputList[i].Length}");
+                    throw new ArgumentException($"输入分片长度不一致：分片0长度为 {length}，分片{i}长度为 {inputs.Span[i].Length}");
                 }
             }
+
+            // 验证所有输出分片长度一致
             for (int i = 0; i < expectedOutputCount; i++)
             {
-                if (outputList[i].Length != length)
+                if (outputs.Span[i].Length != length)
                 {
-                    throw new ArgumentException($"输出分片{i}长度应为 {length}，实际 {outputList[i].Length}");
+                    throw new ArgumentException($"输出分片{i}长度应为 {length}，实际 {outputs.Span[i].Length}");
                 }
             }
 
             // 确定起始行
             int startRow = IsSquare ? 0 : Columns;
 
+            // 执行矩阵乘法
             for (int row = 0; row < expectedOutputCount; row++)
             {
-                var outputSpan = outputList[row].Span;
+                var outputSpan = outputs.Span[row].Span;
                 int matrixRow = startRow + row;
                 int rowBase = matrixRow * Columns;
 
+                // 对每个字节位置进行运算
                 for (int i = 0; i < length; i++)
                 {
                     byte sum = 0;
                     for (int col = 0; col < Columns; col++)
                     {
-                        sum ^= _gf.Multiply(_data[rowBase + col], inputList[col].Span[i]);
+                        sum ^= _gf.Multiply(_data[rowBase + col], inputs.Span[col].Span[i]);
                     }
                     outputSpan[i] = sum;
                 }
@@ -327,12 +343,16 @@ namespace zms9110750.ReedSolomon.Matrixs
         public void CodeShards(IEnumerable<IReadOnlyList<byte>> inputs, IEnumerable<IList<byte>> outputs, int offset, int count)
         {
             if (offset < 0)
+            {
                 throw new ArgumentOutOfRangeException(nameof(offset), "offset 不能为负数");
+            }
             if (count <= 0)
+            {
                 throw new ArgumentOutOfRangeException(nameof(count), "count 必须大于 0");
+            }
 
-            var inputList = inputs as IList<IReadOnlyList<byte>> ?? inputs?.ToList() ?? throw new ArgumentNullException(nameof(inputs));
-            var outputList = outputs as IList<IList<byte>> ?? outputs?.ToList() ?? throw new ArgumentNullException(nameof(outputs));
+            var inputList = inputs as IReadOnlyList<IReadOnlyList<byte>> ?? inputs?.ToImmutableList() ?? throw new ArgumentNullException(nameof(inputs));
+            var outputList = outputs as IReadOnlyList<IList<byte>> ?? outputs?.ToImmutableList() ?? throw new ArgumentNullException(nameof(outputs));
 
             // 验证输入分片数量
             if (inputList.Count != Columns)

@@ -1,4 +1,5 @@
 ﻿using System.Buffers;
+using System.Collections.Immutable;
 
 namespace zms9110750.ReedSolomon.Matrixs;
 
@@ -58,7 +59,7 @@ public static class MatrixExtensions
         }
 
         // 求逆矩阵并执行解码
-        var inverse = encodingMatrix.InverseRows(availableRowIndices, dataShardCount);
+        var inverse = encodingMatrix.InverseRows(availableRowIndices);
         inverse.CodeShards(availableShards, recoveredDataShards, blockSize);
     }
 
@@ -79,11 +80,25 @@ public static class MatrixExtensions
     /// <exception cref="ArgumentException">当分片数量或长度不正确时抛出</exception>
     public static void RecoverDataShards(
         this IMatrix<byte> encodingMatrix,
-        IEnumerable<ReadOnlyMemory<byte>> availableShards,
-        IEnumerable<Memory<byte>> recoveredDataShards,
+        ReadOnlyMemory<ReadOnlyMemory<byte>> availableShards,
+        ReadOnlyMemory<Memory<byte>> recoveredDataShards,
         ReadOnlySpan<int> availableRowIndices)
     {
         int dataShardCount = encodingMatrix.Columns;
+
+        // 验证参数非空
+        if (availableShards.IsEmpty)
+        {
+            throw new ArgumentNullException(nameof(availableShards));
+        }
+        if (recoveredDataShards.IsEmpty)
+        {
+            throw new ArgumentNullException(nameof(recoveredDataShards));
+        }
+        if (availableRowIndices.IsEmpty)
+        {
+            throw new ArgumentNullException(nameof(availableRowIndices));
+        }
 
         // 验证 availableRowIndices 长度必须等于数据分片数
         if (availableRowIndices.Length != dataShardCount)
@@ -91,38 +106,41 @@ public static class MatrixExtensions
             throw new ArgumentException($"availableRowIndices 长度应为 {dataShardCount}，实际 {availableRowIndices.Length}", nameof(availableRowIndices));
         }
 
-        // 将可用分片转为列表并验证数量
-        var availableList = availableShards as IList<ReadOnlyMemory<byte>> ?? availableShards?.ToList()?? throw new ArgumentNullException(nameof(availableShards));
-        if (availableList.Count != dataShardCount)
+        // 验证可用分片数量
+        if (availableShards.Length != dataShardCount)
         {
-            throw new ArgumentException($"availableShards 数量应为 {dataShardCount}，实际 {availableList.Count}", nameof(availableShards));
+            throw new ArgumentException($"availableShards 数量应为 {dataShardCount}，实际 {availableShards.Length}", nameof(availableShards));
         }
 
-        // 将缺失分片转为列表并验证数量
-        var missingList = recoveredDataShards as IList<Memory<byte>> ?? recoveredDataShards?.ToList()??throw new ArgumentNullException(nameof(recoveredDataShards));
-        if (missingList.Count != dataShardCount)
+        // 验证恢复分片数量
+        if (recoveredDataShards.Length != dataShardCount)
         {
-            throw new ArgumentException($"recoveredDataShards 数量应为 {dataShardCount}，实际 {missingList.Count}", nameof(recoveredDataShards));
+            throw new ArgumentException($"recoveredDataShards 数量应为 {dataShardCount}，实际 {recoveredDataShards.Length}", nameof(recoveredDataShards));
         }
 
-        // 验证所有分片长度一致
-        int length = availableList[0].Length;
+        // 获取第一个分片的长度作为基准
+        int length = availableShards.Span[0].Length;
+
+        // 验证所有可用分片长度一致
         for (int i = 1; i < dataShardCount; i++)
         {
-            if (availableList[i].Length != length)
+            if (availableShards.Span[i].Length != length)
             {
-                throw new ArgumentException($"可用分片长度不一致：分片0长度为 {length}，分片{i}长度为 {availableList[i].Length}");
-            }
-        }
-        for (int i = 0; i < dataShardCount; i++)
-        {
-            if (missingList[i].Length != length)
-            {
-                throw new ArgumentException($"缺失分片{i}长度应为 {length}，实际 {missingList[i].Length}");
+                throw new ArgumentException($"可用分片长度不一致：分片0长度为 {length}，分片{i}长度为 {availableShards.Span[i].Length}");
             }
         }
 
-        var inverse = encodingMatrix.InverseRows(availableRowIndices, dataShardCount);
+        // 验证所有恢复分片长度一致
+        for (int i = 0; i < dataShardCount; i++)
+        {
+            if (recoveredDataShards.Span[i].Length != length)
+            {
+                throw new ArgumentException($"恢复分片{i}长度应为 {length}，实际 {recoveredDataShards.Span[i].Length}");
+            }
+        }
+
+        // 求逆矩阵并执行编码
+        var inverse = encodingMatrix.InverseRows(availableRowIndices);
         inverse.CodeShards(availableShards, recoveredDataShards);
     }
 
@@ -171,14 +189,14 @@ public static class MatrixExtensions
         }
 
         // 将可用分片转为列表并验证数量
-        var availableList = availableShards as IList<IReadOnlyList<byte>> ?? availableShards?.ToList() ?? throw new ArgumentNullException(nameof(availableShards));
+        var availableList = availableShards as IReadOnlyList<IReadOnlyList<byte>> ?? availableShards?.ToImmutableList() ?? throw new ArgumentNullException(nameof(availableShards));
         if (availableList.Count != dataShardCount)
         {
             throw new ArgumentException($"availableShards 数量应为 {dataShardCount}，实际 {availableList.Count}", nameof(availableShards));
         }
 
         // 将缺失分片转为列表并验证数量
-        var missingList = recoveredDataShards as IList<IList<byte>> ?? recoveredDataShards?.ToList()?? throw new ArgumentNullException(nameof(recoveredDataShards));
+        var missingList = recoveredDataShards as IReadOnlyList<IList<byte>> ?? recoveredDataShards?.ToImmutableList()?? throw new ArgumentNullException(nameof(recoveredDataShards));
         if (missingList.Count != dataShardCount)
         {
             throw new ArgumentException(
@@ -204,7 +222,7 @@ public static class MatrixExtensions
             }
         }
 
-        var inverse = encodingMatrix.InverseRows(availableRowIndices, dataShardCount);
+        var inverse = encodingMatrix.InverseRows(availableRowIndices);
         inverse.CodeShards(availableShards, recoveredDataShards, offset, count);
     }
 }

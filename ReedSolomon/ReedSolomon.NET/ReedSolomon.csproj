@@ -20,20 +20,10 @@
 		<PackageReadmeFile>Readme.md</PackageReadmeFile>
 		<PackageTags>reedsolomon erasure coding shard parity storage streaming</PackageTags>
 		<PackageOutputPath>C:\Users\16229\source\NugetPack</PackageOutputPath>
-	</PropertyGroup>
-
-	<ItemGroup>
-	  <None Include="Readme.md">
-	    <Pack>True</Pack>
-	    <PackagePath>\</PackagePath>
-	  </None>
-	</ItemGroup>
-	<ItemGroup>
+	</PropertyGroup> 
+	<ItemGroup> 
 		<PackageReference Include="System.Collections.Immutable" Version="6.0.0" Condition="$(TargetFramework.StartsWith('netstandard'))" />
-		<PackageReference Include="System.IO.Pipelines" Version="6.0.0" />
-	</ItemGroup>
-
-	<ItemGroup>
+		<PackageReference Include="System.IO.Pipelines" Version="6.0.0" /> 
 		<None Update="Readme.md">
 			<Pack>True</Pack>
 			<PackagePath>\</PackagePath>

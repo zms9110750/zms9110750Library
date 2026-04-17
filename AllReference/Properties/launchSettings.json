@@ -35,6 +35,9 @@
     },
     "test.cs": {
       "commandName": "Project"
+    },
+    "rs.cs": {
+      "commandName": "Project"
     }
   }
 }

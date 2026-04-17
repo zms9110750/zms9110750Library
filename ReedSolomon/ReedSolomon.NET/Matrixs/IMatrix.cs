@@ -61,7 +61,7 @@ namespace zms9110750.ReedSolomon.Matrixs
         /// </list></param> 
         /// <exception cref="ArgumentNullException"/> 
         /// <exception cref="ArgumentException"/> 
-        void CodeShards(IEnumerable<ReadOnlyMemory<byte>> inputs, IEnumerable<Memory<byte>> outputs);
+        void CodeShards(ReadOnlyMemory<ReadOnlyMemory<byte>> inputs, ReadOnlyMemory<Memory<byte>> outputs);
 
         /// <summary>
         /// 使用分片集合执行矩阵乘法
@@ -84,10 +84,11 @@ namespace zms9110750.ReedSolomon.Matrixs
         /// 根据指定的行索引构建子矩阵并求逆。
         /// 用于解码时，根据可用分片的行索引构造恢复矩阵。
         /// </summary>
-        /// <param name="rowIndices">要提取的行索引，长度等于 size</param>
-        /// <param name="size">子矩阵大小（等于数据分片数）</param>
+        /// <param name="rowIndices">要提取的行索引，长度等于留存数据分片数</param>
         /// <returns>子方阵的逆矩阵</returns>
-        IMatrix InverseRows(ReadOnlySpan<int> rowIndices, int size);
+        /// <remarks>方阵时，不能调用此方法。</remarks>
+        /// <exception cref="InvalidOperationException"/>
+        IMatrix InverseRows(ReadOnlySpan<int> rowIndices );
     }
 
     /// <summary>
@@ -100,6 +101,6 @@ namespace zms9110750.ReedSolomon.Matrixs
         /// <summary>
         /// 本原多项式。与域元素类型 T 共同唯一确定一个伽罗瓦域。
         /// </summary>
-        T PrimitivePolynomial { get; } 
+        T PrimitivePolynomial { get; }
     }
 }

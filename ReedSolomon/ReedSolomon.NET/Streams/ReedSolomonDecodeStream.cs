@@ -1,22 +1,46 @@
-﻿namespace zms9110750.ReedSolomon.Streams;
+﻿
+using System.Buffers;
+using System.IO.Pipelines;
+
+namespace zms9110750.ReedSolomon.Streams;
+
 
 /// <summary>
-/// Reed-Solomon 解码流：从多个分片流读取数据，解码后输出恢复的原始数据
+/// Reed-Solomon 解码流
 /// </summary>
-public sealed class ReedSolomonDecodeStream : Stream
+public class ReedSolomonDecodeStream : SpanCapableStreamBase
 {
-    private readonly IMatrix _encodingMatrix;
-    private readonly IReadOnlyList<Stream> _shardStreams;
-    private readonly int _blockSize;
-    private readonly int _dataShardCount;
-    private readonly byte[] _inputBuffer;
-    private readonly byte[] _outputBuffer;
-    private readonly bool[] _shardPresent;
-    private int _outputBufferFilled;
-    private int _outputBufferReadPos;
+    /// <summary>当前流位置</summary>
     private long _position;
-    private long _totalLength;
-    private bool _isFinished;
+
+    /// <summary>是否已释放</summary>
+    private bool _disposed;
+
+    /// <summary>恢复矩阵</summary>
+    private IMatrix RecoveryMatrix { get; }
+
+    /// <summary>所有分片流（轮询读取）</summary>
+    private StreamRoundRobin AllShardStreams { get; }
+
+    /// <summary>数据分片数量（K）</summary>
+    public int DataShards { get; }
+
+    /// <summary>每个分片的轮询字节数</summary>
+    public int BlockSize { get; }
+
+    /// <summary>每次解码的数据块大小（DataShards * BlockSize）</summary>
+    private int ChunkSize => DataShards * BlockSize;
+    /// <summary>缓存已解码的数据的Pipe</summary>
+    private Pipe Pipe { get; }
+
+    /// <summary>缓存已解码的数据的Pipe的写入器流包装</summary> 
+    private Stream PipeStream { get; }
+
+    /// <summary>缓存已解码的数据的Pipe的读取器</summary>
+    private PipeReader PipeReader => Pipe.Reader;
+
+    /// <summary>所有分片流的Pipe读取器</summary>
+    private PipeReader AllShardReader { get; }
 
     /// <inheritdoc/>
     public override bool CanRead => true;
@@ -28,7 +52,10 @@ public sealed class ReedSolomonDecodeStream : Stream
     public override bool CanSeek => false;
 
     /// <inheritdoc/>
-    public override long Length => _totalLength;
+    public override long Length { get; }
+
+    /// <summary>剩余长度 ( Length - Position)</summary>
+    public long RemainLength => Length - Position;
 
     /// <inheritdoc/>
     public override long Position
@@ -40,183 +67,236 @@ public sealed class ReedSolomonDecodeStream : Stream
     /// <summary>
     /// 初始化解码流
     /// </summary>
-    /// <param name="encodingMatrix">编码矩阵</param>
-    /// <param name="shardStreams">分片输入流集合，数量为 Rows（总分片数），缺失的流用 null 表示</param>
-    /// <param name="blockSize">每个分片的字节数</param>
-    /// <param name="totalLength">原始数据总长度</param>
-    public ReedSolomonDecodeStream(IMatrix encodingMatrix, IReadOnlyList<Stream> shardStreams, int blockSize, long totalLength)
+    /// <param name="recoveryMatrix">恢复矩阵（方阵，大小应为 dataShards × dataShards）</param>
+    /// <param name="allShardStreams">所有分片流（顺序：前K个数据分片，后M个冗余分片）</param>
+    /// <param name="blockSize">每个分片的轮询字节数</param>
+    /// <param name="length">流的总长度</param>
+    public ReedSolomonDecodeStream(IMatrix recoveryMatrix, IReadOnlyList<Stream> allShardStreams, int blockSize, long length)
+        : this(recoveryMatrix, new StreamRoundRobin(allShardStreams, blockSize), length)
     {
-        if (encodingMatrix == null)
-            throw new ArgumentNullException(nameof(encodingMatrix));
-        if (shardStreams == null)
-            throw new ArgumentNullException(nameof(shardStreams));
-        if (blockSize <= 0)
-            throw new ArgumentException("blockSize 必须大于 0", nameof(blockSize));
-        if (totalLength < 0)
-            throw new ArgumentException("totalLength 不能为负数", nameof(totalLength));
+    }
 
-        int totalShards = encodingMatrix.Rows;
-        if (shardStreams.Count != totalShards)
+    /// <summary>
+    /// 初始化解码流
+    /// </summary>
+    /// <param name="recoveryMatrix">恢复矩阵（方阵，大小应为 dataShards × dataShards）</param>
+    /// <param name="allShardStreams">所有分片流（顺序：前K个数据分片，后M个冗余分片）</param>
+    /// <param name="length">流的总长度</param>
+    public ReedSolomonDecodeStream(IMatrix recoveryMatrix, StreamRoundRobin allShardStreams, long length)
+    {
+        if (recoveryMatrix == null)
         {
-            throw new ArgumentException($"分片流数量应为 {totalShards}，实际 {shardStreams.Count}", nameof(shardStreams));
+            throw new ArgumentNullException(nameof(recoveryMatrix));
+        }
+        if (!recoveryMatrix.IsSquare)
+        {
+            throw new ArgumentException("恢复矩阵必须是方阵", nameof(recoveryMatrix));
+        }
+        if (allShardStreams == null)
+        {
+            throw new ArgumentNullException(nameof(allShardStreams));
+        }
+        if (allShardStreams.StreamsCount != recoveryMatrix.Rows)
+        {
+            throw new ArgumentException($"分片流数量应为 {recoveryMatrix.Rows}，实际 {allShardStreams.StreamsCount}", nameof(allShardStreams));
         }
 
-        _encodingMatrix = encodingMatrix;
-        _shardStreams = shardStreams;
-        _blockSize = blockSize;
-        _dataShardCount = encodingMatrix.Columns;
-        _totalLength = totalLength;
-        _inputBuffer = new byte[totalShards * blockSize];
-        _outputBuffer = new byte[_dataShardCount * blockSize];
-        _shardPresent = new bool[totalShards];
-        _outputBufferFilled = 0;
-        _outputBufferReadPos = 0;
-        _position = 0;
-        _isFinished = false;
-
-        // 标记哪些分片存在
-        for (int i = 0; i < totalShards; i++)
-        {
-            _shardPresent[i] = shardStreams[i] != null;
-        }
+        DataShards = recoveryMatrix.Rows;
+        BlockSize = allShardStreams.SegmentSize;
+        RecoveryMatrix = recoveryMatrix;
+        AllShardStreams = allShardStreams;
+        AllShardReader = PipeReader.Create(AllShardStreams);
+        Length = length;
+        Pipe = new Pipe();
+        PipeStream = Pipe.Writer.AsStream();
     }
 
     /// <inheritdoc/>
-    public override int Read(byte[] buffer, int offset, int count)
+    /// <remarks>同步方法使用了异步无await的等待。可能死锁。尽可能使用异步方法。</remarks>
+    public override int Read(Span<byte> buffer)
     {
-        return ReadAsync(buffer, offset, count, CancellationToken.None).GetAwaiter().GetResult();
-    }
-
-    /// <inheritdoc/>
-    public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-    {
-        if (_isFinished)
+        if (_disposed)
+        {
+            throw new ObjectDisposedException(nameof(ReedSolomonDecodeStream));
+        }
+        if (buffer.Length > RemainLength)
+        {
+            buffer = buffer.Slice(0, (int)RemainLength);
+        }
+        if (buffer.Length == 0)
+        {
             return 0;
-
-        int totalBytesRead = 0;
-        int currentOffset = offset;
-        int bytesRemaining = count;
-
-        while (bytesRemaining > 0 && !_isFinished)
-        {
-            // 如果输出缓冲区有数据，直接读取
-            if (_outputBufferReadPos < _outputBufferFilled)
-            {
-                int canRead = _outputBufferFilled - _outputBufferReadPos;
-                int toRead = Math.Min(bytesRemaining, canRead);
-                Buffer.BlockCopy(_outputBuffer, _outputBufferReadPos, buffer, currentOffset, toRead);
-                _outputBufferReadPos += toRead;
-                totalBytesRead += toRead;
-                currentOffset += toRead;
-                bytesRemaining -= toRead;
-                _position += toRead;
-                continue;
-            }
-
-            // 输出缓冲区已空，尝试解码下一个块
-            bool hasMore = await DecodeNextBlockAsync(cancellationToken);
-            if (!hasMore)
-            {
-                _isFinished = true;
-                break;
-            }
         }
 
-        return totalBytesRead;
-    }
+        byte[] poolBuffer = ArrayPool<byte>.Shared.Rent(ChunkSize << 1);
 
-    private async Task<bool> DecodeNextBlockAsync(CancellationToken cancellationToken)
-    {
-        // 检查是否还有数据需要处理
-        if (_position >= _totalLength)
+        try
         {
-            return false;
-        }
-
-        // 当前块的大小（最后一个块可能不完整）
-        int currentBlockSize = (int)Math.Min(_blockSize, _totalLength - _position);
-
-        // 从所有存在的分片流中读取当前块的数据
-        for (int i = 0; i < _shardStreams.Count; i++)
-        {
-            if (_shardPresent[i])
+            int bytesRead = 0;
+            Memory<byte> outputMemory = poolBuffer.AsMemory(0, ChunkSize);
+            Memory<byte> inputBufferMemory = poolBuffer.AsMemory(ChunkSize, ChunkSize);
+            while (true)
             {
-                var stream = _shardStreams[i];
-                int offset = i * _blockSize;
-                int bytesRead = 0;
-                while (bytesRead < currentBlockSize)
+                if (PipeReader.TryRead(out var readResult))
                 {
-                    int read = await stream!.ReadAsync(_inputBuffer, offset + bytesRead, currentBlockSize - bytesRead, cancellationToken);
-                    if (read == 0)
+                    if (readResult.Buffer.Length >= buffer.Length)
+                    {
+                        var data = readResult.Buffer.Slice(0, buffer.Length);
+                        data.CopyTo(buffer);
+                        PipeReader.AdvanceTo(data.End);
+                        return buffer.Length;
+                    }
+                    else
+                    {
+                        PipeReader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
+                    }
+                }
+                var shardBuffer = (AllShardReader.ReadAtLeastAsync(ChunkSize).Result).Buffer;
+                if (shardBuffer.Length > ChunkSize)
+                {
+                    shardBuffer = shardBuffer.Slice(0, ChunkSize);
+                }
+                ReadOnlyMemory<byte> chunkMemory;
+                switch ((integrity: shardBuffer.Length == ChunkSize, shardBuffer.IsSingleSegment))
+                {
+                    case { integrity: true, IsSingleSegment: true }:
+                        chunkMemory = shardBuffer.First;
                         break;
-                    bytesRead += read;
+                    case { integrity: false } when shardBuffer.Length < RemainLength:
+                        throw new EndOfStreamException("分片流过早结束，无法读取足够的数据进行解码");
+                    case { integrity: false }:
+                        inputBufferMemory.Span.Clear();
+                        goto default;
+                    default:
+                        shardBuffer.CopyTo(inputBufferMemory.Span);
+                        chunkMemory = inputBufferMemory;
+                        break;
                 }
-                // 如果读取不足，补零
-                if (bytesRead < currentBlockSize)
-                {
-                    Array.Clear(_inputBuffer, offset + bytesRead, currentBlockSize - bytesRead);
-                }
-            }
-            else
-            {
-                // 缺失的分片，用零填充
-                int offset = i * _blockSize;
-                Array.Clear(_inputBuffer, offset, currentBlockSize);
+                RecoveryMatrix.CodeShards(chunkMemory.Span, outputMemory.Span, BlockSize);
+                PipeStream.Write(outputMemory.Span);
+                AllShardReader.AdvanceTo(shardBuffer.End);
+                _position += shardBuffer.Length;
+                bytesRead += (int)shardBuffer.Length;
             }
         }
-
-        // 收集可用分片的行索引和数据
-        var availableIndices = new List<int>();
-        var availableData = new List<byte[]>();
-
-        for (int i = 0; i < _shardStreams.Count && availableIndices.Count < _dataShardCount; i++)
+        finally
         {
-            if (_shardPresent[i])
-            {
-                availableIndices.Add(i);
-                var data = new byte[currentBlockSize];
-                Buffer.BlockCopy(_inputBuffer, i * _blockSize, data, 0, currentBlockSize);
-                availableData.Add(data);
-            }
+            ArrayPool<byte>.Shared.Return(poolBuffer);
         }
-
-        if (availableIndices.Count < _dataShardCount)
-        {
-            throw new InvalidOperationException($"可用分片不足，需要 {_dataShardCount} 个，实际 {availableIndices.Count}");
-        }
-
-        // 构建恢复矩阵并解码
-        var inverse = _encodingMatrix.InverseRows(availableIndices.ToArray(), _dataShardCount);
-
-        // 准备连续内存输入
-        byte[] availableBuffer = new byte[_dataShardCount * currentBlockSize];
-        for (int i = 0; i < _dataShardCount; i++)
-        {
-            Buffer.BlockCopy(availableData[i], 0, availableBuffer, i * currentBlockSize, currentBlockSize);
-        }
-
-        // 解码
-        byte[] recoveredBuffer = new byte[_dataShardCount * currentBlockSize];
-        inverse.CodeShards(availableBuffer, recoveredBuffer, currentBlockSize);
-
-        // 提取实际有效数据（只取到 totalLength 为止）
-        int bytesToCopy = (int)Math.Min(_totalLength - _position, _dataShardCount * currentBlockSize);
-        Buffer.BlockCopy(recoveredBuffer, 0, _outputBuffer, 0, bytesToCopy);
-        _outputBufferFilled = bytesToCopy;
-        _outputBufferReadPos = 0;
-
-        return true;
     }
 
     /// <inheritdoc/>
-    public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+    public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+    {
+        if (_disposed)
+        {
+            throw new ObjectDisposedException(nameof(ReedSolomonDecodeStream));
+        }
+        if (buffer.Length > RemainLength)
+        {
+            buffer = buffer.Slice(0, (int)RemainLength);
+        }
+        if (buffer.Length == 0)
+        {
+            return 0;
+        }
+
+        byte[] poolBuffer = ArrayPool<byte>.Shared.Rent(ChunkSize << 1);
+
+        try
+        {
+            int bytesRead = 0;
+            Memory<byte> outputMemory = poolBuffer.AsMemory(0, ChunkSize);
+            Memory<byte> inputBufferMemory = poolBuffer.AsMemory(ChunkSize, ChunkSize);
+            while (true)
+            {
+                if (PipeReader.TryRead(out var readResult))
+                {
+                    if (readResult.Buffer.Length >= buffer.Length)
+                    {
+                        var data = readResult.Buffer.Slice(0, buffer.Length);
+                        data.CopyTo(buffer.Span);
+                        PipeReader.AdvanceTo(data.End);
+                        return buffer.Length;
+                    }
+                    else
+                    {
+                        PipeReader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
+                    }
+                }
+                var shardBuffer = (await AllShardReader.ReadAtLeastAsync(ChunkSize, cancellationToken).ConfigureAwait(false)).Buffer;
+                if (shardBuffer.Length > ChunkSize)
+                {
+                    shardBuffer = shardBuffer.Slice(0, ChunkSize);
+                }
+                ReadOnlyMemory<byte> chunkMemory;
+
+                switch ((integrity: shardBuffer.Length == ChunkSize, shardBuffer.IsSingleSegment))
+                {
+                    case { integrity: true, IsSingleSegment: true }:
+                        chunkMemory = shardBuffer.First;
+                        break;
+                    case { integrity: false } when shardBuffer.Length < RemainLength:
+                        throw new EndOfStreamException("分片流过早结束，无法读取足够的数据进行解码");
+                    case { integrity: false }:
+                        inputBufferMemory.Span.Clear();
+                        goto default;
+                    default:
+                        shardBuffer.CopyTo(inputBufferMemory.Span);
+                        chunkMemory = inputBufferMemory;
+                        break;
+                }
+
+                RecoveryMatrix.CodeShards(chunkMemory.Span, outputMemory.Span, BlockSize);
+                await PipeStream.WriteAsync(outputMemory, cancellationToken).ConfigureAwait(false);
+                AllShardReader.AdvanceTo(shardBuffer.End);
+                int bytesToAdvance = (int)Math.Min(RemainLength, shardBuffer.Length);
+                _position += bytesToAdvance;
+                bytesRead += bytesToAdvance;
+            }
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(poolBuffer);
+        }
+    }
 
     /// <inheritdoc/>
-    public override void Flush() { }
+    public override void Flush()
+    {
+    }
 
     /// <inheritdoc/>
-    public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+    protected override void Dispose(bool disposing)
+    {
+        if (!_disposed && disposing)
+        {
+            // 不关闭底层流，由调用方管理
+        }
+        _disposed = true;
+        base.Dispose(disposing);
+    }
 
     /// <inheritdoc/>
-    public override void SetLength(long value) => throw new NotSupportedException();
+    public override void Write(ReadOnlySpan<byte> buffer)
+    {
+        throw new NotSupportedException();
+    }
+    /// <inheritdoc/> 
+    public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
+    {
+        throw new NotSupportedException();
+    }
+    /// <inheritdoc/>
+    public override long Seek(long offset, SeekOrigin origin)
+    {
+        throw new NotSupportedException();
+    }
+
+    /// <inheritdoc/>
+    public override void SetLength(long value)
+    {
+        throw new NotSupportedException();
+    }
+
 }

@@ -11,20 +11,24 @@
 		<PublishAot>False</PublishAot> 
 		<UserSecretsId>992b82a8-b20a-466c-b522-8bd8393e5f02</UserSecretsId>
 		<PublishTrimmed>False</PublishTrimmed>
+		<!-- 👇 allows c# file to override the TF via a #:property -->
 		<TargetFramework Condition="$(TargetFramework) == ''">net10.0</TargetFramework>
+
+		<!-- 👇 additional properties required in package mode -->
 		<ImportProjectExtensionProps>true</ImportProjectExtensionProps>
 		<ImportProjectExtensionTargets>true</ImportProjectExtensionTargets>
 	</PropertyGroup> 
 
-	<ItemGroup>
+	<ItemGroup> 
+
 		<PackageReference Include="Autofac" Version="*" />
 		<PackageReference Include="Autofac.Pooling" Version="*" />
 		<PackageReference Include="Blake3" Version="*" />
 		<PackageReference Include="FFMpegCore" Version="5.4.0" />
-		<PackageReference Include="FluentFTP" Version="53.0.2" />
+		<PackageReference Include="FluentFTP" Version="54.1.1" />
 		<PackageReference Include="GodotSharp" Version="*" />
 		<PackageReference Include="Humanizer.Core.zh-Hans" Version="*" />
-		<PackageReference Include="Microsoft.Agents.AI.OpenAI" Version="1.0.0-rc4" />
+		<PackageReference Include="Microsoft.Agents.AI.OpenAI" Version="1.1.0" />
 		<PackageReference Include="Microsoft.Bcl.TimeProvider" Version="*" /> 
 		<PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" Version="*" />
 		<PackageReference Include="NuGet.Common" Version="*" /> 
@@ -44,13 +48,15 @@
 		<PackageReference Include="Serilog.Extensions.Logging" Version="10.0.0" />
 		<PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
 		<PackageReference Include="SharpCompress" Version="*" />
-		<PackageReference Include="SmallSharp" Version="2.3.0">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		<PackageReference Include="SmallSharp" Version="2.3.1">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
+		 
 		<PackageReference Include="System.Interactive" Version="*" />
 		<PackageReference Include="System.Reactive" Version="*" />
 		<PackageReference Include="Scriban" Version="*" />
+		<PackageReference Include="xunit.v3" Version="3.2.2" />
 		<PackageReference Include="ZLinq.FileSystem" Version="*" />
 		<PackageReference Include="Serilog" Version="4.3.1" />
 		<PackageReference Include="ZLinq.Godot" Version="*" />
@@ -59,7 +65,7 @@
 		<PackageReference Include="zms9110750.InterfaceImplAsExtensionGenerator" Version="*" />
 		<PackageReference Include="Refit.HttpClientFactory" Version="*" />
 		<PackageReference Include="Azure.AI.OpenAI" Version="2.8.0-beta.1" />
-		<PackageReference Include="Azure.Identity" Version="1.18.0" />
+		<PackageReference Include="Azure.Identity" Version="1.21.0" />
 	</ItemGroup>
 	<ItemGroup> 
 		<ProjectReference Include="..\Canalot\Canalot.csproj" />
@@ -78,5 +84,17 @@
 	</ItemGroup>
 	<ItemGroup>
 	  <None Remove="tar.cs" />
+	</ItemGroup>
+	<ItemGroup Condition="'$(Configuration)' != 'Debug'">
+		<Compile Remove="UnitTests\**" />
+	</ItemGroup>
+	<ItemGroup Condition="'$(Configuration)' == 'Debug'">
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.4.0" />
+		<PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Moq" Version="4.20.72" />
+		<PackageReference Include="Shouldly" Version="4.3.0" />
 	</ItemGroup>
 </Project>
